@@ -193,7 +193,7 @@ function ProfitabilityCalculator() {
                 {/* Parámetros de Meli */}
                 <div className="p-4 bg-slate-900/50 border border-slate-800 rounded">
                     <p className="text-xs text-slate-500 font-mono">
-                        <span className="text-purple-400">Parámetros Mercado Libre:</span> Comisión Premium 18% | Envío $200 MXN (50% subsidio después de $400k) | Fulfillment ~5%
+                        <span className="text-purple-400">Parámetros Mercado Libre:</span> Comisión Premium 18% | Envío $200 MXN (50% subsidio después de $400k)
                     </p>
                 </div>
 
@@ -631,13 +631,9 @@ export default function MexarMeliClient() {
                                                 <span className="text-slate-300">Envío gratis (vendedor asume)</span>
                                                 <span className="text-red-400 font-bold">~5-10%</span>
                                             </div>
-                                            <div className="flex justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
-                                                <span className="text-slate-300">Fulfillment + storage</span>
-                                                <span className="text-red-400 font-bold">~3-8%</span>
-                                            </div>
                                             <div className="flex justify-between p-3 bg-red-500/10 border border-red-500/30 rounded">
                                                 <span className="text-white font-bold">TOTAL COSTO SOBRE VENTA</span>
-                                                <span className="text-red-400 font-bold text-xl">66-100%</span>
+                                                <span className="text-red-400 font-bold text-xl">63-92%</span>
                                             </div>
                                         </div>
                                     </div>
