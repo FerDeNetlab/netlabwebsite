@@ -35,7 +35,6 @@ function ProfitabilityCalculator() {
     const COMISION_PREMIUM = 0.18 // 18%
     const ENVIO_PROMEDIO = 200 // MXN
     const FACTURACION_SUBSIDIO = 400000 // $400k MXN para subsidio envío
-    const FULFILLMENT_PERCENT = 0.05 // 5%
 
     // Simulación de crecimiento de ventas en Mercado Libre (escenario optimista)
     const simularVentas = (mes: number): number => {
@@ -77,14 +76,13 @@ function ProfitabilityCalculator() {
         const comision = ingresoBruto * COMISION_PREMIUM
         const publicidad = ingresoBruto * acos
         const envioTotal = costoEnvioPorUnidad * unidadesMes
-        const fulfillment = ingresoBruto * FULFILLMENT_PERCENT
         const costoProducto = ingresoBruto * (1 - margenBruto / 100)
 
-        const costoTotal = comision + publicidad + envioTotal + fulfillment + costoProducto
+        const costoTotal = comision + publicidad + envioTotal + costoProducto
         const utilidad = ingresoBruto - costoTotal
         const margenNeto = ingresoBruto > 0 ? (utilidad / ingresoBruto) * 100 : 0
 
-        const costoSobreVenta = ingresoBruto > 0 ? ((comision + publicidad + envioTotal + fulfillment) / ingresoBruto) * 100 : 0
+        const costoSobreVenta = ingresoBruto > 0 ? ((comision + publicidad + envioTotal) / ingresoBruto) * 100 : 0
 
         return {
             mes,
@@ -93,7 +91,6 @@ function ProfitabilityCalculator() {
             comision,
             publicidad,
             envio: envioTotal,
-            fulfillment,
             costoProducto,
             utilidad,
             margenNeto,
