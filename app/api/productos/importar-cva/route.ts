@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function POST(request: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const { filters, startPage = 1, maxPages = 10 } = body
@@ -40,21 +45,21 @@ export async function POST(request: Request) {
     let paginaActual = startPage
     let totalPaginas = 1
     let paginasProcesadas = 0
-    
+
     console.log(`[v0] Iniciando descarga desde página ${startPage}, máximo ${maxPages} páginas...`)
-    
+
     // Iterar solo por el número máximo de páginas permitidas
     do {
       const params = new URLSearchParams()
       params.append('page', paginaActual.toString())
-      
+
       if (filters?.marca) params.append('marca', filters.marca)
       if (filters?.grupo) params.append('grupo', filters.grupo)
       if (filters?.exist) params.append('exist', filters.exist.toString())
       if (filters?.completos) params.append('completos', '1')
 
       const url = `${baseUrl}?${params.toString()}`
-      
+
       // 3. Obtener productos de CVA página por página
       const productosResponse = await fetch(url, {
         headers: {
@@ -71,21 +76,21 @@ export async function POST(request: Request) {
 
       const data = await productosResponse.json()
       const articulos = data.articulos || []
-      
+
       todosLosArticulos = todosLosArticulos.concat(articulos)
-      
+
       // CVA devuelve paginación en el formato: {"paginacion": {"total_paginas": 290, "pagina": 3}}
       if (data.paginacion) {
         totalPaginas = data.paginacion.total_paginas || 1
       }
-      
+
       paginasProcesadas++
       console.log(`[v0] Descargada página ${paginaActual}/${totalPaginas}, productos acumulados: ${todosLosArticulos.length}`)
-      
+
       paginaActual++
-      
+
     } while (paginaActual <= totalPaginas && paginasProcesadas < maxPages)
-    
+
     const hayMasPaginas = paginaActual <= totalPaginas
     console.log(`[v0] Descarga de lote completada: ${todosLosArticulos.length} productos. ${hayMasPaginas ? `Quedan ${totalPaginas - paginaActual + 1} páginas más.` : 'Todas las páginas completadas.'}`)
     const articulos = todosLosArticulos
@@ -101,14 +106,14 @@ export async function POST(request: Request) {
     // Procesar en chunks para evitar saturar la base de datos
     for (let i = 0; i < articulos.length; i += BATCH_SIZE) {
       const batch = articulos.slice(i, i + BATCH_SIZE)
-      
+
       try {
         // Preparar valores para batch insert
         const values = batch.map(articulo => {
-          const precio = articulo.moneda === 'Pesos' 
-            ? articulo.precio 
+          const precio = articulo.moneda === 'Pesos'
+            ? articulo.precio
             : articulo.precio * 20 // Conversión aproximada
-          
+
           return {
             sku: articulo.clave,
             nombre: articulo.descripcion?.substring(0, 255) || articulo.clave,
@@ -126,10 +131,10 @@ export async function POST(request: Request) {
           const base = idx * 8
           return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8})`
         }).join(',')
-        
+
         const flatValues = values.flatMap(p => [
           p.sku,
-          p.nombre, 
+          p.nombre,
           p.descripcion,
           p.precio_unitario,
           p.categoria,
@@ -154,10 +159,10 @@ export async function POST(request: Request) {
               ultima_actualizacion_precio = NOW(),
               updated_at = NOW()
           `, flatValues)
-          
+
           totalProcesados += values.length
         } catch (error) {
-          console.error(`[v0] Error en batch insert:`, error)
+          console.error(`[Auth] Error en batch insert: ${error}`)
           // Fallback: intentar uno por uno si falla el batch
           for (const producto of values) {
             try {
@@ -194,7 +199,7 @@ export async function POST(request: Request) {
         }
 
         console.log(`[v0] Procesados ${totalProcesados}/${articulos.length} productos, ${errores} errores`)
-        
+
       } catch (error) {
         console.error(`[v0] Error fatal en lote ${i}-${i + BATCH_SIZE}:`, error)
         errores += batch.length

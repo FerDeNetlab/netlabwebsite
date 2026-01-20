@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
 
 /**
  * Endpoint para búsqueda dinámica de productos en CVA
  * Útil para autocompletar en cotizaciones sin importar todos los productos
  */
 export async function POST(request: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const { busqueda, limite = 50 } = body
@@ -50,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     const data = await productosResponse.json()
-    
+
     // Formatear para el frontend
     const productos = (data.articulos || []).map((art: any) => ({
       sku: art.clave,

@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const { etapa, nombre, valor, fecha_cierre_estimada, probabilidad, descripcion } = body
@@ -34,6 +39,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     await sql`
       DELETE FROM oportunidades

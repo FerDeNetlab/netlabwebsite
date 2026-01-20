@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function GET() {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const oportunidades = await sql`
       SELECT 
@@ -32,6 +37,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const { nombre, cliente_id, valor, fecha_cierre_estimada, probabilidad, etapa, descripcion } = body

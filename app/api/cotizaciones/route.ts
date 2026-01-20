@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function GET() {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const cotizaciones = await sql`
       SELECT 
@@ -16,12 +21,16 @@ export async function GET() {
 
     return NextResponse.json(cotizaciones)
   } catch (error) {
-    console.error('[v0] Error fetching cotizaciones:', error)
+    console.error('[Auth] Error fetching cotizaciones:', error)
     return NextResponse.json({ error: 'Error al obtener cotizaciones' }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
   try {
     const body = await request.json()
     const { cliente_id, proyecto_id, total, items, notas, vigencia } = body
@@ -54,7 +63,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(cotizacion[0], { status: 201 })
   } catch (error) {
-    console.error('[v0] Error creating cotizacion:', error)
+    console.error('[Auth] Error creating cotizacion:', error)
     return NextResponse.json({ error: 'Error al crear cotización' }, { status: 500 })
   }
 }
