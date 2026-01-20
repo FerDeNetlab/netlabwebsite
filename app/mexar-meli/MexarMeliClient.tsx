@@ -1,5 +1,5 @@
 "use client"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import {
     ArrowRight,
@@ -25,6 +25,203 @@ import {
 import { Navbar } from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
 import { Footer } from "@/components/sections/footer"
+
+// Componente de Calculadora de Rentabilidad
+function ProfitabilityCalculator() {
+    const [precio, setPrecio] = useState(350)
+    const [unidades, setUnidades] = useState(100)
+    const [margen, setMargen] = useState(40)
+
+    // Constantes de Mercado Libre
+    const COMISION_PREMIUM = 0.18 // 18%
+    const ENVIO_PROMEDIO = 200 // MXN
+    const FACTURACION_SUBSIDIO = 400000 // $400k MXN para subsidio envío
+    const FULFILLMENT_PERCENT = 0.05 // 5%
+
+    // Función para calcular métricas por mes
+    const calcularMes = (mes: number, precioUnitario: number, unidadesMes: number, margenBruto: number) => {
+        // Simulación de crecimiento de cuenta
+        const facturacionAcumulada = precioUnitario * unidadesMes * mes
+        const tieneSubsidioEnvio = facturacionAcumulada >= FACTURACION_SUBSIDIO
+
+        // ACOS disminuye con el tiempo (reputación)
+        let acos: number
+        if (mes <= 3) acos = 0.55 // 55% primeros 3 meses
+        else if (mes <= 6) acos = 0.45 // 45% meses 4-6
+        else if (mes <= 12) acos = 0.30 // 30% meses 7-12
+        else if (mes <= 18) acos = 0.20 // 20% meses 13-18
+        else acos = 0.12 // 12% después de 18 meses
+
+        // Costo de envío (vendedor asume, con subsidio después de $400k)
+        const costoEnvioPorUnidad = tieneSubsidioEnvio ? ENVIO_PROMEDIO * 0.5 : ENVIO_PROMEDIO
+        const costoEnvioPercent = costoEnvioPorUnidad / precioUnitario
+
+        // Cálculo de costos
+        const ingresoBruto = precioUnitario * unidadesMes
+        const comision = ingresoBruto * COMISION_PREMIUM
+        const publicidad = ingresoBruto * acos
+        const envioTotal = costoEnvioPorUnidad * unidadesMes
+        const fulfillment = ingresoBruto * FULFILLMENT_PERCENT
+        const costoProducto = ingresoBruto * (1 - margenBruto / 100)
+
+        const costoTotal = comision + publicidad + envioTotal + fulfillment + costoProducto
+        const utilidad = ingresoBruto - costoTotal
+        const margenNeto = (utilidad / ingresoBruto) * 100
+
+        const costoSobreVenta = ((comision + publicidad + envioTotal + fulfillment) / ingresoBruto) * 100
+
+        return {
+            mes,
+            ingreso: ingresoBruto,
+            comision,
+            publicidad,
+            envio: envioTotal,
+            fulfillment,
+            costoProducto,
+            utilidad,
+            margenNeto,
+            acos: acos * 100,
+            costoSobreVenta,
+            facturacionAcumulada,
+            tieneSubsidioEnvio,
+        }
+    }
+
+    // Generar tabla de 24 meses
+    const meses = [1, 3, 6, 9, 12, 15, 18, 24]
+    const proyecciones = meses.map(m => calcularMes(m, precio, unidades, margen))
+
+    const formatMoney = (n: number) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
+
+    return (
+        <TerminalFrame className="border-purple-500/30">
+            <div className="space-y-6">
+                <div className="flex items-center gap-3 text-purple-400 font-mono mb-6">
+                    <BarChart3 className="w-6 h-6" />
+                    <span className="text-xl font-bold">Calculadora de Rentabilidad en el Tiempo</span>
+                </div>
+
+                <p className="text-slate-400 text-sm">
+                    Ingresa el precio de tu producto y la cantidad estimada de ventas mensuales para ver cómo evolucionan los costos y la rentabilidad conforme madura tu cuenta.
+                </p>
+
+                {/* Inputs */}
+                <div className="grid md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-2">Precio por unidad (MXN)</label>
+                        <input
+                            type="number"
+                            value={precio}
+                            onChange={(e) => setPrecio(Number(e.target.value) || 0)}
+                            className="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white font-mono text-lg focus:border-purple-500 focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-2">Unidades vendidas/mes</label>
+                        <input
+                            type="number"
+                            value={unidades}
+                            onChange={(e) => setUnidades(Number(e.target.value) || 0)}
+                            className="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white font-mono text-lg focus:border-purple-500 focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-400 mb-2">Margen bruto (%)</label>
+                        <input
+                            type="number"
+                            value={margen}
+                            onChange={(e) => setMargen(Number(e.target.value) || 0)}
+                            className="w-full p-3 bg-slate-900 border border-slate-700 rounded text-white font-mono text-lg focus:border-purple-500 focus:outline-none"
+                        />
+                    </div>
+                </div>
+
+                {/* Parámetros de Meli */}
+                <div className="p-4 bg-slate-900/50 border border-slate-800 rounded mt-4">
+                    <p className="text-xs text-slate-500 font-mono">
+                        <span className="text-purple-400">Parámetros Mercado Libre:</span> Comisión Premium 18% | Envío promedio $200 MXN | Subsidio envío después de $400k facturación | Fulfillment ~5%
+                    </p>
+                </div>
+
+                {/* Tabla de Proyección */}
+                <div className="overflow-x-auto mt-6">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-700">
+                                <th className="text-left py-3 px-2 text-slate-400 font-mono">Mes</th>
+                                <th className="text-right py-3 px-2 text-slate-400 font-mono">Ingreso</th>
+                                <th className="text-right py-3 px-2 text-slate-400 font-mono">ACOS</th>
+                                <th className="text-right py-3 px-2 text-slate-400 font-mono">Costo Total %</th>
+                                <th className="text-right py-3 px-2 text-slate-400 font-mono">Utilidad</th>
+                                <th className="text-right py-3 px-2 text-slate-400 font-mono">Margen Neto</th>
+                                <th className="text-center py-3 px-2 text-slate-400 font-mono">Subsidio Envío</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {proyecciones.map((p) => (
+                                <tr key={p.mes} className={`border-b border-slate-800 ${p.utilidad >= 0 ? '' : 'bg-red-500/5'}`}>
+                                    <td className="py-3 px-2 text-white font-bold">Mes {p.mes}</td>
+                                    <td className="py-3 px-2 text-right text-slate-300">{formatMoney(p.ingreso)}</td>
+                                    <td className="py-3 px-2 text-right">
+                                        <span className={p.acos > 30 ? 'text-red-400' : p.acos > 20 ? 'text-yellow-400' : 'text-green-400'}>
+                                            {p.acos.toFixed(0)}%
+                                        </span>
+                                    </td>
+                                    <td className="py-3 px-2 text-right">
+                                        <span className={p.costoSobreVenta > 50 ? 'text-red-400' : p.costoSobreVenta > 35 ? 'text-yellow-400' : 'text-green-400'}>
+                                            {p.costoSobreVenta.toFixed(0)}%
+                                        </span>
+                                    </td>
+                                    <td className={`py-3 px-2 text-right font-bold ${p.utilidad >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {formatMoney(p.utilidad)}
+                                    </td>
+                                    <td className={`py-3 px-2 text-right font-bold ${p.margenNeto >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {p.margenNeto.toFixed(1)}%
+                                    </td>
+                                    <td className="py-3 px-2 text-center">
+                                        {p.tieneSubsidioEnvio ? (
+                                            <span className="text-green-400">✓ Activo</span>
+                                        ) : (
+                                            <span className="text-slate-500">No ({((p.facturacionAcumulada / FACTURACION_SUBSIDIO) * 100).toFixed(0)}%)</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Leyenda y notas */}
+                <div className="grid md:grid-cols-2 gap-4 mt-6">
+                    <div className="p-4 bg-green-500/5 border border-green-500/20 rounded">
+                        <p className="text-sm text-slate-300">
+                            <span className="text-green-400 font-semibold">✓ Punto de equilibrio:</span> El mes donde la utilidad se vuelve positiva marca el inicio de la rentabilidad real.
+                        </p>
+                    </div>
+                    <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded">
+                        <p className="text-sm text-slate-300">
+                            <span className="text-purple-400 font-semibold">📊 Factores de mejora:</span> ACOS baja con reseñas y reputación. Envío se subsidia al superar $400k MXN facturados.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Resumen */}
+                <div className="p-6 bg-red-500/5 border-l-4 border-red-500 rounded mt-6">
+                    <p className="text-lg text-white font-semibold mb-2">
+                        Inversión estimada hasta rentabilidad:
+                    </p>
+                    <p className="text-slate-300">
+                        Con estos números, los primeros <span className="text-red-400 font-bold">12-18 meses</span> generarán pérdidas acumuladas de aproximadamente{' '}
+                        <span className="text-red-400 font-bold">
+                            {formatMoney(proyecciones.slice(0, 5).reduce((acc, p) => acc + Math.min(0, p.utilidad), 0))}
+                        </span>{' '}
+                        antes de alcanzar rentabilidad sostenible.
+                    </p>
+                </div>
+            </div>
+        </TerminalFrame>
+    )
+}
 
 export default function MexarMeliClient() {
     useEffect(() => {
@@ -413,6 +610,9 @@ export default function MexarMeliClient() {
                                 </div>
                             </div>
                         </TerminalFrame>
+
+                        {/* CALCULADORA DE RENTABILIDAD */}
+                        <ProfitabilityCalculator />
                     </div>
                 </div>
             </section>
