@@ -17,11 +17,14 @@ import {
     TrendingUp,
     FileText,
     Zap,
+    DollarSign,
+    Percent,
+    Clock,
+    XCircle,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
 import { Footer } from "@/components/sections/footer"
-import Image from "next/image"
 
 export default function MexarMeliClient() {
     useEffect(() => {
@@ -32,15 +35,15 @@ export default function MexarMeliClient() {
         <main className="min-h-screen bg-[#0c0c0c]">
             <Navbar />
 
-            {/* Hero Section */}
+            {/* Hero Section - SIN BRANDING NETLAB */}
             <section className="relative pt-10 pb-32 md:pt-16 overflow-hidden">
                 <div className="container px-4 mx-auto max-w-6xl">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                         <TerminalFrame className="min-h-[500px] border-slate-800 bg-[#050505]">
                             <div className="font-mono space-y-8">
                                 <div className="flex flex-wrap items-center gap-3 text-sm md:text-lg mb-8">
-                                    <span className="text-green-500 font-bold">netlab@mexar:~$</span>
-                                    <span className="text-slate-100">iniciar-propuesta</span>
+                                    <span className="text-green-500 font-bold">strategy@retail:~$</span>
+                                    <span className="text-slate-100">analizar-modelo</span>
                                     <span className="text-purple-400">--concesion-digital</span>
                                     <span className="text-purple-400">--gobierno-marca</span>
                                     <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
@@ -48,9 +51,9 @@ export default function MexarMeliClient() {
 
                                 <div className="space-y-6 md:pl-6 border-l-2 border-slate-800 ml-1 md:ml-3 pl-4">
                                     <div className="flex items-center gap-4 mb-6">
-                                        <Image src="/logo-netlab.png" alt="Netlab Logo" width={120} height={40} className="h-10 w-auto" />
-                                        <span className="text-2xl text-slate-500">×</span>
-                                        <div className="text-2xl font-bold text-purple-400 tracking-wider">MEXAR PHARMA</div>
+                                        <div className="text-3xl font-bold text-purple-400 tracking-wider">MEXAR PHARMA</div>
+                                        <span className="text-2xl text-slate-500">/</span>
+                                        <div className="text-2xl font-bold text-green-400 tracking-wider">Made4You</div>
                                     </div>
 
                                     <motion.h1
@@ -69,22 +72,27 @@ export default function MexarMeliClient() {
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 1.5 }}
                                     >
-                                        Una propuesta estratégica para Made4You: separar correctamente quién decide y quién ejecuta,
-                                        permitiendo escalar sin perder el control del negocio.
+                                        Análisis estratégico: por qué separar quién decide de quién ejecuta es la clave para escalar en retail digital sin perder el control del negocio.
                                     </motion.p>
 
                                     <motion.div
-                                        className="pt-8"
+                                        className="pt-8 flex gap-4"
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 2.2 }}
                                     >
                                         <a
-                                            href="#contexto"
+                                            href="#costos"
                                             className="group relative inline-flex items-center justify-center px-8 py-3 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm"
                                         >
-                                            <span className="mr-2">Ver propuesta completa</span>
+                                            <span className="mr-2">Ver análisis de costos</span>
                                             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                        </a>
+                                        <a
+                                            href="#contexto"
+                                            className="inline-flex items-center justify-center px-8 py-3 font-mono font-medium text-slate-300 transition-all duration-200 bg-transparent border border-slate-700 hover:border-purple-500 hover:text-purple-400 rounded-sm"
+                                        >
+                                            Ver propuesta completa
                                         </a>
                                     </motion.div>
 
@@ -94,9 +102,9 @@ export default function MexarMeliClient() {
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 2.8 }}
                                     >
-                                        <p>{">"} Analizando modelo de negocio actual... [OK]</p>
-                                        <p>{">"} Identificando oportunidades en retail digital... [OK]</p>
-                                        <p>{">"} Diseñando estructura de control estratégico... [READY]</p>
+                                        <p>{">"} Analizando costos reales de Mercado Libre... [OK]</p>
+                                        <p>{">"} Calculando ACOS y TACOS proyectados... [OK]</p>
+                                        <p>{">"} Evaluando modelo de concesión vs operación propia... [READY]</p>
                                     </motion.div>
                                 </div>
                             </div>
@@ -106,6 +114,307 @@ export default function MexarMeliClient() {
 
                 <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
                 <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-[#0c0c0c]/80 to-[#0c0c0c]"></div>
+            </section>
+
+            {/* NUEVA SECCIÓN: Costos Reales de Mercado Libre */}
+            <section id="costos" className="py-20 border-t border-slate-800">
+                <div className="container px-4 mx-auto max-w-6xl">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-bold text-white mb-4">La Realidad de los Costos en Mercado Libre</h2>
+                        <p className="text-slate-400 text-lg">Por qué empezar desde cero NO es rentable</p>
+                    </div>
+
+                    <div className="space-y-8">
+                        {/* Comisiones */}
+                        <TerminalFrame>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                                    <span className="text-lg">$</span>
+                                    <span className="text-lg">cat comisiones-mercadolibre.txt</span>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <Percent className="w-8 h-8 text-red-400" />
+                                    Comisiones por Venta (2024-2025)
+                                </h3>
+
+                                <div className="grid md:grid-cols-3 gap-6 mt-6">
+                                    <div className="p-6 bg-slate-900/50 border border-slate-800 rounded">
+                                        <h4 className="text-green-400 font-semibold mb-3">Publicación Gratuita</h4>
+                                        <p className="text-3xl font-bold text-white mb-2">0%</p>
+                                        <ul className="text-xs text-slate-400 space-y-1">
+                                            <li>• Baja exposición</li>
+                                            <li>• Máx 5-20 ventas/año</li>
+                                            <li>• Duración 60 días</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="p-6 bg-slate-900/50 border border-slate-800 rounded">
+                                        <h4 className="text-purple-400 font-semibold mb-3">Publicación Clásica</h4>
+                                        <p className="text-3xl font-bold text-white mb-2">9% - 18%</p>
+                                        <ul className="text-xs text-slate-400 space-y-1">
+                                            <li>• Mayor exposición</li>
+                                            <li>• Varía por categoría</li>
+                                            <li>• Sin MSI</li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="p-6 bg-red-500/10 border border-red-500/30 rounded">
+                                        <h4 className="text-red-400 font-semibold mb-3">Publicación Premium</h4>
+                                        <p className="text-3xl font-bold text-red-400 mb-2">13% - 22%</p>
+                                        <ul className="text-xs text-slate-400 space-y-1">
+                                            <li>• Máxima exposición</li>
+                                            <li>• Permite MSI</li>
+                                            <li>• <span className="text-red-400">Obligatoria para competir</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-red-500/5 border-l-4 border-red-500 rounded mt-6">
+                                    <p className="text-slate-300">
+                                        <span className="text-red-400 font-semibold">⚠️ Costo fijo adicional:</span> Para productos menores a $299 MXN se cobra entre $25-$37 MXN extra por unidad vendida.
+                                    </p>
+                                </div>
+                            </div>
+                        </TerminalFrame>
+
+                        {/* ACOS y TACOS */}
+                        <TerminalFrame>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                                    <span className="text-lg">$</span>
+                                    <span className="text-lg">cat metricas-publicidad.txt</span>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <BarChart3 className="w-8 h-8 text-purple-400" />
+                                    ACOS y TACOS: Las Métricas que Definen Rentabilidad
+                                </h3>
+
+                                <div className="grid md:grid-cols-2 gap-8 mt-6">
+                                    <div className="p-6 bg-purple-500/5 border border-purple-500/30 rounded">
+                                        <h4 className="text-xl font-bold text-purple-400 mb-4">ACOS (Advertising Cost of Sales)</h4>
+                                        <p className="text-sm text-slate-400 mb-4">
+                                            Gasto publicitario ÷ Ventas por publicidad × 100
+                                        </p>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">ACOS ideal</span>
+                                                <span className="text-green-400 font-bold">10-15%</span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">ACOS tolerable (lanzamiento)</span>
+                                                <span className="text-yellow-400 font-bold">20-30%</span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">ACOS cuenta nueva (realista)</span>
+                                                <span className="text-red-400 font-bold">40-60%+</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 bg-green-500/5 border border-green-500/30 rounded">
+                                        <h4 className="text-xl font-bold text-green-400 mb-4">TACOS (Total Advertising Cost of Sales)</h4>
+                                        <p className="text-sm text-slate-400 mb-4">
+                                            Gasto publicitario ÷ Ventas TOTALES × 100
+                                        </p>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">TACOS saludable</span>
+                                                <span className="text-green-400 font-bold">5-10%</span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">TACOS en crecimiento</span>
+                                                <span className="text-yellow-400 font-bold">10-15%</span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-2 bg-slate-900/50 rounded">
+                                                <span className="text-slate-300">TACOS cuenta nueva</span>
+                                                <span className="text-red-400 font-bold">25-40%+</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-purple-500/5 border-l-4 border-purple-500 rounded mt-6">
+                                    <p className="text-slate-300">
+                                        <span className="text-purple-400 font-semibold">💡 Clave:</span> Para que una campaña sea rentable, el ACOS debe ser <span className="text-green-400 font-semibold">menor que tu margen neto</span>. Si tu margen es 25% y tu ACOS es 40%, estás perdiendo dinero en cada venta publicitaria.
+                                    </p>
+                                </div>
+                            </div>
+                        </TerminalFrame>
+
+                        {/* Inversión en Publicidad */}
+                        <TerminalFrame>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                                    <span className="text-lg">$</span>
+                                    <span className="text-lg">cat inversion-publicidad.txt</span>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <DollarSign className="w-8 h-8 text-green-400" />
+                                    Inversión Mensual en Product Ads (Mercado Ads)
+                                </h3>
+
+                                <div className="grid md:grid-cols-3 gap-6 mt-6">
+                                    <div className="p-6 bg-slate-900/50 border border-slate-800 rounded">
+                                        <h4 className="text-slate-400 text-sm mb-2">Campañas de prueba</h4>
+                                        <p className="text-3xl font-bold text-white mb-2">$300 - $500 USD</p>
+                                        <p className="text-xs text-slate-500">~$5,000 - $8,500 MXN/mes</p>
+                                    </div>
+
+                                    <div className="p-6 bg-purple-500/10 border border-purple-500/30 rounded">
+                                        <h4 className="text-purple-400 text-sm mb-2">Campañas en crecimiento</h4>
+                                        <p className="text-3xl font-bold text-white mb-2">$1,000 - $3,000 USD</p>
+                                        <p className="text-xs text-slate-500">~$17,000 - $51,000 MXN/mes</p>
+                                    </div>
+
+                                    <div className="p-6 bg-red-500/10 border border-red-500/30 rounded">
+                                        <h4 className="text-red-400 text-sm mb-2">Sectores competitivos</h4>
+                                        <p className="text-3xl font-bold text-red-400 mb-2">$5,000+ USD</p>
+                                        <p className="text-xs text-slate-500">~$85,000+ MXN/mes</p>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-red-500/5 border-l-4 border-red-500 rounded mt-6">
+                                    <p className="text-slate-300">
+                                        <span className="text-red-400 font-semibold">⚠️ Sin publicidad = sin visibilidad.</span> La publicidad en Mercado Libre es prácticamente obligatoria para aparecer en los primeros resultados. Sin ella, tus productos quedan enterrados.
+                                    </p>
+                                </div>
+                            </div>
+                        </TerminalFrame>
+
+                        {/* Fulfillment */}
+                        <TerminalFrame>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                                    <span className="text-lg">$</span>
+                                    <span className="text-lg">cat costos-fulfillment.txt</span>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <Package className="w-8 h-8 text-blue-400" />
+                                    Mercado Envíos Full (Fulfillment)
+                                </h3>
+
+                                <div className="grid md:grid-cols-2 gap-6 mt-6">
+                                    <div className="space-y-4">
+                                        <h4 className="text-blue-400 font-semibold">Costos asociados:</h4>
+                                        <ul className="space-y-3 text-sm text-slate-300">
+                                            <li className="flex items-start gap-2">
+                                                <DollarSign className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                                <span><span className="text-white font-semibold">Almacenamiento diario:</span> Cobro por unidad según tamaño</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <Clock className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                                                <span><span className="text-white font-semibold">Stock antiguo (+120 días):</span> Cargo adicional por unidad</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <Package className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                                                <span><span className="text-white font-semibold">Colecta a domicilio:</span> Tarifa según volumen y distancia</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                                                <span><span className="text-white font-semibold">Retiro/descarte:</span> Costo por retirar productos de bodega</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div className="p-6 bg-blue-500/5 border border-blue-500/30 rounded">
+                                        <h4 className="text-blue-400 font-semibold mb-3">Sin Full = Sin competitividad</h4>
+                                        <p className="text-sm text-slate-400 mb-4">
+                                            Usar Full es prácticamente obligatorio para:
+                                        </p>
+                                        <ul className="space-y-2 text-sm text-slate-300">
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                                Aparecer en primeros resultados
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                                Participar en Hot Sale, Buen Fin
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                                Ofrecer envío gratis competitivo
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </TerminalFrame>
+
+                        {/* Resumen: Por qué NO empezar de cero */}
+                        <TerminalFrame className="border-red-500/30">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 text-red-400 font-mono mb-6">
+                                    <AlertTriangle className="w-6 h-6" />
+                                    <span className="text-xl font-bold">Por qué NO es rentable empezar desde cero</span>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-bold text-white">Costos de una cuenta nueva:</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
+                                                <span className="text-slate-300">Comisión Premium</span>
+                                                <span className="text-red-400 font-bold">~18-22%</span>
+                                            </div>
+                                            <div className="flex justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
+                                                <span className="text-slate-300">ACOS inicial (sin reseñas)</span>
+                                                <span className="text-red-400 font-bold">40-60%</span>
+                                            </div>
+                                            <div className="flex justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
+                                                <span className="text-slate-300">Envío gratis (vendedor asume)</span>
+                                                <span className="text-red-400 font-bold">~5-10%</span>
+                                            </div>
+                                            <div className="flex justify-between p-3 bg-slate-900/50 border border-slate-800 rounded">
+                                                <span className="text-slate-300">Fulfillment + storage</span>
+                                                <span className="text-red-400 font-bold">~3-8%</span>
+                                            </div>
+                                            <div className="flex justify-between p-3 bg-red-500/10 border border-red-500/30 rounded">
+                                                <span className="text-white font-bold">TOTAL COSTO SOBRE VENTA</span>
+                                                <span className="text-red-400 font-bold text-xl">66-100%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-lg font-bold text-white">Tiempo para rentabilidad:</h4>
+                                        <div className="p-6 bg-slate-900/50 border border-slate-800 rounded space-y-4">
+                                            <div className="flex items-center gap-3">
+                                                <Clock className="w-6 h-6 text-red-400" />
+                                                <div>
+                                                    <p className="text-white font-semibold">6-12 meses</p>
+                                                    <p className="text-xs text-slate-400">Para acumular reseñas y reputación</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <TrendingUp className="w-6 h-6 text-yellow-400" />
+                                                <div>
+                                                    <p className="text-white font-semibold">12-18 meses</p>
+                                                    <p className="text-xs text-slate-400">Para lograr ACOS sostenible (&lt;20%)</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <DollarSign className="w-6 h-6 text-green-400" />
+                                                <div>
+                                                    <p className="text-white font-semibold">18-24 meses</p>
+                                                    <p className="text-xs text-slate-400">Para ser realmente rentable</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 bg-red-500/5 border-l-4 border-red-500 rounded">
+                                            <p className="text-sm text-slate-300">
+                                                <span className="text-red-400 font-semibold">Inversión perdida:</span> Durante esos 12+ meses, cada venta genera pérdida o break-even mientras se construye posicionamiento.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </TerminalFrame>
+                    </div>
+                </div>
             </section>
 
             {/* Contexto del Problema */}
@@ -375,314 +684,6 @@ export default function MexarMeliClient() {
                 </div>
             </section>
 
-            {/* Por qué incluir ecommerce */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <TerminalFrame>
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                                <span className="text-lg">$</span>
-                                <span className="text-lg">cat ecommerce-concesion.txt</span>
-                            </div>
-
-                            <div className="space-y-6">
-                                <h2 className="text-3xl font-bold text-white">Por qué incluir también el ecommerce en la concesión</h2>
-
-                                <div className="grid md:grid-cols-2 gap-8 mt-8">
-                                    <div className="p-6 bg-red-500/5 border border-red-500/30 rounded">
-                                        <h3 className="text-xl font-bold text-red-400 mb-4">❌ Separar ecommerce y marketplaces:</h3>
-                                        <ul className="space-y-2 text-sm text-slate-400">
-                                            <li>• Fragmenta inventarios</li>
-                                            <li>• Genera conflictos de precio</li>
-                                            <li>• Duplica costos logísticos</li>
-                                            <li>• Rompe la experiencia del cliente</li>
-                                            <li>• Dificulta la lectura real de datos</li>
-                                        </ul>
-                                    </div>
-
-                                    <div className="p-6 bg-green-500/5 border border-green-500/30 rounded">
-                                        <h3 className="text-xl font-bold text-green-400 mb-4">✓ Un solo operador:</h3>
-                                        <ul className="space-y-2 text-sm text-slate-400">
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Reduce fricción
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Opera con coherencia
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Optimiza costos
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Aprende más rápido
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded mt-6">
-                                    <p className="text-slate-300 text-center text-lg">
-                                        <span className="text-purple-400 font-semibold">El dominio, la marca y los datos</span> siguen siendo
-                                        de Mexar.
-                                        <br />
-                                        <span className="text-green-400 font-semibold">La operación diaria</span> la ejecuta quien sabe
-                                        hacerlo mejor.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </TerminalFrame>
-                </div>
-            </section>
-
-            {/* Rol de Mexar */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <TerminalFrame>
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                                <span className="text-lg">$</span>
-                                <span className="text-lg">cat rol-mexar.txt</span>
-                            </div>
-
-                            <div className="space-y-6">
-                                <h2 className="text-3xl font-bold text-white">El rol correcto de Mexar en este modelo</h2>
-
-                                <p className="text-lg text-slate-400">
-                                    Mexar no se retira del retail digital. Mexar asume el{" "}
-                                    <span className="text-green-400 font-semibold">rol estratégico correcto</span>.
-                                </p>
-
-                                <div className="grid md:grid-cols-2 gap-6 mt-8">
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-bold text-purple-400">Mexar es responsable de:</h3>
-                                        <ul className="space-y-3 text-sm text-slate-300">
-                                            {[
-                                                "Desarrollo y calidad del producto",
-                                                "Cumplimiento regulatorio",
-                                                "Narrativa de marca",
-                                                "Lineamientos visuales",
-                                                "Claims permitidos",
-                                                "Precio mínimo y precio sugerido",
-                                                "Arquitectura del catálogo",
-                                                "Inversión inicial para activación y rotación",
-                                                "Evaluación del desempeño del operador",
-                                            ].map((item, i) => (
-                                                <li key={i} className="flex items-start gap-2">
-                                                    <CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
-                                                    {item}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    <div className="p-6 bg-purple-500/5 border border-purple-500/30 rounded flex flex-col justify-center">
-                                        <p className="text-2xl font-bold text-white text-center mb-4">
-                                            Mexar <span className="text-purple-400">dirige</span> la marca y el negocio.
-                                        </p>
-                                        <p className="text-xl text-slate-400 text-center">
-                                            El operador <span className="text-green-400">ejecuta</span> la venta y la operación.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </TerminalFrame>
-                </div>
-            </section>
-
-            {/* Exclusividad */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <TerminalFrame>
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                                <span className="text-lg">$</span>
-                                <span className="text-lg">cat exclusividad.txt</span>
-                            </div>
-
-                            <div className="space-y-6">
-                                <h2 className="text-3xl font-bold text-white">Sobre la exclusividad (por qué es necesaria)</h2>
-
-                                <p className="text-lg text-slate-300 font-semibold">
-                                    La exclusividad no es un favor al distribuidor. Es un{" "}
-                                    <span className="text-green-400">mecanismo de alineación</span>.
-                                </p>
-
-                                <div className="grid md:grid-cols-2 gap-8 mt-8">
-                                    <div className="p-6 bg-red-500/5 border border-red-500/30 rounded">
-                                        <h3 className="text-lg font-bold text-red-400 mb-4">Sin exclusividad:</h3>
-                                        <ul className="space-y-2 text-sm text-slate-400">
-                                            <li>• El operador prioriza otras marcas</li>
-                                            <li>• No invierte realmente</li>
-                                            <li>• Dispersa esfuerzos</li>
-                                            <li>• Made4You es "una más"</li>
-                                        </ul>
-                                    </div>
-
-                                    <div className="p-6 bg-green-500/5 border border-green-500/30 rounded">
-                                        <h3 className="text-lg font-bold text-green-400 mb-4">Con exclusividad:</h3>
-                                        <ul className="space-y-2 text-sm text-slate-400">
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                El operador tiene incentivos reales
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Invierte tiempo, dinero y foco
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Construye marca a largo plazo
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div className="p-6 bg-slate-900/50 border-l-4 border-purple-500 rounded mt-6">
-                                    <p className="text-slate-300">
-                                        <span className="text-purple-400 font-semibold">Eso sí:</span> la exclusividad debe estar{" "}
-                                        <span className="text-white font-semibold">condicionada, no regalada</span>.
-                                    </p>
-                                    <ul className="mt-4 space-y-1 text-sm text-slate-400">
-                                        <li>• Duración limitada</li>
-                                        <li>• KPIs claros</li>
-                                        <li>• Revisiones periódicas</li>
-                                        <li>• Cláusulas de salida</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </TerminalFrame>
-                </div>
-            </section>
-
-            {/* Qué asume cada parte */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* Inversión Mexar */}
-                        <TerminalFrame>
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 text-purple-400 font-mono mb-4">
-                                    <Target className="w-6 h-6" />
-                                    <span className="text-xl font-bold">Inversión de Mexar</span>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <h4 className="text-green-400 font-semibold">✓ La inversión correcta es:</h4>
-                                    <ul className="space-y-2 text-sm text-slate-300">
-                                        <li>• Asegurar inventario suficiente</li>
-                                        <li>• Permitir rotación sana</li>
-                                        <li>• Apoyar lanzamientos</li>
-                                        <li>• Fortalecer la marca</li>
-                                    </ul>
-                                </div>
-
-                                <div className="space-y-4 mt-6">
-                                    <h4 className="text-red-400 font-semibold">✕ No es:</h4>
-                                    <ul className="space-y-2 text-sm text-slate-400">
-                                        <li>• Pagar ads sin control</li>
-                                        <li>• Absorber devoluciones mal gestionadas</li>
-                                        <li>• Cubrir ineficiencias operativas</li>
-                                    </ul>
-                                </div>
-
-                                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded mt-4">
-                                    <p className="text-sm text-slate-300">
-                                        <span className="text-green-400 font-semibold">Invertir con reglas</span> no debilita el control, lo
-                                        fortalece.
-                                    </p>
-                                </div>
-                            </div>
-                        </TerminalFrame>
-
-                        {/* Qué asume operador */}
-                        <TerminalFrame>
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 text-green-400 font-mono mb-4">
-                                    <Users className="w-6 h-6" />
-                                    <span className="text-xl font-bold">Qué asume el operador</span>
-                                </div>
-
-                                <ul className="space-y-2 text-sm text-slate-300">
-                                    {[
-                                        "Logística",
-                                        "Fulfillment",
-                                        "Atención al cliente",
-                                        "Marketplaces",
-                                        "Ecommerce",
-                                        "Publicidad performance",
-                                        "Ejecución diaria",
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-start gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded mt-6">
-                                    <p className="text-sm text-slate-300 font-semibold mb-2">Su incentivo es claro:</p>
-                                    <ul className="space-y-1 text-xs text-slate-400">
-                                        <li>• Vende más → gana más</li>
-                                        <li>• Cuida la marca → conserva la concesión</li>
-                                        <li>• Falla → pierde el acuerdo</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </TerminalFrame>
-                    </div>
-                </div>
-            </section>
-
-            {/* Datos y Transparencia */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <TerminalFrame>
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                                <span className="text-lg">$</span>
-                                <span className="text-lg">cat transparencia.txt</span>
-                            </div>
-
-                            <div className="space-y-6">
-                                <h2 className="text-3xl font-bold text-white">Datos, métricas y transparencia</h2>
-
-                                <p className="text-lg text-slate-400">Mexar tiene acceso a:</p>
-
-                                <div className="grid md:grid-cols-3 gap-4 mt-6">
-                                    {[
-                                        { icon: BarChart3, text: "Ventas por canal" },
-                                        { icon: TrendingUp, text: "Margen real" },
-                                        { icon: Target, text: "Gasto publicitario" },
-                                        { icon: Package, text: "Rotación de inventario" },
-                                        { icon: AlertTriangle, text: "Devoluciones" },
-                                        { icon: Shield, text: "Nivel de servicio" },
-                                    ].map((item, i) => (
-                                        <div key={i} className="p-4 bg-slate-900/50 border border-slate-800 rounded flex items-center gap-3">
-                                            <item.icon className="w-5 h-5 text-green-400 flex-shrink-0" />
-                                            <span className="text-sm text-slate-300">{item.text}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="p-6 bg-green-500/5 border-l-4 border-green-500 rounded mt-8">
-                                    <p className="text-xl font-bold text-white mb-2">No se delega la información.</p>
-                                    <p className="text-lg text-slate-400">Se delega la ejecución.</p>
-                                    <p className="text-sm text-slate-500 mt-4">
-                                        Esto permite: tomar decisiones informadas, corregir a tiempo, evitar dependencia ciega.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </TerminalFrame>
-                </div>
-            </section>
-
             {/* Riesgos Mitigados */}
             <section className="py-20 border-t border-slate-800">
                 <div className="container px-4 mx-auto max-w-6xl">
@@ -772,11 +773,11 @@ export default function MexarMeliClient() {
                             </div>
 
                             <div className="space-y-6">
-                                <h2 className="text-3xl font-bold text-white">Conclusión final</h2>
+                                <h2 className="text-3xl font-bold text-white">Conclusión</h2>
 
                                 <div className="grid md:grid-cols-2 gap-8 mt-8">
                                     <div>
-                                        <h3 className="text-lg font-bold text-red-400 mb-4">Esta propuesta NO:</h3>
+                                        <h3 className="text-lg font-bold text-red-400 mb-4">Este modelo NO:</h3>
                                         <ul className="space-y-2 text-slate-400">
                                             <li>• Reduce control</li>
                                             <li>• Aumenta riesgo</li>
@@ -785,7 +786,7 @@ export default function MexarMeliClient() {
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-bold text-green-400 mb-4">Esta propuesta SÍ:</h3>
+                                        <h3 className="text-lg font-bold text-green-400 mb-4">Este modelo SÍ:</h3>
                                         <ul className="space-y-2 text-slate-300">
                                             <li className="flex items-start gap-2">
                                                 <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -805,7 +806,7 @@ export default function MexarMeliClient() {
                                             </li>
                                             <li className="flex items-start gap-2">
                                                 <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                                Mantiene foco en lo que Mexar hace mejor
+                                                Evita 12-24 meses de pérdidas construyendo cuenta desde cero
                                             </li>
                                         </ul>
                                     </div>
@@ -821,41 +822,6 @@ export default function MexarMeliClient() {
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                    </TerminalFrame>
-                </div>
-            </section>
-
-            {/* CTA Final */}
-            <section className="py-20 border-t border-slate-800">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <TerminalFrame className="border-green-500/30">
-                        <div className="text-center space-y-8 py-8">
-                            <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
-                                <span className="text-lg">root@netlab:~/mexar#</span>
-                                <span className="text-lg">siguiente-paso</span>
-                                <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
-                            </div>
-
-                            <h2 className="text-3xl md:text-4xl font-bold text-white">¿Listos para el siguiente paso?</h2>
-
-                            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                                El siguiente paso es revisar este modelo juntos, resolver dudas y definir el marco de colaboración.
-                            </p>
-
-                            <div className="pt-6">
-                                <a
-                                    href="https://wa.me/5215513180427?text=Hola%2C%20quiero%20más%20información%20sobre%20el%20modelo%20de%20concesión%20digital%20para%20Mexar"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group relative inline-flex items-center justify-center px-8 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg"
-                                >
-                                    <span className="mr-2">Agendar reunión</span>
-                                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                                </a>
-                            </div>
-
-                            <p className="text-sm text-slate-500 font-mono">O escríbenos directamente: contacto@netlab.mx</p>
                         </div>
                     </TerminalFrame>
                 </div>
