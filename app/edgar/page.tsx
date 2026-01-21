@@ -1,5 +1,7 @@
 "use client"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/sections/footer"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
@@ -22,6 +24,28 @@ import {
 } from "lucide-react"
 
 export default function EdgarCV() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const images = [
+    "/edgar/edgar-1.jpeg",
+    "/edgar/edgar-2.jpeg",
+    "/edgar/edgar-3.jpeg",
+    "/edgar/edgar-4.jpeg",
+    "/edgar/edgar-5.jpeg",
+    "/edgar/edgar-6.jpeg",
+    "/edgar/edgar-7.jpeg",
+    "/edgar/edgar-8.jpeg",
+    "/edgar/edgar-9.jpeg",
+    "/edgar/edgar-10.jpeg",
+    "/edgar/edgar-11.jpeg",
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -57,14 +81,32 @@ export default function EdgarCV() {
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 {/* Photo Placeholder */}
                 <div className="relative shrink-0">
-                  <div className="w-48 h-64 md:w-56 md:h-72 border-2 border-slate-800 bg-[#050505] rounded-sm overflow-hidden flex flex-col items-center justify-center group">
+                  <div className="w-48 h-64 md:w-56 md:h-72 border-2 border-slate-800 bg-[#050505] rounded-sm overflow-hidden flex flex-col items-center justify-center group relative">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentImageIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="absolute inset-0"
+                      >
+                        <Image
+                          src={images[currentImageIndex]}
+                          alt="Edgar Cervantes"
+                          fill
+                          className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+
+                    {/* Overlay effects */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c0c] via-transparent to-transparent opacity-60"></div>
                     <div className="absolute top-2 left-2 flex gap-1">
                       <div className="w-2 h-2 rounded-full bg-red-500/50" />
                       <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
                       <div className="w-2 h-2 rounded-full bg-green-500/50" />
                     </div>
-                    <Users size={40} className="text-slate-700 mb-2 group-hover:text-purple-400 transition-colors" />
-                    <span className="text-[10px] text-slate-500 uppercase tracking-widest">[ USER_IMAGE_STUB ]</span>
                     <div className="absolute inset-x-0 bottom-0 h-1 bg-purple-500/30 group-hover:bg-purple-500 transition-colors" />
                   </div>
                   <div className="mt-4 flex flex-col items-center md:items-start gap-2">
