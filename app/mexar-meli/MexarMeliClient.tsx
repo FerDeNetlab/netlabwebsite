@@ -771,6 +771,74 @@ export default function MexarMeliClient() {
                 </div>
             </section>
 
+            {/* Roadmap Estratégico */}
+            <section className="py-20 border-t border-slate-800">
+                <div className="container px-4 mx-auto max-w-6xl">
+                    <TerminalFrame title="netlab@roadmap:~">
+                        <div className="space-y-12">
+                            <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                                <span className="text-lg">$</span>
+                                <span className="text-lg">cat hoja-de-ruta.txt</span>
+                            </div>
+
+                            <h2 className="text-3xl font-bold text-white text-center">Hoja de Ruta Estratégica</h2>
+
+                            <div className="relative mt-16">
+                                {/* Linea conectora */}
+                                <div className="absolute left-[31px] md:left-1/2 top-0 bottom-0 w-0.5 bg-slate-800 md:-translate-x-1/2" />
+
+                                <div className="space-y-16">
+                                    {/* Etapa 1 */}
+                                    <div className="relative flex flex-col md:flex-row items-start md:items-center">
+                                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-500/20 border-2 border-purple-500 z-10 md:absolute md:left-1/2 md:-translate-x-1/2">
+                                            <Zap className="w-8 h-8 text-purple-400" />
+                                        </div>
+                                        <div className="mt-4 md:mt-0 md:w-[45%] md:pr-12 md:text-right pl-20 md:pl-0">
+                                            <h3 className="text-xl font-bold text-white">Etapa 1: Apalancamiento</h3>
+                                            <p className="text-purple-400 font-mono text-sm mb-2">Concesión Digital</p>
+                                            <p className="text-slate-400 text-sm">
+                                                Apalancarse de una infraestructura y operación que ya está pulida y establecida en el canal digital.
+                                                Evita la curva de aprendizaje y pérdida de 18+ meses.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Etapa 2 */}
+                                    <div className="relative flex flex-col md:flex-row-reverse items-start md:items-center">
+                                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/20 border-2 border-blue-500 z-10 md:absolute md:left-1/2 md:-translate-x-1/2">
+                                            <Target className="w-8 h-8 text-blue-400" />
+                                        </div>
+                                        <div className="mt-4 md:mt-0 md:w-[45%] md:pl-12 pl-20 md:pl-12">
+                                            <h3 className="text-xl font-bold text-white">Etapa 2: Maduración</h3>
+                                            <p className="text-blue-400 font-mono text-sm mb-2">Posicionamiento y Marca</p>
+                                            <p className="text-slate-400 text-sm">
+                                                Con el modelo de negocio validado, se consolida el posicionamiento de marca,
+                                                la estrategia de comunicación y difusión en todos los canales digitales.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Etapa 3 */}
+                                    <div className="relative flex flex-col md:flex-row items-start md:items-center">
+                                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-500 z-10 md:absolute md:left-1/2 md:-translate-x-1/2">
+                                            <BarChart3 className="w-8 h-8 text-green-400" />
+                                        </div>
+                                        <div className="mt-4 md:mt-0 md:w-[45%] md:pr-12 md:text-right pl-20 md:pl-0">
+                                            <h3 className="text-xl font-bold text-white">Etapa 3: Escalabilidad</h3>
+                                            <p className="text-green-400 font-mono text-sm mb-2">Decisiones basadas en Datos</p>
+                                            <p className="text-slate-400 text-sm">
+                                                Optimización de alianzas para mayor seguridad y control. Evaluación de
+                                                canales propios como complemento a las alianzas estratégicas para maximizar el alcance.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </TerminalFrame>
+                </div>
+            </section>
+
             {/* Error Conceptual */}
             <section className="py-20 border-t border-slate-800">
                 <div className="container px-4 mx-auto max-w-6xl">
