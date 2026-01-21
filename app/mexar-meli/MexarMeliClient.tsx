@@ -796,10 +796,16 @@ export default function MexarMeliClient() {
                                         <div className="mt-4 md:mt-0 md:w-[45%] md:pr-12 md:text-right pl-20 md:pl-0">
                                             <h3 className="text-xl font-bold text-white">Etapa 1: Apalancamiento</h3>
                                             <p className="text-purple-400 font-mono text-sm mb-2">Concesión Digital</p>
-                                            <p className="text-slate-400 text-sm">
+                                            <p className="text-slate-400 text-sm mb-4">
                                                 Apalancarse de una infraestructura y operación que ya está pulida y establecida en el canal digital.
                                                 Evita la curva de aprendizaje y pérdida de 18+ meses.
                                             </p>
+                                            <div className="bg-purple-500/5 border border-purple-500/20 p-3 rounded text-left inline-block">
+                                                <p className="text-xs font-bold text-purple-400 mb-1 uppercase tracking-wider">Requisito Clave:</p>
+                                                <p className="text-xs text-slate-300">
+                                                    Sistema de monitoreo de aliados para control de métricas y toma de decisiones efectivas.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -811,10 +817,16 @@ export default function MexarMeliClient() {
                                         <div className="mt-4 md:mt-0 md:w-[45%] md:pl-12 pl-20 md:pl-12">
                                             <h3 className="text-xl font-bold text-white">Etapa 2: Maduración</h3>
                                             <p className="text-blue-400 font-mono text-sm mb-2">Posicionamiento y Marca</p>
-                                            <p className="text-slate-400 text-sm">
+                                            <p className="text-slate-400 text-sm mb-4">
                                                 Con el modelo de negocio validado, se consolida el posicionamiento de marca,
                                                 la estrategia de comunicación y difusión en todos los canales digitales.
                                             </p>
+                                            <div className="bg-blue-500/5 border border-blue-500/20 p-3 rounded text-left inline-block">
+                                                <p className="text-xs font-bold text-blue-400 mb-1 uppercase tracking-wider">Requisito Clave:</p>
+                                                <p className="text-xs text-slate-300">
+                                                    Incorporación de Estratega Comercial e Implementador Comercial.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -826,10 +838,16 @@ export default function MexarMeliClient() {
                                         <div className="mt-4 md:mt-0 md:w-[45%] md:pr-12 md:text-right pl-20 md:pl-0">
                                             <h3 className="text-xl font-bold text-white">Etapa 3: Escalabilidad</h3>
                                             <p className="text-green-400 font-mono text-sm mb-2">Decisiones basadas en Datos</p>
-                                            <p className="text-slate-400 text-sm">
+                                            <p className="text-slate-400 text-sm mb-4">
                                                 Optimización de alianzas para mayor seguridad y control. Evaluación de
                                                 canales propios como complemento a las alianzas estratégicas para maximizar el alcance.
                                             </p>
+                                            <div className="bg-green-500/5 border border-green-500/20 p-3 rounded text-left inline-block">
+                                                <p className="text-xs font-bold text-green-400 mb-1 uppercase tracking-wider">Estrategia:</p>
+                                                <p className="text-xs text-slate-300">
+                                                    Basado en datos: Decidir entre escalar alianzas actuales o aperturar un nuevo canal comercial propio.
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
