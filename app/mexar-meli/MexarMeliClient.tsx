@@ -507,45 +507,6 @@ export default function MexarMeliClient() {
                         </TerminalFrame>
 
                         {/* Inversión en Publicidad */}
-                        <TerminalFrame>
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                                    <span className="text-lg">$</span>
-                                    <span className="text-lg">cat inversion-publicidad.txt</span>
-                                </div>
-
-                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-                                    <DollarSign className="w-8 h-8 text-green-400" />
-                                    Inversión Mensual en Product Ads (Mercado Ads)
-                                </h3>
-
-                                <div className="grid md:grid-cols-3 gap-6 mt-6">
-                                    <div className="p-6 bg-slate-900/50 border border-slate-800 rounded">
-                                        <h4 className="text-slate-400 text-sm mb-2">Campañas de prueba</h4>
-                                        <p className="text-3xl font-bold text-white mb-2">$300 - $500 USD</p>
-                                        <p className="text-xs text-slate-500">~$5,000 - $8,500 MXN/mes</p>
-                                    </div>
-
-                                    <div className="p-6 bg-purple-500/10 border border-purple-500/30 rounded">
-                                        <h4 className="text-purple-400 text-sm mb-2">Campañas en crecimiento</h4>
-                                        <p className="text-3xl font-bold text-white mb-2">$1,000 - $3,000 USD</p>
-                                        <p className="text-xs text-slate-500">~$17,000 - $51,000 MXN/mes</p>
-                                    </div>
-
-                                    <div className="p-6 bg-red-500/10 border border-red-500/30 rounded">
-                                        <h4 className="text-red-400 text-sm mb-2">Sectores competitivos</h4>
-                                        <p className="text-3xl font-bold text-red-400 mb-2">$5,000+ USD</p>
-                                        <p className="text-xs text-slate-500">~$85,000+ MXN/mes</p>
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-red-500/5 border-l-4 border-red-500 rounded mt-6">
-                                    <p className="text-slate-300">
-                                        <span className="text-red-400 font-semibold">⚠️ Sin publicidad = sin visibilidad.</span> La publicidad en Mercado Libre es prácticamente obligatoria para aparecer en los primeros resultados. Sin ella, tus productos quedan enterrados.
-                                    </p>
-                                </div>
-                            </div>
-                        </TerminalFrame>
 
                         {/* Fulfillment */}
                         <TerminalFrame>
