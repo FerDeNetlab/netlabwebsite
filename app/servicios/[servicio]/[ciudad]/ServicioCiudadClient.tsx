@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import type { Servicio, Ciudad } from "@/lib/seo-data"
 import Navbar from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
+import { Breadcrumbs } from "@/components/breadcrumbs"
 
 interface Props {
   servicio: Servicio
@@ -25,6 +26,14 @@ export default function ServicioCiudadClient({ servicio, ciudad }: Props) {
         {/* Hero Section */}
         <section className="pt-16 pb-12 px-4">
           <div className="max-w-6xl mx-auto">
+            <Breadcrumbs
+              items={[
+                { label: "Servicios", href: "/#sistemas" },
+                { label: servicio.nombre },
+                { label: ciudad.nombre }
+              ]}
+            />
+
             <Link
               href="/#sistemas"
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-6"

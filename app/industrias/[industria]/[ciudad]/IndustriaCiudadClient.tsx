@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import type { Industria, Ciudad } from "@/lib/seo-data"
 import Navbar from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
+import { Breadcrumbs } from "@/components/breadcrumbs"
 
 interface Props {
   industria: Industria
@@ -55,6 +56,14 @@ export default function IndustriaCiudadClient({ industria, ciudad }: Props) {
         {/* Hero Section */}
         <section className="pt-16 pb-12 px-4">
           <div className="max-w-6xl mx-auto">
+            <Breadcrumbs
+              items={[
+                { label: "Industrias", href: "/#sistemas" },
+                { label: industria.nombre },
+                { label: ciudad.nombre }
+              ]}
+            />
+
             <Link
               href="/#tipos-de-negocio"
               className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-6"

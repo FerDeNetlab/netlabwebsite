@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { industrias, ciudades } from "@/lib/seo-data"
 import IndustriaCiudadClient from "./IndustriaCiudadClient"
+import { SEOPageSchema } from "@/components/seo-page-schema"
 
 type Props = {
   params: Promise<{
@@ -58,6 +59,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "es_MX",
       url: `https://www.netlab.mx/industrias/${industriaSlug}/${ciudadSlug}`,
     },
+    alternates: {
+      canonical: `https://www.netlab.mx/industrias/${industriaSlug}/${ciudadSlug}`,
+    },
   }
 }
 
@@ -71,5 +75,10 @@ export default async function IndustriaCiudadPage({ params }: Props) {
     notFound()
   }
 
-  return <IndustriaCiudadClient industria={industria} ciudad={ciudad} />
+  return (
+    <>
+      <SEOPageSchema tipo="industria" item={industria} ciudad={ciudad} />
+      <IndustriaCiudadClient industria={industria} ciudad={ciudad} />
+    </>
+  )
 }

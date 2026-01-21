@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { servicios, ciudades } from "@/lib/seo-data"
 import ServicioCiudadClient from "./ServicioCiudadClient"
+import { SEOPageSchema } from "@/components/seo-page-schema"
 
 type Props = {
   params: Promise<{
@@ -59,6 +60,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "es_MX",
       url: `https://www.netlab.mx/servicios/${servicioSlug}/${ciudadSlug}`,
     },
+    alternates: {
+      canonical: `https://www.netlab.mx/servicios/${servicioSlug}/${ciudadSlug}`,
+    },
   }
 }
 
@@ -72,5 +76,10 @@ export default async function ServicioCiudadPage({ params }: Props) {
     notFound()
   }
 
-  return <ServicioCiudadClient servicio={servicio} ciudad={ciudad} />
+  return (
+    <>
+      <SEOPageSchema tipo="servicio" item={servicio} ciudad={ciudad} />
+      <ServicioCiudadClient servicio={servicio} ciudad={ciudad} />
+    </>
+  )
 }
