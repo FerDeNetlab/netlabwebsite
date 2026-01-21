@@ -542,6 +542,23 @@ export default function MexarMeliClient() {
                                                 <span><span className="text-white font-semibold">Retiro/descarte:</span> Costo por retirar productos de bodega</span>
                                             </li>
                                         </ul>
+
+                                        <div className="pt-4 border-t border-slate-800 mt-4">
+                                            <h4 className="text-yellow-400 font-semibold mb-3 flex items-center gap-2">
+                                                <AlertTriangle className="w-4 h-4" />
+                                                Requisitos para activar Full:
+                                            </h4>
+                                            <ul className="space-y-2 text-sm text-slate-400">
+                                                <li className="flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                                                    Ventas acumuladas: <span className="text-white font-mono">+$400,000 MXN</span>
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                                                    Historial de ventas: <span className="text-white font-mono">+100 facturas/ventas</span>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
 
                                     <div className="p-6 bg-blue-500/5 border border-blue-500/30 rounded">
