@@ -803,7 +803,7 @@ export default function MexarMeliClient() {
                                             <div className="bg-purple-500/5 border border-purple-500/20 p-3 rounded text-left inline-block">
                                                 <p className="text-xs font-bold text-purple-400 mb-1 uppercase tracking-wider">Requisito Clave:</p>
                                                 <p className="text-xs text-slate-300">
-                                                    Sistema de monitoreo de aliados para control de métricas y toma de decisiones efectivas.
+                                                    Sistema de monitoreo de aliados para control de métricas y toma de decisiones efectivas (mejora de producto y apoyo a aliados).
                                                 </p>
                                             </div>
                                         </div>
