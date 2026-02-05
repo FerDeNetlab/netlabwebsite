@@ -162,6 +162,68 @@ export default function AuraClient() {
                 </div>
             </section>
 
+            {/* Implementation Phases */}
+            <section className="py-24">
+                <div className="container px-4 mx-auto max-w-6xl">
+                    <div className="text-center mb-16 space-y-4">
+                        <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight uppercase">Estrategia por Fases</h2>
+                        <p className="text-slate-500 uppercase tracking-[0.2em] text-xs font-bold font-mono">Modelo de crecimiento controlado</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <PhaseCard
+                            number="01"
+                            title="Módulo Core: CVA"
+                            description="Integración de catálogo CVA y sincronización con Mercado Libre."
+                            price="$40,000"
+                            status="READY_TO_DEPLOY"
+                            deliverables={[
+                                "CVA API Connection",
+                                "Catalog Mapping Store",
+                                "Stock Auto-Sync Engine",
+                                "Base Dashboard HUD"
+                            ]}
+                        />
+                        <PhaseCard
+                            number="02"
+                            title="Llantas ERP"
+                            description="Extensión de categorías desde tu ERP actual."
+                            price="$10,000"
+                            status="PENDING"
+                            deliverables={[
+                                "ERP Connector v1",
+                                "Tire Specs Mapping",
+                                "Logistics Flag Rules"
+                            ]}
+                        />
+                        <PhaseCard
+                            number="03"
+                            title="Celulares ERP"
+                            description="Nuevos flujos de sincronización para alta tecnología."
+                            price="$10,000"
+                            status="PENDING"
+                            deliverables={[
+                                "Tech Data Parser",
+                                "Warranty Management",
+                                "Meli Template Sync"
+                            ]}
+                        />
+                        <PhaseCard
+                            number="04"
+                            title="Aura Gateway API"
+                            description="Infraestructura propia para futuros canales de venta."
+                            price="$15,000"
+                            status="SYSTEM_LOCK"
+                            deliverables={[
+                                "Custom API Gateway",
+                                "Unified Inventory Webhook",
+                                "Admin Control Center"
+                            ]}
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* Phase 1 Detailed Deliverables */}
             <section className="py-24 border-t border-slate-900 bg-[#080808]">
                 <div className="container px-4 mx-auto max-w-6xl">
@@ -233,68 +295,6 @@ export default function AuraClient() {
                                 "Backup de reglas de negocio",
                                 "Propiedad total sobre tu base de datos",
                                 "Acceso restringido por niveles"
-                            ]}
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Implementation Phases */}
-            <section className="py-24">
-                <div className="container px-4 mx-auto max-w-6xl">
-                    <div className="text-center mb-16 space-y-4">
-                        <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight uppercase">Estrategia por Fases</h2>
-                        <p className="text-slate-500 uppercase tracking-[0.2em] text-xs font-bold font-mono">Modelo de crecimiento controlado</p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <PhaseCard
-                            number="01"
-                            title="Módulo Core: CVA"
-                            description="Integración de catálogo CVA y sincronización con Mercado Libre."
-                            price="$40,000"
-                            status="READY_TO_DEPLOY"
-                            deliverables={[
-                                "CVA API Connection",
-                                "Catalog Mapping Store",
-                                "Stock Auto-Sync Engine",
-                                "Base Dashboard HUD"
-                            ]}
-                        />
-                        <PhaseCard
-                            number="02"
-                            title="Llantas ERP"
-                            description="Extensión de categorías desde tu ERP actual."
-                            price="$10,000"
-                            status="PENDING"
-                            deliverables={[
-                                "ERP Connector v1",
-                                "Tire Specs Mapping",
-                                "Logistics Flag Rules"
-                            ]}
-                        />
-                        <PhaseCard
-                            number="03"
-                            title="Celulares ERP"
-                            description="Nuevos flujos de sincronización para alta tecnología."
-                            price="$10,000"
-                            status="PENDING"
-                            deliverables={[
-                                "Tech Data Parser",
-                                "Warranty Management",
-                                "Meli Template Sync"
-                            ]}
-                        />
-                        <PhaseCard
-                            number="04"
-                            title="Aura Gateway API"
-                            description="Infraestructura propia para futuros canales de venta."
-                            price="$15,000"
-                            status="SYSTEM_LOCK"
-                            deliverables={[
-                                "Custom API Gateway",
-                                "Unified Inventory Webhook",
-                                "Admin Control Center"
                             ]}
                         />
                     </div>
