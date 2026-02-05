@@ -49,7 +49,7 @@ export default function AuraClient() {
                                         Propuesta Técnica: Orquestador a Medida
                                     </div>
 
-                                    <h1 className="text-3xl md:text-6xl font-bold tracking-tighter text-white leading-none">
+                                    <h1 className="text-4xl md:text-6xl font-bold tracking-tighter text-white leading-tight md:leading-none">
                                         ORQUESTADOR DE <span className="text-green-500">MARKETPLACES</span>
                                     </h1>
 
@@ -107,7 +107,7 @@ export default function AuraClient() {
                             </ul>
                         </div>
 
-                        <div className="bg-[#0f172a]/10 p-8 space-y-6 border-l md:border-l-0 border-slate-800">
+                        <div className="bg-[#0f172a]/10 p-8 space-y-6 border-t md:border-t-0 md:border-l border-slate-800">
                             <div className="flex items-center gap-3 text-green-500 font-bold text-xs uppercase">
                                 <CheckCircle2 size={16} /> Netlab Orchestrator
                             </div>
@@ -412,7 +412,7 @@ function InteractiveWorkflowDemo() {
     useEffect(() => {
         const timer = setInterval(() => {
             setActiveStep((prev) => (prev + 1) % steps.length)
-        }, 2500)
+        }, 4500)
         return () => clearInterval(timer)
     }, [])
 
@@ -427,7 +427,7 @@ function InteractiveWorkflowDemo() {
                 {steps.map((step, i) => (
                     <div
                         key={i}
-                        className={`flex items-center gap-4 p-3 border transition-all duration-500 ${activeStep === i ? "bg-slate-900 border-green-500/30" : "bg-transparent border-slate-900 opacity-40 scale-[0.98]"
+                        className={`flex items-center gap-4 p-3 border transition-all duration-800 ${activeStep === i ? "bg-slate-900 border-green-500/30" : "bg-transparent border-slate-900 opacity-40 scale-[0.98]"
                             }`}
                     >
                         <div className={`${activeStep === i ? "text-green-500" : "text-slate-600"}`}>
