@@ -68,11 +68,11 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  // Auth-protected admin routes
-  if (pathname.startsWith("/admin")) {
+  // Auth-protected admin routes (except login page to avoid redirect loop)
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
     const session = await auth()
     if (!session) {
-      return NextResponse.redirect(new URL("/api/auth/signin", request.url))
+      return NextResponse.redirect(new URL("/admin/login", request.url))
     }
   }
 
