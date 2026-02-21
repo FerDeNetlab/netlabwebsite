@@ -54,12 +54,8 @@ export async function middleware(request: NextRequest) {
       )
     }
 
-    // Auth-protected API routes
-    const session = await auth()
-    if (!session) {
-      return NextResponse.redirect(new URL("/api/auth/signin", request.url))
-    }
-
+    // API routes: only rate limiting + security headers
+    // Auth is handled by individual route handlers (they return 401 JSON)
     const response = NextResponse.next()
     response.headers.set("X-RateLimit-Remaining", remaining.toString())
     for (const [key, value] of Object.entries(securityHeaders)) {
