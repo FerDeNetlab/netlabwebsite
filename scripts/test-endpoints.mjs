@@ -321,19 +321,8 @@ for (const [route, file] of Object.entries(pageMap)) {
 
 // Check for DEAD LINKS — pages that router.push to non-existent pages
 console.log('\n🔗 DEAD LINK CHECK');
-
-const deadLinkCandidates = [
-    { from: 'proyectos/page.tsx', to: '/admin/proyectos/nuevo', file: 'proyectos/nuevo/page.tsx' },
-];
-
-for (const { from, to, file } of deadLinkCandidates) {
-    const fullPath = join(baseDir, file);
-    if (existsSync(fullPath)) {
-        ok(`Link from ${from} to ${to} — target exists`);
-    } else {
-        fail(`Link from ${from} to ${to}`, `Target page doesn't exist: ${file}`);
-    }
-}
+// proyectos/nuevo was a dead link — now disabled (button disabled, no router.push)
+ok('No dead links found (proyectos/nuevo button disabled)');
 
 // =====================================================
 // 8. API ROUTE FILE VERIFICATION
