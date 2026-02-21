@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
 import {
   ArrowLeft, Building2, Mail, Phone, FileText, MapPin,
-  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send
+  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send, Download
 } from 'lucide-react'
 
 interface CotizacionDetalle {
@@ -57,6 +57,7 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
   const router = useRouter()
   const [cotizacion, setCotizacion] = useState<CotizacionDetalle | null>(null)
   const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/admin/login')
@@ -105,6 +106,31 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
       if (response.ok) router.push('/admin/cotizaciones')
     } catch (error) {
       console.error('[ERP] Error:', error)
+    }
+  }
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true)
+    try {
+      const response = await fetch(`/api/cotizaciones/${id}/pdf`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `Cotizacion-${cotizacion?.numero_cotizacion || id}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+      } else {
+        alert('Error al generar PDF')
+      }
+    } catch (error) {
+      console.error('[ERP] Error downloading PDF:', error)
+      alert('Error al descargar PDF')
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -159,6 +185,9 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2">
+                <Button onClick={handleDownloadPDF} disabled={downloading} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
+                  <Download className="h-4 w-4" /> {downloading ? 'Generando...' : 'Descargar PDF'}
+                </Button>
                 {cotizacion.estado === 'borrador' && (
                   <Button onClick={() => handleEstadoChange('enviada')} className="font-mono gap-2 bg-blue-600 hover:bg-blue-700" size="sm">
                     <Send className="h-4 w-4" /> Marcar Enviada
