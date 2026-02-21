@@ -33,12 +33,27 @@ export async function POST(request: Request) {
   }
   try {
     const body = await request.json()
-    const { cliente_id, proyecto_id, total, items, notas, vigencia } = body
+    const { cliente_id, concepto, subtotal, iva, total, fecha_vencimiento, condiciones_pago, notas, items } = body
+
+    // Auto-generate numero_cotizacion
+    const countResult = await sql`
+      SELECT COUNT(*) as cnt FROM cotizaciones
+    ` as Record<string, unknown>[]
+    const nextNum = Number(countResult[0].cnt) + 1
+    const numero_cotizacion = `COT-${String(nextNum).padStart(4, '0')}`
 
     // Crear cotización
     const cotizacion = await sql`
-      INSERT INTO cotizaciones (cliente_id, proyecto_id, total, estado, notas, vigencia)
-      VALUES (${cliente_id}, ${proyecto_id || null}, ${total}, 'pendiente', ${notas || ''}, ${vigencia})
+      INSERT INTO cotizaciones (
+        id, cliente_id, concepto, subtotal, iva, total, estado,
+        fecha_emision, fecha_vencimiento, condiciones_pago, notas,
+        numero_cotizacion, created_at, updated_at
+      )
+      VALUES (
+        gen_random_uuid(), ${cliente_id}, ${concepto}, ${subtotal}, ${iva}, ${total}, 'borrador',
+        CURRENT_DATE, ${fecha_vencimiento || null}, ${condiciones_pago || null}, ${notas || null},
+        ${numero_cotizacion}, NOW(), NOW()
+      )
       RETURNING *
     ` as Record<string, unknown>[]
 
@@ -49,13 +64,13 @@ export async function POST(request: Request) {
       for (const item of items) {
         await sql`
           INSERT INTO cotizacion_items (
-            cotizacion_id, producto_id, descripcion, cantidad, 
-            precio_unitario, descuento, subtotal
+            id, cotizacion_id, producto_id, descripcion, cantidad, 
+            precio_unitario, descuento, subtotal, created_at
           )
           VALUES (
-            ${cotizacionId}, ${item.producto_id || null}, ${item.descripcion},
+            gen_random_uuid(), ${cotizacionId}, ${item.producto_id || null}, ${item.descripcion},
             ${item.cantidad}, ${item.precio_unitario}, ${item.descuento || 0},
-            ${item.subtotal}
+            ${item.subtotal}, NOW()
           )
         `
       }
@@ -63,7 +78,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(cotizacion[0], { status: 201 })
   } catch (error) {
-    console.error('[Auth] Error creating cotizacion:', error)
+    console.error('[ERP] Error creating cotizacion:', error)
     return NextResponse.json({ error: 'Error al crear cotización' }, { status: 500 })
   }
 }
