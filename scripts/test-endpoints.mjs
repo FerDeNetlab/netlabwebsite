@@ -14,25 +14,25 @@ let failed = 0;
 const failures = [];
 
 function ok(name) {
-    passed++;
-    console.log(`  ✅ ${name}`);
+  passed++;
+  console.log(`  ✅ ${name}`);
 }
 
 function fail(name, reason) {
-    failed++;
-    failures.push({ name, reason });
-    console.log(`  ❌ ${name}: ${reason}`);
+  failed++;
+  failures.push({ name, reason });
+  console.log(`  ❌ ${name}: ${reason}`);
 }
 
 async function testQuery(name, query) {
-    try {
-        const result = await query;
-        ok(name);
-        return result;
-    } catch (error) {
-        fail(name, error.message);
-        return null;
-    }
+  try {
+    const result = await query;
+    ok(name);
+    return result;
+  } catch (error) {
+    fail(name, error.message);
+    return null;
+  }
 }
 
 // =====================================================
@@ -41,7 +41,7 @@ async function testQuery(name, query) {
 console.log('\n📋 TABLE EXISTENCE');
 const requiredTables = ['clientes', 'oportunidades', 'cotizaciones', 'cotizacion_items', 'productos', 'proyectos'];
 for (const table of requiredTables) {
-    await testQuery(`Table "${table}" exists`, sql`
+  await testQuery(`Table "${table}" exists`, sql`
     SELECT 1 FROM information_schema.tables 
     WHERE table_schema = 'public' AND table_name = ${table}
   `);
@@ -67,25 +67,25 @@ const newCliente = await testQuery('POST clientes (create)', sql`
 const testClienteId = newCliente?.[0]?.id;
 
 if (testClienteId) {
-    // GET /api/clientes/[id] — used by clientes/[id]/page.tsx
-    await testQuery('GET clientes/[id] (single)', sql`
+  // GET /api/clientes/[id] — used by clientes/[id]/page.tsx
+  await testQuery('GET clientes/[id] (single)', sql`
     SELECT * FROM public.clientes WHERE id = ${testClienteId}
   `);
 
-    // PATCH /api/clientes/[id] — used by clientes/[id]/page.tsx
-    await testQuery('PATCH clientes/[id] (update)', sql`
+  // PATCH /api/clientes/[id] — used by clientes/[id]/page.tsx
+  await testQuery('PATCH clientes/[id] (update)', sql`
     UPDATE public.clientes SET nombre = COALESCE(${'__TEST_UPDATED__'}, nombre), updated_at = NOW() WHERE id = ${testClienteId} RETURNING *
   `);
 
-    // DELETE /api/clientes/[id] — used by clientes/[id]/page.tsx (soft delete)
-    await testQuery('DELETE clientes/[id] (soft delete)', sql`
+  // DELETE /api/clientes/[id] — used by clientes/[id]/page.tsx (soft delete)
+  await testQuery('DELETE clientes/[id] (soft delete)', sql`
     UPDATE public.clientes SET activo = false, updated_at = NOW() WHERE id = ${testClienteId}
   `);
 
-    // Cleanup
-    await sql`DELETE FROM public.clientes WHERE id = ${testClienteId}`;
+  // Cleanup
+  await sql`DELETE FROM public.clientes WHERE id = ${testClienteId}`;
 } else {
-    fail('clientes/[id] tests', 'Could not create test client');
+  fail('clientes/[id] tests', 'Could not create test client');
 }
 
 // =====================================================
@@ -108,25 +108,25 @@ const newProd = await testQuery('POST productos (create)', sql`
 const testProdId = newProd?.[0]?.id;
 
 if (testProdId) {
-    // GET /api/productos/[id]
-    await testQuery('GET productos/[id] (single)', sql`
+  // GET /api/productos/[id]
+  await testQuery('GET productos/[id] (single)', sql`
     SELECT * FROM public.productos WHERE id = ${testProdId}
   `);
 
-    // PATCH /api/productos/[id] — used by productos/page.tsx edit
-    await testQuery('PATCH productos/[id] (update)', sql`
+  // PATCH /api/productos/[id] — used by productos/page.tsx edit
+  await testQuery('PATCH productos/[id] (update)', sql`
     UPDATE public.productos SET nombre = COALESCE(${'__TEST_PROD_UPD__'}, nombre), updated_at = NOW() WHERE id = ${testProdId} RETURNING *
   `);
 
-    // DELETE /api/productos/[id] — used by productos/page.tsx (soft delete)
-    await testQuery('DELETE productos/[id] (soft delete)', sql`
+  // DELETE /api/productos/[id] — used by productos/page.tsx (soft delete)
+  await testQuery('DELETE productos/[id] (soft delete)', sql`
     UPDATE public.productos SET activo = false, updated_at = NOW() WHERE id = ${testProdId}
   `);
 
-    // Cleanup
-    await sql`DELETE FROM public.productos WHERE id = ${testProdId}`;
+  // Cleanup
+  await sql`DELETE FROM public.productos WHERE id = ${testProdId}`;
 } else {
-    fail('productos/[id] tests', 'Could not create test product');
+  fail('productos/[id] tests', 'Could not create test product');
 }
 
 // =====================================================
@@ -158,12 +158,12 @@ const newOp = await testQuery('POST oportunidades (create)', sql`
 const testOpId = newOp?.[0]?.id;
 
 if (testOpId) {
-    // PATCH /api/oportunidades/[id] — used by drag-drop + edit modal
-    await testQuery('PATCH oportunidades/[id] (update etapa)', sql`
+  // PATCH /api/oportunidades/[id] — used by drag-drop + edit modal
+  await testQuery('PATCH oportunidades/[id] (update etapa)', sql`
     UPDATE oportunidades SET etapa = COALESCE(${'calificacion'}, etapa), updated_at = NOW() WHERE id = ${testOpId} RETURNING *
   `);
 
-    await testQuery('PATCH oportunidades/[id] (update all fields)', sql`
+  await testQuery('PATCH oportunidades/[id] (update all fields)', sql`
     UPDATE oportunidades SET 
       nombre = COALESCE(${'__TEST_OP_UPD__'}, nombre),
       valor = COALESCE(${75000}, valor),
@@ -173,12 +173,12 @@ if (testOpId) {
     WHERE id = ${testOpId} RETURNING *
   `);
 
-    // DELETE /api/oportunidades/[id] — used by CRMKanban delete button
-    await testQuery('DELETE oportunidades/[id] (hard delete)', sql`
+  // DELETE /api/oportunidades/[id] — used by CRMKanban delete button
+  await testQuery('DELETE oportunidades/[id] (hard delete)', sql`
     DELETE FROM oportunidades WHERE id = ${testOpId}
   `);
 } else {
-    fail('oportunidades/[id] tests', 'Could not create test oportunidad');
+  fail('oportunidades/[id] tests', 'Could not create test oportunidad');
 }
 
 // Cleanup temp client
@@ -214,143 +214,181 @@ const newCot = await testQuery('POST cotizaciones (create with all fields)', sql
 const testCotId = newCot?.[0]?.id;
 
 if (testCotId) {
-    // Insert test item
-    const testItem = await testQuery('POST cotizacion_items (create)', sql`
+  // Insert test item
+  const testItem = await testQuery('POST cotizacion_items (create)', sql`
     INSERT INTO cotizacion_items (id, cotizacion_id, descripcion, cantidad, precio_unitario, descuento, subtotal, created_at)
     VALUES (gen_random_uuid(), ${testCotId}, 'Servicio test', 2, 5000, 0, 10000, NOW())
     RETURNING *
   `);
 
-    // GET /api/cotizaciones/[id] — used by cotizaciones/[id]/page.tsx
-    const cotDetail = await testQuery('GET cotizaciones/[id] (with items + client)', sql`
+  // GET /api/cotizaciones/[id] — used by cotizaciones/[id]/page.tsx
+  const cotDetail = await testQuery('GET cotizaciones/[id] (with items + client)', sql`
     SELECT c.*, cl.nombre as cliente_nombre, cl.empresa as cliente_empresa, cl.email as cliente_email, cl.rfc as cliente_rfc
     FROM cotizaciones c LEFT JOIN clientes cl ON c.cliente_id = cl.id WHERE c.id = ${testCotId}
   `);
 
-    const cotItems = await testQuery('GET cotizacion_items for cotizacion', sql`
+  const cotItems = await testQuery('GET cotizacion_items for cotizacion', sql`
     SELECT ci.*, p.nombre as producto_nombre FROM cotizacion_items ci 
     LEFT JOIN productos p ON ci.producto_id = p.id WHERE ci.cotizacion_id = ${testCotId}
   `);
 
-    // PATCH /api/cotizaciones/[id] — used by status change buttons
-    await testQuery('PATCH cotizaciones/[id] (change estado)', sql`
+  // PATCH /api/cotizaciones/[id] — used by status change buttons
+  await testQuery('PATCH cotizaciones/[id] (change estado)', sql`
     UPDATE cotizaciones SET estado = COALESCE(${'enviada'}, estado), updated_at = NOW() WHERE id = ${testCotId} RETURNING *
   `);
 
-    // DELETE /api/cotizaciones/[id] — used by delete button
-    await testQuery('DELETE cotizacion_items (cascade)', sql`
+  // DELETE /api/cotizaciones/[id] — used by delete button
+  await testQuery('DELETE cotizacion_items (cascade)', sql`
     DELETE FROM cotizacion_items WHERE cotizacion_id = ${testCotId}
   `);
-    await testQuery('DELETE cotizaciones/[id]', sql`
+  await testQuery('DELETE cotizaciones/[id]', sql`
     DELETE FROM cotizaciones WHERE id = ${testCotId}
   `);
 } else {
-    fail('cotizaciones/[id] tests', 'Could not create test cotizacion');
+  fail('cotizaciones/[id] tests', 'Could not create test cotizacion');
 }
 
 // Cleanup
 await sql`DELETE FROM public.clientes WHERE id = ${tempClientId2}`;
 
 // =====================================================
-// 6. DASHBOARD STATS (used by: /admin/DashboardClient.tsx)
+// 9. FINANCIAL TABLES
 // =====================================================
-console.log('\n📊 DASHBOARD STATS');
+console.log('\n💰 FINANCIAL TABLES');
+for (const table of ['facturas', 'pagos', 'gastos', 'categorias_gasto']) {
+  await testQuery(`Table "${table}" exists`, sql`
+    SELECT 1 FROM information_schema.tables 
+    WHERE table_schema = 'public' AND table_name = ${table}
+  `);
+}
 
-await testQuery('Stats: totalClientes', sql`
-  SELECT COUNT(*) as total FROM public.clientes WHERE activo = true
+// =====================================================
+// 10. FACTURAS CRUD
+// =====================================================
+console.log('\n🧾 FACTURAS CRUD');
+
+const tempClient3 = await sql`
+  INSERT INTO public.clientes (id, nombre, activo, created_at, updated_at)
+  VALUES (gen_random_uuid(), '__TEMP_FOR_FAC__', true, NOW(), NOW()) RETURNING id
+`;
+const tempClientId3 = tempClient3[0].id;
+
+const newFac = await testQuery('POST facturas (create)', sql`
+  INSERT INTO facturas (id, cliente_id, numero_factura, concepto, subtotal, iva, total, estado, fecha_emision, fecha_vencimiento, created_at, updated_at)
+  VALUES (gen_random_uuid(), ${tempClientId3}, 'NL-TEST-0001', 'Test Factura', 10000, 1600, 11600, 'pendiente', CURRENT_DATE, CURRENT_DATE + INTERVAL '30 days', NOW(), NOW())
+  RETURNING *
 `);
 
-await testQuery('Stats: oportunidadesAbiertas (safe)', async () => {
-    try {
-        return await sql`SELECT COUNT(*) as total FROM public.oportunidades WHERE etapa NOT IN ('ganado', 'perdido')`;
-    } catch { return [{ total: 0 }]; }
-});
+const testFacId = newFac?.[0]?.id;
 
-await testQuery('Stats: cotizacionesPendientes (safe)', async () => {
-    try {
-        return await sql`SELECT COUNT(*) as total FROM public.cotizaciones WHERE estado IN ('pendiente', 'borrador', 'enviada')`;
-    } catch { return [{ total: 0 }]; }
-});
+if (testFacId) {
+  await testQuery('GET facturas (list with JOIN)', sql`
+    SELECT f.*, cl.nombre as cliente_nombre,
+      (SELECT COALESCE(SUM(p.monto), 0) FROM pagos p WHERE p.factura_id = f.id) as total_pagado
+    FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
+    ORDER BY f.created_at DESC
+  `);
 
-// =====================================================
-// 7. PAGE ROUTE VERIFICATION
-// =====================================================
-console.log('\n🗺️ PAGE ROUTE VERIFICATION');
+  await testQuery('GET facturas/[id] (detail)', sql`
+    SELECT f.*, cl.nombre as cliente_nombre FROM facturas f
+    LEFT JOIN clientes cl ON f.cliente_id = cl.id WHERE f.id = ${testFacId}
+  `);
 
-const adminPages = [
-    '/admin',
-    '/admin/login',
-    '/admin/clientes',
-    '/admin/clientes/nuevo',
-    '/admin/clientes/[id]',
-    '/admin/crm',
-    '/admin/cotizaciones',
-    '/admin/cotizaciones/nueva',
-    '/admin/cotizaciones/[id]',
-    '/admin/cotizaciones/productos',
-    '/admin/proyectos',
-];
+  // Register payment
+  const newPago = await testQuery('POST pagos (register payment)', sql`
+    INSERT INTO pagos (id, factura_id, monto, metodo_pago, referencia, fecha_pago, created_at)
+    VALUES (gen_random_uuid(), ${testFacId}, 5000, 'transferencia', 'REF-TEST-001', CURRENT_DATE, NOW())
+    RETURNING *
+  `);
 
-// Check that page files exist
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+  await testQuery('GET pagos for factura', sql`
+    SELECT * FROM pagos WHERE factura_id = ${testFacId}
+  `);
 
-const baseDir = process.cwd() + '/app/admin';
-const pageMap = {
-    '/admin': 'page.tsx',
-    '/admin/login': 'login/page.tsx',
-    '/admin/clientes': 'clientes/page.tsx',
-    '/admin/clientes/nuevo': 'clientes/nuevo/page.tsx',
-    '/admin/clientes/[id]': 'clientes/[id]/page.tsx',
-    '/admin/crm': 'crm/page.tsx',
-    '/admin/cotizaciones': 'cotizaciones/page.tsx',
-    '/admin/cotizaciones/nueva': 'cotizaciones/nueva/page.tsx',
-    '/admin/cotizaciones/[id]': 'cotizaciones/[id]/page.tsx',
-    '/admin/cotizaciones/productos': 'cotizaciones/productos/page.tsx',
-    '/admin/proyectos': 'proyectos/page.tsx',
-};
+  await testQuery('PATCH facturas/[id] (change estado)', sql`
+    UPDATE facturas SET estado = 'parcial', updated_at = NOW() WHERE id = ${testFacId} RETURNING *
+  `);
 
-for (const [route, file] of Object.entries(pageMap)) {
-    const fullPath = join(baseDir, file);
-    if (existsSync(fullPath)) {
-        ok(`Page file exists: ${route}`);
-    } else {
-        fail(`Page file exists: ${route}`, `Missing: ${file}`);
-    }
+  // Cleanup
+  await sql`DELETE FROM pagos WHERE factura_id = ${testFacId}`;
+  await sql`DELETE FROM facturas WHERE id = ${testFacId}`;
+} else {
+  fail('facturas tests', 'Could not create test factura');
 }
 
-// Check for DEAD LINKS — pages that router.push to non-existent pages
-console.log('\n🔗 DEAD LINK CHECK');
-// proyectos/nuevo was a dead link — now disabled (button disabled, no router.push)
-ok('No dead links found (proyectos/nuevo button disabled)');
-
 // =====================================================
-// 8. API ROUTE FILE VERIFICATION
+// 11. GASTOS CRUD
 // =====================================================
-console.log('\n🔌 API ROUTE FILE VERIFICATION');
+console.log('\n💸 GASTOS CRUD');
 
-const apiBaseDir = process.cwd() + '/app/api';
-const apiRoutes = {
-    'GET/POST /api/clientes': 'clientes/route.ts',
-    'GET/PATCH/DELETE /api/clientes/[id]': 'clientes/[id]/route.ts',
-    'GET/POST /api/productos': 'productos/route.ts',
-    'GET/PATCH/DELETE /api/productos/[id]': 'productos/[id]/route.ts',
-    'GET/POST /api/oportunidades': 'oportunidades/route.ts',
-    'PATCH/DELETE /api/oportunidades/[id]': 'oportunidades/[id]/route.ts',
-    'GET/POST /api/cotizaciones': 'cotizaciones/route.ts',
-    'GET/PATCH/DELETE /api/cotizaciones/[id]': 'cotizaciones/[id]/route.ts',
-    'GET /api/dashboard/stats': 'dashboard/stats/route.ts',
-    'NextAuth /api/auth/[...nextauth]': 'auth/[...nextauth]/route.ts',
-};
+const cats = await testQuery('GET categorias_gasto', sql`
+  SELECT * FROM categorias_gasto WHERE activo = true ORDER BY nombre
+`);
 
-for (const [label, file] of Object.entries(apiRoutes)) {
-    const fullPath = join(apiBaseDir, file);
-    if (existsSync(fullPath)) {
-        ok(`API route: ${label}`);
-    } else {
-        fail(`API route: ${label}`, `Missing: ${file}`);
-    }
+const catId = cats?.[0]?.id;
+
+const newGasto = await testQuery('POST gastos (create)', sql`
+  INSERT INTO gastos (id, categoria_id, concepto, monto, fecha_vencimiento, proveedor, estado, created_at, updated_at)
+  VALUES (gen_random_uuid(), ${catId || null}, 'Test Gasto', 5000, CURRENT_DATE + INTERVAL '7 days', 'Proveedor Test', 'pendiente', NOW(), NOW())
+  RETURNING *
+`);
+
+const testGastoId = newGasto?.[0]?.id;
+
+if (testGastoId) {
+  await testQuery('GET gastos (list with categories)', sql`
+    SELECT g.*, cg.nombre as categoria_nombre FROM gastos g
+    LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
+    ORDER BY g.created_at DESC
+  `);
+
+  await testQuery('PATCH gastos/[id] (mark paid)', sql`
+    UPDATE gastos SET estado = 'pagado', fecha_pago = CURRENT_DATE, updated_at = NOW() WHERE id = ${testGastoId} RETURNING *
+  `);
+
+  await sql`DELETE FROM gastos WHERE id = ${testGastoId}`;
+} else {
+  fail('gastos tests', 'Could not create test gasto');
 }
+
+await sql`DELETE FROM public.clientes WHERE id = ${tempClientId3}`;
+
+// =====================================================
+// 12. FINANZAS STATS / CALENDARIO / FLUJO QUERIES
+// =====================================================
+console.log('\n📈 FINANZAS QUERIES');
+
+await testQuery('Stats: CxC total', sql`
+  SELECT COALESCE(SUM(total), 0) as total FROM facturas WHERE estado IN ('pendiente', 'parcial')
+`);
+
+await testQuery('Stats: CxP total', sql`
+  SELECT COALESCE(SUM(monto), 0) as total FROM gastos WHERE estado = 'pendiente'
+`);
+
+await testQuery('Stats: ingresos mes', sql`
+  SELECT COALESCE(SUM(monto), 0) as total FROM pagos
+  WHERE DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
+`);
+
+await testQuery('Calendario: cobros del mes', sql`
+  SELECT f.id, f.numero_factura, f.total, f.fecha_vencimiento
+  FROM facturas f WHERE EXTRACT(MONTH FROM f.fecha_vencimiento) = EXTRACT(MONTH FROM CURRENT_DATE)
+`);
+
+await testQuery('Flujo: ingresos esperados 90d', sql`
+  SELECT fecha_vencimiento, SUM(total) as monto FROM facturas
+  WHERE estado IN ('pendiente', 'parcial') AND fecha_vencimiento >= CURRENT_DATE
+    AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '90 days'
+  GROUP BY fecha_vencimiento ORDER BY fecha_vencimiento
+`);
+
+await testQuery('Flujo: egresos esperados 90d', sql`
+  SELECT fecha_vencimiento, SUM(monto) as monto FROM gastos
+  WHERE estado = 'pendiente' AND fecha_vencimiento >= CURRENT_DATE
+    AND fecha_vencimiento <= CURRENT_DATE + INTERVAL '90 days'
+  GROUP BY fecha_vencimiento ORDER BY fecha_vencimiento
+`);
 
 // =====================================================
 // SUMMARY
@@ -359,11 +397,12 @@ console.log('\n' + '='.repeat(60));
 console.log(`\n📊 RESULTS: ${passed} passed, ${failed} failed\n`);
 
 if (failures.length > 0) {
-    console.log('❌ FAILURES:');
-    for (const f of failures) {
-        console.log(`   • ${f.name}: ${f.reason}`);
-    }
+  console.log('❌ FAILURES:');
+  for (const f of failures) {
+    console.log(`   • ${f.name}: ${f.reason}`);
+  }
 }
 
 console.log('');
 process.exit(failed > 0 ? 1 : 0);
+

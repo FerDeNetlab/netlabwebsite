@@ -128,6 +128,15 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       borderColor: 'border-purple-500/20',
       path: '/admin/cotizaciones/productos',
     },
+    {
+      title: 'Finanzas',
+      description: 'Facturas, gastos y flujo de efectivo',
+      icon: DollarSign,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10',
+      borderColor: 'border-emerald-500/20',
+      path: '/admin/finanzas',
+    },
   ]
 
   return (
