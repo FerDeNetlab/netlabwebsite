@@ -8,13 +8,13 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, CheckCircle, Trash2, Building2, Mail, Phone, FileText } from 'lucide-react'
+import { ArrowLeft, DollarSign, CheckCircle, Trash2, Building2, Mail, Phone, FileText, Download, Eye } from 'lucide-react'
 
 interface FacturaDetalle {
     id: string; numero_factura: string; concepto: string; subtotal: number; iva: number; total: number;
     estado: string; fecha_emision: string; fecha_vencimiento: string; fecha_pago: string; metodo_pago: string; notas: string;
     cliente_nombre: string; cliente_empresa: string; cliente_email: string; cliente_telefono: string; cliente_rfc: string;
-    total_pagado: number;
+    total_pagado: number; archivo_nombre: string;
     pagos: { id: string; monto: number; metodo_pago: string; referencia: string; fecha_pago: string; notas: string }[]
 }
 
@@ -91,6 +91,11 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                     <span className="px-3 py-1 rounded border text-sm font-mono text-green-400 bg-green-400/10 border-green-500/30 flex items-center gap-1">
                                         <CheckCircle className="h-4 w-4" /> Pagada
                                     </span>
+                                )}
+                                {factura.archivo_nombre && (
+                                    <Button onClick={() => window.open(`/api/facturas/${id}/pdf`, '_blank')} variant="outline" className="font-mono gap-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 bg-transparent" size="sm">
+                                        <Eye className="h-4 w-4" /> Ver PDF
+                                    </Button>
                                 )}
                                 <Button onClick={handleDelete} variant="outline" className="font-mono gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent ml-auto" size="sm">
                                     <Trash2 className="h-4 w-4" /> Eliminar

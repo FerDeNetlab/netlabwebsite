@@ -68,6 +68,9 @@ export default function FacturasPage() {
                                     <h1 className="text-3xl font-mono text-green-400">Facturas</h1>
                                     <p className="text-gray-400 font-mono text-sm mt-1">Cuentas por cobrar</p>
                                 </div>
+                                <Button onClick={() => router.push('/admin/finanzas/facturas/nueva')} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
+                                    <Plus className="h-4 w-4" /> Nueva Factura
+                                </Button>
                             </div>
 
                             {/* Filters */}
@@ -131,7 +134,7 @@ export default function FacturasPage() {
                                 <div className="text-center py-12">
                                     <Receipt className="h-12 w-12 text-gray-600 mx-auto mb-3" />
                                     <p className="font-mono text-gray-400">{search ? 'Sin resultados para esa búsqueda' : 'No hay facturas registradas'}</p>
-                                    <p className="font-mono text-gray-600 text-sm mt-1">Crea una factura desde una cotización aprobada</p>
+                                    <p className="font-mono text-gray-600 text-sm mt-1">Registra facturas generadas en Odoo</p>
                                 </div>
                             )}
                         </div>
