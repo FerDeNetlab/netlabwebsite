@@ -27,7 +27,8 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
-        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, notas, archivo_nombre, archivo_data } = body
+        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, notas, archivo_nombre, archivo_data, tipo, recurrente, dia_mes } = body
+        const tipoVal = tipo || 'unico'
 
         // Auto-generate numero_factura if not provided
         let numFactura = numero_factura
@@ -35,12 +36,13 @@ export async function POST(request: Request) {
             const countResult = await sql`SELECT COUNT(*) as cnt FROM facturas` as Record<string, unknown>[]
             const nextNum = Number(countResult[0].cnt) + 1
             const year = new Date().getFullYear()
-            numFactura = `NL-${year}-${String(nextNum).padStart(4, '0')}`
+            const prefix = tipoVal === 'recurrente' ? 'RC' : 'NL'
+            numFactura = `${prefix}-${year}-${String(nextNum).padStart(4, '0')}`
         }
 
         const factura = await sql`
-      INSERT INTO facturas (id, cliente_id, numero_factura, concepto, subtotal, iva, total, estado, fecha_emision, fecha_vencimiento, notas, archivo_nombre, archivo_data, created_at, updated_at)
-      VALUES (gen_random_uuid(), ${cliente_id || null}, ${numFactura}, ${concepto}, ${subtotal}, ${iva || 0}, ${total}, 'pendiente', CURRENT_DATE, ${fecha_vencimiento || null}, ${notas || null}, ${archivo_nombre || null}, ${archivo_data || null}, NOW(), NOW())
+      INSERT INTO facturas (id, cliente_id, numero_factura, concepto, subtotal, iva, total, estado, fecha_emision, fecha_vencimiento, notas, archivo_nombre, archivo_data, tipo, recurrente, dia_mes, created_at, updated_at)
+      VALUES (gen_random_uuid(), ${cliente_id || null}, ${numFactura}, ${concepto}, ${subtotal}, ${iva || 0}, ${total}, 'pendiente', CURRENT_DATE, ${fecha_vencimiento || null}, ${notas || null}, ${archivo_nombre || null}, ${archivo_data || null}, ${tipoVal}, ${recurrente || false}, ${dia_mes || null}, NOW(), NOW())
       RETURNING *
     ` as Record<string, unknown>[]
 

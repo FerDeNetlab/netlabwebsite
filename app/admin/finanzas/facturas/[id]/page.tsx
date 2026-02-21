@@ -14,7 +14,7 @@ interface FacturaDetalle {
     id: string; numero_factura: string; concepto: string; subtotal: number; iva: number; total: number;
     estado: string; fecha_emision: string; fecha_vencimiento: string; fecha_pago: string; metodo_pago: string; notas: string;
     cliente_nombre: string; cliente_empresa: string; cliente_email: string; cliente_telefono: string; cliente_rfc: string;
-    total_pagado: number; archivo_nombre: string;
+    total_pagado: number; archivo_nombre: string; tipo: string;
     pagos: { id: string; monto: number; metodo_pago: string; referencia: string; fecha_pago: string; notas: string }[]
 }
 
@@ -69,8 +69,13 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                             {/* Header */}
                             <div className="flex items-start justify-between border-b border-green-500/20 pb-4">
                                 <div>
-                                    <Button onClick={() => router.push('/admin/finanzas/facturas')} variant="ghost" className="font-mono gap-2 text-sm mb-2"><ArrowLeft className="h-4 w-4" /> Facturas</Button>
-                                    <h1 className="text-3xl font-mono text-green-400">{factura.numero_factura}</h1>
+                                    <Button onClick={() => router.push('/admin/finanzas/facturas')} variant="ghost" className="font-mono gap-2 text-sm mb-2"><ArrowLeft className="h-4 w-4" /> Cuentas por Cobrar</Button>
+                                    <div className="flex items-center gap-3">
+                                        <h1 className="text-3xl font-mono text-green-400">{factura.numero_factura}</h1>
+                                        <span className={`px-2 py-0.5 rounded text-xs font-mono ${factura.tipo === 'recurrente' ? 'text-cyan-400 bg-cyan-400/10 border border-cyan-500/30' : 'text-green-400 bg-green-400/10 border border-green-500/30'}`}>
+                                            {factura.tipo === 'recurrente' ? '🔄 Pago Recurrente' : '⚡ Pago Único'}
+                                        </span>
+                                    </div>
                                     <p className="text-gray-400 font-mono text-sm mt-1">{factura.concepto}</p>
                                 </div>
                                 <div className="text-right">

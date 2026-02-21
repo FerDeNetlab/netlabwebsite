@@ -10,7 +10,7 @@ import { Navbar } from '@/components/navbar'
 import { ArrowLeft, Plus, Search, Receipt } from 'lucide-react'
 
 interface Factura {
-    id: string; numero_factura: string; concepto: string; total: number; estado: string;
+    id: string; numero_factura: string; concepto: string; total: number; estado: string; tipo: string;
     cliente_nombre: string; cliente_empresa: string; fecha_vencimiento: string; total_pagado: number
 }
 
@@ -65,11 +65,11 @@ export default function FacturasPage() {
                                     <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-2">
                                         <ArrowLeft className="h-4 w-4" /> Finanzas
                                     </Button>
-                                    <h1 className="text-3xl font-mono text-green-400">Facturas</h1>
-                                    <p className="text-gray-400 font-mono text-sm mt-1">Cuentas por cobrar</p>
+                                    <h1 className="text-3xl font-mono text-green-400">Cuentas por Cobrar</h1>
+                                    <p className="text-gray-400 font-mono text-sm mt-1">Facturas y pagos comprometidos</p>
                                 </div>
                                 <Button onClick={() => router.push('/admin/finanzas/facturas/nueva')} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
-                                    <Plus className="h-4 w-4" /> Nueva Factura
+                                    <Plus className="h-4 w-4" /> Nueva Entrada
                                 </Button>
                             </div>
 
@@ -96,6 +96,7 @@ export default function FacturasPage() {
                                         <thead className="bg-zinc-800/50 border-b border-gray-700">
                                             <tr className="font-mono text-xs text-gray-400">
                                                 <th className="text-left p-3">Número</th>
+                                                <th className="text-left p-3">Tipo</th>
                                                 <th className="text-left p-3">Cliente</th>
                                                 <th className="text-left p-3">Concepto</th>
                                                 <th className="text-right p-3">Total</th>
@@ -112,6 +113,11 @@ export default function FacturasPage() {
                                                     <tr key={f.id} onClick={() => router.push(`/admin/finanzas/facturas/${f.id}`)}
                                                         className="border-b border-gray-800 last:border-0 hover:bg-zinc-800/30 cursor-pointer transition-colors">
                                                         <td className="p-3 text-green-400">{f.numero_factura}</td>
+                                                        <td className="p-3">
+                                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${f.tipo === 'recurrente' ? 'text-cyan-400 bg-cyan-400/10' : 'text-green-400 bg-green-400/10'}`}>
+                                                                {f.tipo === 'recurrente' ? '🔄 Recurrente' : '⚡ Único'}
+                                                            </span>
+                                                        </td>
                                                         <td className="p-3 text-gray-300">{f.cliente_nombre}</td>
                                                         <td className="p-3 text-gray-400 max-w-[200px] truncate">{f.concepto}</td>
                                                         <td className="p-3 text-right text-white">{fmt(f.total)}</td>

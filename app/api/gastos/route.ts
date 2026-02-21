@@ -31,11 +31,11 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
-        const { categoria_id, concepto, monto, fecha_vencimiento, proveedor, recurrente, frecuencia, notas } = body
+        const { categoria_id, concepto, monto, fecha_vencimiento, proveedor, recurrente, dia_mes, subtipo, notas } = body
 
         const gasto = await sql`
-      INSERT INTO gastos (id, categoria_id, concepto, monto, fecha_vencimiento, proveedor, recurrente, frecuencia, estado, notas, created_at, updated_at)
-      VALUES (gen_random_uuid(), ${categoria_id || null}, ${concepto}, ${monto}, ${fecha_vencimiento || null}, ${proveedor || null}, ${recurrente || false}, ${frecuencia || null}, 'pendiente', ${notas || null}, NOW(), NOW())
+      INSERT INTO gastos (id, categoria_id, concepto, monto, fecha_vencimiento, proveedor, recurrente, dia_mes, subtipo, estado, notas, created_at, updated_at)
+      VALUES (gen_random_uuid(), ${categoria_id || null}, ${concepto}, ${monto}, ${fecha_vencimiento || null}, ${proveedor || null}, ${recurrente || false}, ${dia_mes || null}, ${subtipo || 'general'}, 'pendiente', ${notas || null}, NOW(), NOW())
       RETURNING *
     ` as Record<string, unknown>[]
 
