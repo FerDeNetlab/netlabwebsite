@@ -14,7 +14,7 @@ export function ServicesSection() {
           <p className="text-lg text-slate-400 font-mono">
             Implementamos Odoo, ERP, sistemas para negocios, puntos de venta y automatización comercial para PyMEs.
           </p>
-          {/* </CHANGE> */}
+
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -39,7 +39,7 @@ export function ServicesSection() {
               </div>
             </div>
           </TerminalFrame>
-          {/* </CHANGE> */}
+
 
           <TerminalFrame
             title="customization.exe"
@@ -60,7 +60,7 @@ export function ServicesSection() {
               </div>
             </div>
           </TerminalFrame>
-          {/* </CHANGE> */}
+
 
           <TerminalFrame title="training.exe" borderColor="gray" className="h-full bg-[#111]">
             <div className="flex flex-col h-full">
@@ -85,7 +85,7 @@ export function ServicesSection() {
               </div>
             </div>
           </TerminalFrame>
-          {/* </CHANGE> */}
+
         </div>
       </div>
     </section>

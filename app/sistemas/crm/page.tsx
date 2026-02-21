@@ -6,33 +6,14 @@ export const metadata: Metadata = {
   description:
     "Sistema CRM para gestionar clientes, prospectos y oportunidades de venta en México. Pipeline visual, seguimiento automático y reportes en Guadalajara, Ciudad de México, Monterrey. Ideal para negocios que quieren organizar su información comercial y aumentar ventas.",
   keywords: [
-    "CRM",
     "CRM México",
-    "CRM Guadalajara",
-    "CRM Ciudad de México",
-    "CRM Monterrey",
-    "CRM Querétaro",
-    "gestión de clientes",
-    "software para gestionar clientes",
-    "seguimiento de clientes",
-    "base de datos de clientes",
-    "organizar clientes",
-    "pipeline de ventas",
-    "embudo de ventas",
-    "oportunidades de venta",
-    "software CRM",
     "CRM para PyMEs",
-    "CRM pequeñas empresas",
-    "Odoo CRM",
+    "gestión de clientes México",
     "Odoo CRM México",
-    "relación con clientes",
-    "prospectos",
-    "seguimiento comercial",
-    "historial de clientes",
-    "como organizar clientes",
-    "software relación clientes",
-    "PyMEs",
-    "software para negocios",
+    "pipeline de ventas",
+    "seguimiento de clientes",
+    "software CRM Guadalajara",
+    "embudo de ventas CRM",
   ],
   openGraph: {
     title: "CRM para PyMEs México | Sistema de Gestión de Clientes | Netlab",
@@ -42,7 +23,6 @@ export const metadata: Metadata = {
     locale: "es_MX",
   },
 }
-// </CHANGE>
 
 export default function SistemaCRMPage() {
   return <CRMClientPage />

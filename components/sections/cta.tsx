@@ -23,7 +23,7 @@ export function CtaSection() {
               Agenda un diagnóstico gratis para implementar Odoo, ERP, punto de venta, control de inventarios o
               cualquier sistema para tu PyME.
             </p>
-            {/* </CHANGE> */}
+
 
             <div className="pt-4">
               <a
@@ -35,7 +35,7 @@ export function CtaSection() {
                 <span className="mr-2">Optimizar mi negocio ahora</span>
                 <ArrowRight className="w-5 h-5" />
               </a>
-              {/* </CHANGE> */}
+
 
               <p className="mt-6 text-xs text-slate-600 font-mono">
                 {">"} Te contactaremos en menos de 24 horas hábiles.

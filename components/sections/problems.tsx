@@ -12,7 +12,7 @@ export function ProblemsSection() {
     "Tu sistema de ventas no se conecta con tu facturación o tu ecommerce.",
     "Ya tienes Odoo pero tu negocio no lo usa bien.",
   ]
-  // </CHANGE>
+
 
   return (
     <section className="py-20 bg-[#0c0c0c]">
@@ -24,7 +24,7 @@ export function ProblemsSection() {
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
                 ¿Tu negocio tiene alguno de estos problemas?
               </h2>
-              {/* </CHANGE> */}
+
               <ul className="space-y-3 font-mono">
                 {problems.map((problem, i) => (
                   <li key={i} className="flex items-start text-slate-300 group">
@@ -39,7 +39,7 @@ export function ProblemsSection() {
               <div className="mt-8 pt-4 border-t border-slate-800 text-green-400 font-mono italic">
                 {">"} Netlab conecta tu operación completa con Odoo y ERP para que tu negocio funcione de verdad.
               </div>
-              {/* </CHANGE> */}
+
             </div>
           }
         />

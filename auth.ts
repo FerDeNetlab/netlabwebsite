@@ -26,7 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Asegurarse de que existe el schema y la tabla (opcional, pero ayuda a debuggear)
         const existingUser = await sql`
           SELECT id FROM neon_auth.user WHERE email = ${user.email}
-        `
+        ` as Record<string, unknown>[]
 
         if (existingUser.length === 0) {
           await sql`

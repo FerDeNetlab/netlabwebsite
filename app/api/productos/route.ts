@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       INSERT INTO productos (nombre, descripcion, precio_unitario, categoria, unidad)
       VALUES (${nombre}, ${descripcion}, ${precio_unitario}, ${categoria}, ${unidad})
       RETURNING *
-    `
+    ` as Record<string, unknown>[]
 
     return NextResponse.json(result[0], { status: 201 })
   } catch (error) {

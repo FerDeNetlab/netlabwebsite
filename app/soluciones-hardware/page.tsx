@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     locale: "es_MX",
   },
 }
-// </CHANGE>
+
 
 export default function SolucionesHardwarePage() {
   return <HardwareClient />

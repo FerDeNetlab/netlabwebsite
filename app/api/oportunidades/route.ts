@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         NOW()
       )
       RETURNING *
-    `
+    ` as Record<string, unknown>[]
 
     return NextResponse.json(result[0])
   } catch (error) {

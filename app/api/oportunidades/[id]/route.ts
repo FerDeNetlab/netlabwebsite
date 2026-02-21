@@ -4,15 +4,16 @@ import { auth } from '@/auth'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await auth()
   if (!session) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
   try {
     const body = await request.json()
-    const { etapa, nombre, valor, fecha_cierre_estimada, probabilidad, descripcion } = body
+    const { etapa, nombre, valor, fecha_cierre_estimada, probabilidad, descripcion, cliente_id } = body
 
     const result = await sql`
       UPDATE oportunidades
@@ -23,10 +24,11 @@ export async function PATCH(
         fecha_cierre_estimada = COALESCE(${fecha_cierre_estimada}, fecha_cierre_estimada),
         probabilidad = COALESCE(${probabilidad}, probabilidad),
         descripcion = COALESCE(${descripcion}, descripcion),
+        cliente_id = COALESCE(${cliente_id}, cliente_id),
         updated_at = NOW()
-      WHERE id = ${params.id}
+      WHERE id = ${id}
       RETURNING *
-    `
+    ` as Record<string, unknown>[]
 
     return NextResponse.json(result[0])
   } catch (error) {
@@ -37,8 +39,9 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const session = await auth()
   if (!session) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -46,7 +49,7 @@ export async function DELETE(
   try {
     await sql`
       DELETE FROM oportunidades
-      WHERE id = ${params.id}
+      WHERE id = ${id}
     `
 
     return NextResponse.json({ success: true })

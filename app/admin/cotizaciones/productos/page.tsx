@@ -1,18 +1,16 @@
 'use client'
 
 import React from "react"
-
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ArrowLeft, Plus, Package, Edit, Trash2, Download } from 'lucide-react'
+import { ArrowLeft, Plus, Package, Edit, Trash2, Search, X, Save } from 'lucide-react'
 
 interface Producto {
-  id: number
+  id: string
   nombre: string
   descripcion: string
   precio_unitario: number
@@ -26,10 +24,12 @@ export default function ProductosPage() {
   const router = useRouter()
   const [productos, setProductos] = useState<Producto[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [importing, setImporting] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [saving, setSaving] = useState(false)
   const ITEMS_PER_PAGE = 20
+
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -37,20 +37,11 @@ export default function ProductosPage() {
     categoria: '',
     unidad: 'pieza',
   })
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [importResult, setImportResult] = useState('')
-  const [cvaCredentials, setCvaCredentials] = useState({
-    user: '',
-    password: '',
-    marca: '',
-    grupo: '',
-  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/admin/login')
     }
-    fetchProductos()
   }, [status, router])
 
   const fetchProductos = async () => {
@@ -61,90 +52,95 @@ export default function ProductosPage() {
         setProductos(data)
       }
     } catch (error) {
-      console.error('[v0] Error fetching productos:', error)
+      console.error('[ERP] Error fetching productos:', error)
     }
+  }
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchProductos()
+    }
+  }, [status])
+
+  const filteredProductos = productos.filter(p => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      p.nombre?.toLowerCase().includes(term) ||
+      p.descripcion?.toLowerCase().includes(term) ||
+      p.categoria?.toLowerCase().includes(term)
+    )
+  })
+
+  const totalPages = Math.ceil(filteredProductos.length / ITEMS_PER_PAGE)
+  const paginatedProductos = filteredProductos.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  const resetForm = () => {
+    setFormData({ nombre: '', descripcion: '', precio_unitario: '', categoria: '', unidad: 'pieza' })
+    setEditingId(null)
+    setShowForm(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+    setSaving(true)
+
     try {
-      const response = await fetch('/api/productos', {
-        method: 'POST',
+      const payload = {
+        ...formData,
+        precio_unitario: parseFloat(formData.precio_unitario),
+      }
+
+      const url = editingId ? `/api/productos/${editingId}` : '/api/productos'
+      const method = editingId ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          precio_unitario: parseFloat(formData.precio_unitario),
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (response.ok) {
-        setFormData({
-          nombre: '',
-          descripcion: '',
-          precio_unitario: '',
-          categoria: '',
-          unidad: 'pieza',
-        })
-        setShowForm(false)
         fetchProductos()
+        resetForm()
+      } else {
+        alert('Error al guardar producto')
       }
     } catch (error) {
-      console.error('[v0] Error creating producto:', error)
+      console.error('[ERP] Error saving producto:', error)
+      alert('Error al guardar producto')
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleImportCVA = async (startPage = 1, totalImportados = 0) => {
-    if (startPage === 1) {
-      if (!confirm('¿Deseas importar productos desde CVA? Se hará en lotes automáticos hasta completar todo el catálogo.')) {
-        return
-      }
-    }
+  const handleEdit = (producto: Producto) => {
+    setFormData({
+      nombre: producto.nombre,
+      descripcion: producto.descripcion || '',
+      precio_unitario: producto.precio_unitario.toString(),
+      categoria: producto.categoria || '',
+      unidad: producto.unidad || 'pieza',
+    })
+    setEditingId(producto.id)
+    setShowForm(true)
+  }
 
-    setImporting(true)
+  const handleDelete = async (id: string, nombre: string) => {
+    if (!confirm(`¿Eliminar el producto "${nombre}"?`)) return
 
     try {
-      const response = await fetch('/api/productos/importar-cva', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          startPage,
-          maxPages: 10, // Procesar 10 páginas por vez
-          filters: {
-            exist: 3,
-            completos: 1,
-          }
-        }),
-      })
-
-      const data = await response.json()
-
+      const response = await fetch(`/api/productos/${id}`, { method: 'DELETE' })
       if (response.ok) {
-        const nuevoTotal = totalImportados + data.importados
-        console.log(`[v0] Importados ${data.importados} productos. Total acumulado: ${nuevoTotal}`)
-        
-        // Si hay más páginas, continuar automáticamente
-        if (data.hayMasPaginas) {
-          console.log(`[v0] Continuando desde página ${data.paginaActual}...`)
-          // Llamar recursivamente para continuar
-          setTimeout(() => {
-            handleImportCVA(data.paginaActual, nuevoTotal)
-          }, 1000) // Esperar 1 segundo entre lotes
-        } else {
-          // Importación completa
-          alert(`Importación completada: ${nuevoTotal} productos importados en total`)
-          fetchProductos()
-          setImporting(false)
-        }
+        fetchProductos()
       } else {
-        alert(`Error: ${data.error}`)
-        setImporting(false)
+        alert('Error al eliminar producto')
       }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      console.error('[v0] Error importing from CVA:', errorMsg)
-      alert(`Error al importar productos desde CVA: ${errorMsg}`)
-      setImporting(false)
+    } catch (error) {
+      console.error('[ERP] Error deleting producto:', error)
     }
   }
 
@@ -164,9 +160,10 @@ export default function ProductosPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <TerminalFrame title="root@netlab:~/cotizaciones/productos">
+          <TerminalFrame title="root@netlab:~/productos">
             <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-yellow-500/20 pb-4">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-purple-500/20 pb-4">
                 <div>
                   <Button
                     onClick={() => router.push('/admin/cotizaciones')}
@@ -176,120 +173,116 @@ export default function ProductosPage() {
                     <ArrowLeft className="h-4 w-4" />
                     Volver a Cotizaciones
                   </Button>
-                  <h1 className="text-3xl font-mono text-yellow-400 flex items-center gap-3">
-                    <Package className="h-8 w-8" />
-                    Catálogo de Productos y Servicios
+                  <h1 className="text-3xl font-mono text-purple-400">
+                    <Package className="h-8 w-8 inline mr-2" />
+                    Catálogo de Productos
                   </h1>
+                  <p className="text-gray-400 font-mono text-sm mt-1">
+                    {productos.length} productos registrados
+                  </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleImportCVA}
-                    disabled={importing}
-                    variant="outline"
-                    className="font-mono gap-2 border-green-500/50 text-green-400 hover:bg-green-500/10 bg-transparent"
-                  >
-                    <Download className="h-4 w-4" />
-                    {importing ? 'Importando...' : 'Importar productos de CVA'}
-                  </Button>
-                  <Button
-                    onClick={() => setShowForm(!showForm)}
-                    className="font-mono gap-2 bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Nuevo Producto
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => { resetForm(); setShowForm(true) }}
+                  className="font-mono gap-2 bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nuevo Producto
+                </Button>
               </div>
 
+              {/* Search */}
+              {productos.length > 0 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nombre, descripción o categoría..."
+                    value={searchTerm}
+                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+                    className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-purple-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  />
+                </div>
+              )}
+
+              {/* Form */}
               {showForm && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-zinc-900/50 border border-yellow-500/20 rounded-lg p-6"
+                  className="bg-zinc-900/50 border border-purple-500/30 rounded-lg p-6"
                 >
-                  <h2 className="text-xl font-mono text-yellow-400 mb-4">
-                    Nuevo Producto/Servicio
-                  </h2>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-mono text-purple-400">
+                      {editingId ? 'Editar Producto' : 'Nuevo Producto'}
+                    </h2>
+                    <button onClick={resetForm} className="text-gray-400 hover:text-white">
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-mono text-gray-400 mb-2">
-                          Nombre *
-                        </label>
-                        <Input
+                        <label className="block text-sm font-mono text-gray-400 mb-1">Nombre *</label>
+                        <input
+                          type="text"
                           required
                           value={formData.nombre}
                           onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                          className="font-mono"
+                          className="w-full bg-zinc-800 border border-gray-600 rounded px-3 py-2 text-sm font-mono text-white focus:border-purple-500/50 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-mono text-gray-400 mb-2">
-                          Categoría
-                        </label>
-                        <Input
-                          value={formData.categoria}
-                          onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                          placeholder="Ej: Software, Consultoría, Hardware"
-                          className="font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-mono text-gray-400 mb-2">
-                        Descripción
-                      </label>
-                      <textarea
-                        value={formData.descripcion}
-                        onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                        className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-gray-300"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-mono text-gray-400 mb-2">
-                          Precio Unitario *
-                        </label>
-                        <Input
-                          required
+                        <label className="block text-sm font-mono text-gray-400 mb-1">Precio Unitario *</label>
+                        <input
                           type="number"
                           step="0.01"
+                          required
                           value={formData.precio_unitario}
                           onChange={(e) => setFormData({ ...formData, precio_unitario: e.target.value })}
-                          className="font-mono"
+                          className="w-full bg-zinc-800 border border-gray-600 rounded px-3 py-2 text-sm font-mono text-white focus:border-purple-500/50 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-mono text-gray-400 mb-2">
-                          Unidad
-                        </label>
+                        <label className="block text-sm font-mono text-gray-400 mb-1">Categoría</label>
+                        <input
+                          type="text"
+                          value={formData.categoria}
+                          onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
+                          placeholder="Ej: Software, Hardware, Servicio"
+                          className="w-full bg-zinc-800 border border-gray-600 rounded px-3 py-2 text-sm font-mono text-white focus:border-purple-500/50 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-mono text-gray-400 mb-1">Unidad</label>
                         <select
                           value={formData.unidad}
                           onChange={(e) => setFormData({ ...formData, unidad: e.target.value })}
-                          className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-gray-300"
+                          className="w-full bg-zinc-800 border border-gray-600 rounded px-3 py-2 text-sm font-mono text-white focus:border-purple-500/50 focus:outline-none"
                         >
                           <option value="pieza">Pieza</option>
-                          <option value="hora">Hora</option>
-                          <option value="mes">Mes</option>
                           <option value="servicio">Servicio</option>
+                          <option value="hora">Hora</option>
                           <option value="licencia">Licencia</option>
+                          <option value="paquete">Paquete</option>
+                          <option value="mes">Mes</option>
                         </select>
                       </div>
                     </div>
-
-                    <div className="flex gap-3 pt-4">
-                      <Button type="submit" className="font-mono bg-green-600 hover:bg-green-700">
-                        Guardar Producto
+                    <div>
+                      <label className="block text-sm font-mono text-gray-400 mb-1">Descripción</label>
+                      <textarea
+                        value={formData.descripcion}
+                        onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                        rows={2}
+                        className="w-full bg-zinc-800 border border-gray-600 rounded px-3 py-2 text-sm font-mono text-white focus:border-purple-500/50 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <Button type="submit" disabled={saving} className="font-mono gap-2 bg-purple-600 hover:bg-purple-700">
+                        <Save className="h-4 w-4" />
+                        {saving ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear Producto')}
                       </Button>
-                      <Button
-                        type="button"
-                        onClick={() => setShowForm(false)}
-                        variant="ghost"
-                        className="font-mono"
-                      >
+                      <Button type="button" onClick={resetForm} variant="outline" className="font-mono bg-transparent">
                         Cancelar
                       </Button>
                     </div>
@@ -297,123 +290,96 @@ export default function ProductosPage() {
                 </motion.div>
               )}
 
-              {/* Buscador */}
-              <div className="mb-4">
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  placeholder="Buscar productos por nombre, SKU o descripción..."
-                  className="font-mono bg-zinc-900/50 border-gray-700"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                {productos
-                  .filter(p => 
-                    !searchTerm || 
-                    p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                  .map((producto) => (
-                  <motion.div
-                    key={producto.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="bg-zinc-900/50 border border-gray-700 rounded-lg p-4 hover:border-yellow-500/40 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-mono text-yellow-400">
-                            {producto.nombre}
-                          </h3>
-                          {producto.categoria && (
-                            <span className="text-xs font-mono text-gray-500 bg-zinc-800 px-2 py-1 rounded">
-                              {producto.categoria}
-                            </span>
-                          )}
-                        </div>
-                        {producto.descripcion && (
-                          <p className="text-sm font-mono text-gray-400 mb-2">
-                            {producto.descripcion}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-sm font-mono">
-                          <span className="text-green-400">
-                            ${Number(producto.precio_unitario).toFixed(2)} MXN
-                          </span>
-                          <span className="text-gray-500">
-                            por {producto.unidad}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="font-mono text-blue-400 hover:text-blue-300"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="font-mono text-red-400 hover:text-red-300"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {productos.filter(p => 
-                  !searchTerm || 
-                  p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
-                ).length === 0 && (
-                  <div className="text-center py-12">
-                    <Package className="h-16 w-16 text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-400 font-mono">
-                      {searchTerm ? 'No se encontraron productos con ese criterio.' : 'No hay productos registrados. Importa desde CVA o crea uno manualmente.'}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Paginación */}
-              {productos.filter(p => 
-                !searchTerm || 
-                p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.descripcion?.toLowerCase().includes(searchTerm.toLowerCase())
-              ).length > ITEMS_PER_PAGE && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-700">
-                  <p className="text-sm font-mono text-gray-400">
-                    Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, productos.length)} de {productos.length} productos
+              {/* Products Table */}
+              {paginatedProductos.length === 0 ? (
+                <div className="text-center py-12 bg-zinc-900/30 rounded-lg border border-gray-700">
+                  <Package className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400 font-mono mb-4">
+                    {searchTerm ? 'No se encontraron productos' : 'No hay productos registrados'}
                   </p>
+                  {!searchTerm && (
+                    <Button
+                      onClick={() => setShowForm(true)}
+                      className="font-mono gap-2 bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Crear Primer Producto
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-zinc-900/50 border border-purple-500/20 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-zinc-800/50 border-b border-purple-500/20">
+                      <tr className="font-mono text-xs text-gray-400">
+                        <th className="text-left p-3">Nombre</th>
+                        <th className="text-left p-3">Categoría</th>
+                        <th className="text-left p-3">Unidad</th>
+                        <th className="text-right p-3">Precio</th>
+                        <th className="text-center p-3">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="font-mono text-sm">
+                      {paginatedProductos.map((producto) => (
+                        <tr key={producto.id} className="border-b border-gray-800 last:border-0 hover:bg-zinc-800/30">
+                          <td className="p-3">
+                            <div className="text-purple-400">{producto.nombre}</div>
+                            {producto.descripcion && (
+                              <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">{producto.descripcion}</div>
+                            )}
+                          </td>
+                          <td className="p-3 text-gray-400">{producto.categoria || '—'}</td>
+                          <td className="p-3 text-gray-400">{producto.unidad}</td>
+                          <td className="p-3 text-right text-green-400">
+                            ${producto.precio_unitario.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleEdit(producto)}
+                                className="text-blue-400 hover:text-blue-300 p-1"
+                                title="Editar"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(producto.id, producto.nombre)}
+                                className="text-red-400 hover:text-red-300 p-1"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between font-mono text-sm">
+                  <span className="text-gray-400">
+                    Mostrando {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredProductos.length)} de {filteredProductos.length}
+                  </span>
                   <div className="flex gap-2">
                     <Button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                       variant="outline"
                       size="sm"
-                      className="font-mono"
+                      className="font-mono bg-transparent"
                     >
                       Anterior
                     </Button>
-                    <span className="flex items-center px-3 text-sm font-mono text-gray-400">
-                      Página {currentPage} de {Math.ceil(productos.length / ITEMS_PER_PAGE)}
-                    </span>
                     <Button
-                      onClick={() => setCurrentPage(p => Math.min(Math.ceil(productos.length / ITEMS_PER_PAGE), p + 1))}
-                      disabled={currentPage >= Math.ceil(productos.length / ITEMS_PER_PAGE)}
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
                       variant="outline"
                       size="sm"
-                      className="font-mono"
+                      className="font-mono bg-transparent"
                     >
                       Siguiente
                     </Button>

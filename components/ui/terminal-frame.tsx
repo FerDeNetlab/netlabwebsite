@@ -5,7 +5,7 @@ interface TerminalFrameProps {
   children: React.ReactNode
   title?: string
   className?: string
-  borderColor?: "green" | "purple" | "gray"
+  borderColor?: "green" | "purple" | "gray" | "red" | "blue"
 }
 
 export function TerminalFrame({
@@ -18,6 +18,8 @@ export function TerminalFrame({
     green: "border-green-500/30",
     purple: "border-purple-500/30",
     gray: "border-slate-800",
+    red: "border-red-500/30",
+    blue: "border-blue-500/30",
   }
 
   return (

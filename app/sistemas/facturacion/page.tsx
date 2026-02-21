@@ -6,34 +6,14 @@ export const metadata: Metadata = {
   description:
     "Sistema de facturación electrónica CFDI integrado con tus ventas en México. Timbrado automático ante el SAT, envío por email y control de cobranza en Guadalajara, Ciudad de México, Monterrey. Cumplimiento fiscal garantizado para tu negocio PyME.",
   keywords: [
-    "facturación electrónica",
     "facturación electrónica México",
-    "CFDI",
-    "CFDI México",
-    "timbrado SAT",
-    "factura electrónica",
-    "factura electrónica Guadalajara",
-    "CFDI Monterrey",
-    "Odoo facturación",
+    "CFDI timbrado SAT",
+    "Odoo facturación México",
+    "sistema de facturación PyMEs",
     "facturación automática",
-    "sistema de facturación",
-    "facturación México",
-    "XML",
-    "PDF",
-    "timbrado automático",
-    "cumplimiento fiscal",
-    "SAT",
-    "facturar automáticamente",
-    "como facturar más rápido",
-    "sistema facturación SAT",
-    "cuentas por cobrar",
-    "cobranza",
+    "cumplimiento fiscal México",
     "control de cobranza",
-    "facturación PyMEs",
-    "Ciudad de México",
-    "Querétaro",
-    "Puebla",
-    "León",
+    "factura electrónica Guadalajara",
   ],
   openGraph: {
     title: "Sistema de Facturación Electrónica CFDI México | Netlab",
@@ -43,7 +23,6 @@ export const metadata: Metadata = {
     locale: "es_MX",
   },
 }
-// </CHANGE>
 
 export default function SistemaFacturacionPage() {
   return <FacturacionClientPage />

@@ -19,7 +19,7 @@ export function MethodologySection() {
       desc: "Consultoría de negocios continua: revisamos métricas y optimizamos el sistema para crecimiento empresarial.",
     },
   ]
-  // </CHANGE>
+
 
   return (
     <section id="proceso" className="py-20 bg-[#0a0a0a] border-y border-slate-900">
@@ -31,7 +31,7 @@ export function MethodologySection() {
         <p className="text-lg text-slate-400 font-mono mb-8">
           Implementación Odoo, consultoría ERP y digitalización de negocios paso a paso.
         </p>
-        {/* </CHANGE> */}
+
 
         <div className="mt-8 space-y-8 relative">
           <div className="absolute left-3 top-4 bottom-4 w-px bg-slate-800 md:left-4" />

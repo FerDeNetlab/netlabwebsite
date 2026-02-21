@@ -12,6 +12,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.netlab.mx"),
   title: "Netlab | Implementación Odoo, ERP para Negocios y Sistemas para PyMEs en México",
   description:
     "Implementación Odoo, ERP para negocios, sistemas de ventas, punto de venta, control de inventarios y automatización comercial. Consultoría para PyMEs en Guadalajara y México. Software para negocios que funciona.",
@@ -19,45 +20,22 @@ export const metadata: Metadata = {
     icon: "/icon.svg",
     apple: "/icon.svg",
   },
+  alternates: {
+    canonical: "https://www.netlab.mx",
+  },
   keywords: [
-    "odoo",
-    "odoo méxico",
-    "odoo guadalajara",
-    "consultores odoo",
-    "implementación odoo",
-    "erp para negocios",
-    "sistemas para negocios",
-    "software para negocios",
-    "sistema administrativo",
-    "sistemas empresariales",
-    "punto de venta para negocios",
-    "pos para negocios",
-    "sistema de ventas",
-    "crm para negocios",
+    "implementación odoo México",
+    "ERP para PyMEs",
+    "sistema de ventas México",
     "control de inventarios",
-    "inventarios en tiempo real",
-    "sistema para pyme",
-    "erp para pyme",
-    "soluciones para pymes",
-    "software para pymes",
-    "sistema de facturación",
-    "sistema de ventas y facturación",
+    "punto de venta POS",
+    "CRM para negocios",
+    "Odoo Guadalajara",
+    "software empresarial México",
     "automatización comercial",
-    "embudo de ventas",
-    "proceso comercial",
-    "mejora de procesos",
+    "consultoría PyME",
+    "sistema de facturación",
     "digitalización de negocios",
-    "crecimiento empresarial",
-    "optimización de operaciones",
-    "consultoría de negocios",
-    "consultoría erp",
-    "consultoría pyme",
-    "consultoría en sistemas",
-    "como vender mas",
-    "como vender mas en internet",
-    "como mejorar los procesos de mi empresa",
-    "como ser mas eficiente en mi negocio",
-    "como capacitar vendedores",
   ],
   authors: [{ name: "Netlab Consulting" }],
   openGraph: {
@@ -67,11 +45,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_MX",
     siteName: "Netlab",
+    url: "https://www.netlab.mx",
+    images: [
+      {
+        url: "/logo-netlab.png",
+        width: 1200,
+        height: 630,
+        alt: "Netlab - Implementación Odoo y ERP para PyMEs en México",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Netlab | Sistemas para Negocios y Consultoría ERP",
     description: "Implementación Odoo, ERP para PyMEs y automatización comercial en México",
+    images: ["/logo-netlab.png"],
   },
   robots: {
     index: true,
@@ -84,7 +72,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  generator: "v0.app",
+  generator: "Netlab",
 }
 
 export default function RootLayout({
@@ -99,10 +87,13 @@ export default function RootLayout({
     description: "Implementación Odoo, ERP y sistemas para negocios en México",
     url: "https://www.netlab.mx",
     logo: "https://www.netlab.mx/logo-netlab.png",
+    telephone: "+52-55-1318-0427",
     address: {
       "@type": "PostalAddress",
+      streetAddress: "Calz Independencia Sur 1045",
       addressLocality: "Guadalajara",
       addressRegion: "Jalisco",
+      postalCode: "44460",
       addressCountry: "MX",
     },
     areaServed: [
@@ -126,6 +117,20 @@ export default function RootLayout({
     },
   }
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.netlab.mx/#website",
+    url: "https://www.netlab.mx",
+    name: "Netlab",
+    description: "Implementación Odoo, ERP y sistemas para negocios en México",
+    publisher: {
+      "@type": "Organization",
+      name: "Netlab Consulting",
+    },
+    inLanguage: "es-MX",
+  }
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -134,20 +139,20 @@ export default function RootLayout({
     description:
       "Implementación de Odoo ERP, sistemas de ventas, control de inventarios y software para PyMEs en México",
     url: "https://www.netlab.mx",
-    telephone: "+52-33-1234-5678",
+    telephone: "+52-55-1318-0427",
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Av. Patria 1201",
+      streetAddress: "Calz Independencia Sur 1045",
       addressLocality: "Guadalajara",
       addressRegion: "Jalisco",
-      postalCode: "44610",
+      postalCode: "44460",
       addressCountry: "MX",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 20.7339,
-      longitude: -103.4104,
+      latitude: 20.65863826430465,
+      longitude: -103.35042883099904,
     },
     openingHoursSpecification: [
       {
@@ -159,8 +164,8 @@ export default function RootLayout({
     ],
     aggregateRating: {
       "@type": "AggregateRating",
-      ratingValue: "4.9",
-      reviewCount: "47",
+      ratingValue: "5.0",
+      reviewCount: "1",
     },
   }
 
@@ -264,52 +269,70 @@ export default function RootLayout({
       },
       {
         "@type": "Question",
-        name: "¿Cómo funciona un punto de venta para negocios?",
+        name: "¿Cuánto cuesta implementar Odoo?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Un punto de venta (POS) conectado a tu sistema administrativo te permite vender, facturar y actualizar inventarios en tiempo real. Con Odoo, tu POS se integra automáticamente con control de inventarios y sistema de facturación.",
+          text: "El costo de implementación Odoo varía según módulos y personalización. Para PyMEs, una implementación básica (ventas, inventarios, facturación) va desde $50,000 MXN. Agenda un diagnóstico gratuito para una cotización exacta.",
         },
       },
       {
         "@type": "Question",
-        name: "¿Cuánto tiempo toma implementar Odoo en mi empresa?",
+        name: "¿Dan capacitación a mi equipo?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "La implementación de Odoo para una PyME toma entre 2 a 6 semanas dependiendo del número de módulos y complejidad. Incluye migración de datos, capacitación y soporte inicial.",
+          text: "Absolutamente. La consultoría de negocios incluye entrenamiento a usuarios y administradores. Parte fundamental de la implementación Odoo es que tu equipo adopte el sistema en el día a día.",
         },
       },
       {
         "@type": "Question",
-        name: "¿Ofrecen soporte y capacitación?",
+        name: "¿Tienen oficinas en Guadalajara y otras ciudades?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Sí, incluimos capacitación completa para tu equipo y soporte continuo. La consultoría PyME incluye entrenamiento presencial o remoto y acompañamiento durante la adopción del sistema.",
+          text: "Nuestra oficina principal está en Guadalajara, pero atendemos empresas en toda la República Mexicana incluyendo Ciudad de México, Monterrey, Querétaro, Puebla y más ciudades. Ofrecemos reuniones presenciales y remotas.",
         },
       },
       {
         "@type": "Question",
-        name: "¿Puedo probar el sistema antes de comprar?",
+        name: "¿El sistema funciona en la nube o local?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Sí, ofrecemos demos interactivas de nuestros sistemas y una sesión de diagnóstico gratuita donde evaluamos tus necesidades y te mostramos cómo funcionaría el sistema en tu negocio.",
+          text: "Ofrecemos ambas opciones: Odoo en la nube (acceso desde cualquier lugar) o instalación local (en tus servidores). Para PyMEs recomendamos la nube por seguridad, actualizaciones automáticas y menor costo de infraestructura.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Qué industrias atienden?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Tenemos experiencia en Retail, Manufactura, Farmacéutica, Alimentos y Bebidas, Logística, Construcción, Automotriz y más. Cada implementación se adapta a los procesos específicos de tu industria y cumplimiento regulatorio.",
         },
       },
     ],
   }
 
   return (
-    <html lang="es" className="dark">
+    <html lang="es" dir="ltr" className="dark">
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       </head>
       <body
         className={`${jetbrainsMono.variable} font-mono bg-[#0c0c0c] text-slate-300 antialiased min-h-screen selection:bg-[#22c55e] selection:text-black`}
       >
+        {/* Skip to content - Accessibility */}
+        <a
+          href="#main-content"
+          className="skip-to-content"
+        >
+          Saltar al contenido principal
+        </a>
         <AuthSessionProvider>
-          {children}
+          <div id="main-content">
+            {children}
+          </div>
         </AuthSessionProvider>
         <Analytics />
         <SpeedInsights />

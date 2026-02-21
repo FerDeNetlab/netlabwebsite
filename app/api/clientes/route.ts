@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         gen_random_uuid(), ${nombre}, ${empresa}, ${email}, ${telefono}, ${ciudad}, ${estado}, ${direccion}, ${rfc}, ${notas}, true, NOW(), NOW()
       )
       RETURNING *
-    `
+    ` as Record<string, unknown>[]
 
     return NextResponse.json(result[0])
   } catch (error) {

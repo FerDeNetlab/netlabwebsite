@@ -40,9 +40,9 @@ export async function POST(request: Request) {
       INSERT INTO cotizaciones (cliente_id, proyecto_id, total, estado, notas, vigencia)
       VALUES (${cliente_id}, ${proyecto_id || null}, ${total}, 'pendiente', ${notas || ''}, ${vigencia})
       RETURNING *
-    `
+    ` as Record<string, unknown>[]
 
-    const cotizacionId = cotizacion[0].id
+    const cotizacionId = (cotizacion[0] as Record<string, unknown>).id
 
     // Insertar items
     if (items && items.length > 0) {

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ArrowLeft, CheckCircle2, MapPin, Building2, Zap, Shield, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Industria, Ciudad } from "@/lib/seo-data"
-import Navbar from "@/components/navbar"
+import { Navbar } from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
 import { Breadcrumbs } from "@/components/breadcrumbs"
 

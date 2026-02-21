@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { Plus, Mail, Phone, Building2 } from 'lucide-react'
+import { Plus, Mail, Phone, Building2, Search } from 'lucide-react'
 
 interface Cliente {
   id: string
@@ -25,6 +25,18 @@ export default function ClientesPage() {
   const router = useRouter()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredClientes = clientes.filter(c => {
+    if (!searchTerm) return true
+    const term = searchTerm.toLowerCase()
+    return (
+      c.nombre?.toLowerCase().includes(term) ||
+      c.empresa?.toLowerCase().includes(term) ||
+      c.email?.toLowerCase().includes(term) ||
+      c.ciudad?.toLowerCase().includes(term)
+    )
+  })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -67,7 +79,7 @@ export default function ClientesPage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 pt-24 pb-16">
         <TerminalFrame title="root@netlab:~/clientes">
           <div className="p-6 space-y-6">
@@ -90,22 +102,38 @@ export default function ClientesPage() {
               </Button>
             </div>
 
+            {/* Search */}
+            {clientes.length > 0 && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, empresa, email o ciudad..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-zinc-900 border border-green-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500/50"
+                />
+              </div>
+            )}
+
             {/* Clientes Grid */}
-            {clientes.length === 0 ? (
+            {filteredClientes.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-400 font-mono mb-4">
-                  No hay clientes registrados
+                  {searchTerm ? `No se encontraron clientes para "${searchTerm}"` : 'No hay clientes registrados'}
                 </p>
-                <Button
-                  onClick={() => router.push('/admin/clientes/nuevo')}
-                  className="bg-green-600 hover:bg-green-700 text-white font-mono"
-                >
-                  Crear primer cliente
-                </Button>
+                {!searchTerm && (
+                  <Button
+                    onClick={() => router.push('/admin/clientes/nuevo')}
+                    className="bg-green-600 hover:bg-green-700 text-white font-mono"
+                  >
+                    Crear primer cliente
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {clientes.map((cliente) => (
+                {filteredClientes.map((cliente) => (
                   <div
                     key={cliente.id}
                     className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-6 hover:border-green-500/40 transition-colors cursor-pointer"
@@ -122,7 +150,7 @@ export default function ClientesPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-gray-400 text-sm font-mono">
                         <Mail className="h-4 w-4" />

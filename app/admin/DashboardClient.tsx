@@ -6,37 +6,30 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { 
-  DollarSign, 
-  Users, 
-  FileText, 
-  CheckSquare, 
-  TrendingUp, 
-  Clock, 
+import {
+  Users,
+  DollarSign,
+  TrendingUp,
   LogOut,
   Briefcase,
-  ClipboardList
+  ClipboardList,
+  Package,
+  Plus
 } from 'lucide-react'
 import Image from 'next/image'
-import Navbar from '@/components/navbar' // Import Navbar component
+import { Navbar } from '@/components/navbar'
 
 interface DashboardStats {
   totalClientes: number
   proyectosActivos: number
   cotizacionesPendientes: number
-  tareasAbiertas: number
-  ingresosMes: number
-  horasRegistradas: number
+  oportunidadesAbiertas: number
 }
 
+import type { Session } from 'next-auth'
+
 interface DashboardClientProps {
-  session: {
-    user: {
-      email?: string
-      name?: string
-      id?: string
-    }
-  }
+  session: Session
 }
 
 export default function DashboardClient({ session }: DashboardClientProps) {
@@ -45,9 +38,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
     totalClientes: 0,
     proyectosActivos: 0,
     cotizacionesPendientes: 0,
-    tareasAbiertas: 0,
-    ingresosMes: 0,
-    horasRegistradas: 0,
+    oportunidadesAbiertas: 0,
   })
 
   const handleLogout = async () => {
@@ -56,7 +47,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    
+
     // Fetch real data from API
     const fetchStats = async () => {
       try {
@@ -69,7 +60,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
         console.error('[v0] Error fetching stats:', error)
       }
     }
-    
+
     fetchStats()
   }, [])
 
@@ -83,12 +74,12 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       path: '/admin/clientes',
     },
     {
-      title: 'Proyectos Activos',
-      value: stats.proyectosActivos,
-      icon: FileText,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-400/10',
-      path: '/admin/proyectos',
+      title: 'Oportunidades CRM',
+      value: stats.oportunidadesAbiertas,
+      icon: TrendingUp,
+      color: 'text-cyan-400',
+      bgColor: 'bg-cyan-400/10',
+      path: '/admin/crm',
     },
     {
       title: 'Cotizaciones Pendientes',
@@ -98,36 +89,21 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       bgColor: 'bg-yellow-400/10',
       path: '/admin/cotizaciones',
     },
-    {
-      title: 'Tareas Abiertas',
-      value: stats.tareasAbiertas,
-      icon: CheckSquare,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-400/10',
-      path: '/admin/tareas',
-    },
-    {
-      title: 'Ingresos del Mes',
-      value: `$${(stats.ingresosMes / 1000).toFixed(0)}K`,
-      icon: TrendingUp,
-      color: 'text-green-400',
-      bgColor: 'bg-green-400/10',
-      path: '/admin/finanzas',
-    },
-    {
-      title: 'Horas Registradas',
-      value: stats.horasRegistradas,
-      icon: Clock,
-      color: 'text-cyan-400',
-      bgColor: 'bg-cyan-400/10',
-      path: '/admin/tiempo',
-    },
   ]
 
   const modules = [
     {
+      title: 'Clientes',
+      description: 'Gestiona clientes y datos fiscales',
+      icon: Users,
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+      borderColor: 'border-green-500/20',
+      path: '/admin/clientes',
+    },
+    {
       title: 'CRM',
-      description: 'Gestiona oportunidades de negocio',
+      description: 'Pipeline de oportunidades de negocio',
       icon: Briefcase,
       color: 'text-cyan-400',
       bgColor: 'bg-cyan-400/10',
@@ -142,6 +118,15 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       bgColor: 'bg-yellow-400/10',
       borderColor: 'border-yellow-500/20',
       path: '/admin/cotizaciones',
+    },
+    {
+      title: 'Productos',
+      description: 'Catálogo de productos y servicios',
+      icon: Package,
+      color: 'text-purple-400',
+      bgColor: 'bg-purple-400/10',
+      borderColor: 'border-purple-500/20',
+      path: '/admin/cotizaciones/productos',
     },
   ]
 
@@ -179,11 +164,11 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                   Dashboard - ERP Netlab
                 </h1>
                 <p className="text-gray-400 font-mono text-sm">
-                  Panel de control interno • {new Date().toLocaleDateString('es-MX', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  Panel de control interno • {new Date().toLocaleDateString('es-MX', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </p>
               </div>
@@ -247,14 +232,14 @@ export default function DashboardClient({ session }: DashboardClientProps) {
               {/* Quick Actions */}
               <div className="bg-zinc-900/50 border border-purple-500/20 rounded-lg p-6">
                 <h2 className="text-xl font-mono text-purple-400 mb-4">
+                  <Plus className="h-5 w-5 inline mr-2" />
                   Acciones Rápidas
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {[
                     { label: 'Nuevo Cliente', path: '/admin/clientes/nuevo' },
-                    { label: 'Nuevo Proyecto', path: '/admin/proyectos/nuevo' },
-                    { label: 'Nueva Cotización', path: '/admin/cotizaciones/nuevo' },
-                    { label: 'Registrar Tiempo', path: '/admin/tiempo' },
+                    { label: 'Nueva Cotización', path: '/admin/cotizaciones/nueva' },
+                    { label: 'Nueva Oportunidad', path: '/admin/crm' },
                   ].map((action) => (
                     <button
                       key={action.label}
@@ -267,28 +252,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                 </div>
               </div>
 
-              {/* Recent Activity */}
-              <div className="bg-zinc-900/50 border border-cyan-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-mono text-cyan-400 mb-4">
-                  Actividad Reciente
-                </h2>
-                <div className="space-y-3">
-                  {[
-                    { time: '10:30', action: 'Nueva cotización creada', client: 'GOMWATER' },
-                    { time: '09:15', action: 'Proyecto actualizado', client: 'Tierra Fértil' },
-                    { time: '08:45', action: 'Pago registrado', client: 'Laboratorios Pisa' },
-                  ].map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 text-sm font-mono p-3 bg-zinc-800/30 rounded border border-gray-700/50"
-                    >
-                      <span className="text-gray-500">{activity.time}</span>
-                      <span className="text-gray-400">{activity.action}</span>
-                      <span className="text-green-400 ml-auto">{activity.client}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+
             </div>
           </TerminalFrame>
         </motion.div>

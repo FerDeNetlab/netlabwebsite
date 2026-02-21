@@ -6,33 +6,14 @@ export const metadata: Metadata = {
   description:
     "Sistema punto de venta POS para retail, restaurantes, farmacias y comercios en México. Cobro rápido, control de caja, reportes de ventas e integración con inventarios en Guadalajara, Ciudad de México, Monterrey. Software POS confiable para PyMEs.",
   keywords: [
-    "punto de venta",
-    "POS",
-    "POS México",
-    "punto de venta Guadalajara",
-    "POS Monterrey",
-    "software punto de venta",
-    "sistema POS",
-    "POS para retail",
-    "punto de venta restaurantes",
-    "POS farmacias",
-    "punto de venta tiendas",
-    "software para cobrar",
-    "control de caja",
-    "terminal punto de venta",
-    "Odoo POS",
-    "POS integrado inventarios",
-    "punto de venta rápido",
-    "software caja registradora",
+    "punto de venta México",
     "POS para PyMEs",
-    "punto de venta negocios",
-    "como cobrar más rápido",
-    "sistema para cobrar ventas",
-    "POS cloud",
-    "punto de venta en línea",
-    "Ciudad de México",
-    "Querétaro",
-    "Puebla",
+    "Odoo POS México",
+    "punto de venta restaurantes",
+    "POS para retail",
+    "software punto de venta Guadalajara",
+    "sistema POS integrado inventarios",
+    "control de caja",
   ],
   openGraph: {
     title: "Sistema Punto de Venta POS México | Netlab",
@@ -42,7 +23,6 @@ export const metadata: Metadata = {
     locale: "es_MX",
   },
 }
-// </CHANGE>
 
 export default function SistemaPOSPage() {
   return <SistemaPOSClient />

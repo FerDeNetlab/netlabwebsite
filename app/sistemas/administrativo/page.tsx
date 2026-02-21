@@ -6,34 +6,14 @@ export const metadata: Metadata = {
   description:
     "Sistema administrativo completo para PyMEs en México. Automatiza compras, contabilidad, recursos humanos y control financiero en Guadalajara, Ciudad de México, Monterrey. Libera tiempo de tu equipo administrativo y mantén las finanzas al día.",
   keywords: [
-    "sistema administrativo empresas",
     "sistema administrativo México",
-    "software administrativo Guadalajara",
     "software administrativo PyMEs",
-    "sistema de compras",
-    "contabilidad automatizada",
-    "software contable México",
-    "sistema de recursos humanos",
-    "RRHH México",
+    "Odoo compras contabilidad México",
+    "sistema de compras Guadalajara",
+    "contabilidad automatizada PyME",
+    "software RRHH México",
     "control financiero empresas",
-    "sistema de nómina",
-    "nómina México",
-    "gestión de compras",
     "automatizar área administrativa",
-    "software contable PyME",
-    "cuentas por pagar y cobrar",
-    "conciliación bancaria",
-    "flujo de efectivo",
-    "expedientes de empleados",
-    "control de asistencia",
-    "como automatizar compras",
-    "simplificar contabilidad",
-    "sistema para administración",
-    "Odoo compras México",
-    "Odoo contabilidad",
-    "Ciudad de México",
-    "Monterrey",
-    "Querétaro",
   ],
   openGraph: {
     title: "Sistema Administrativo para Empresas México | Netlab",
@@ -43,7 +23,6 @@ export const metadata: Metadata = {
     locale: "es_MX",
   },
 }
-// </CHANGE>
 
 export default function SistemaAdministrativoPage() {
   return <SistemaAdministrativoClient />
