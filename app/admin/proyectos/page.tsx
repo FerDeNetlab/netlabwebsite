@@ -55,8 +55,9 @@ export default function ProyectosPage() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => router.push('/admin/proyectos/nuevo')}
-                  className="font-mono gap-2 bg-purple-600 hover:bg-purple-700"
+                  disabled
+                  className="font-mono gap-2 bg-purple-600/50 cursor-not-allowed opacity-50"
+                  title="Módulo en construcción"
                 >
                   <Plus className="h-4 w-4" />
                   Nuevo Proyecto
