@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight } from 'lucide-react'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { total: number; pendientes: number; pagadas: number; vencidas: number; por_cobrar: number }
@@ -49,6 +49,7 @@ export default function FinanzasPage() {
         { title: 'Ingresos y Egresos', desc: 'Cobranza y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
         { title: 'Calendario', desc: 'Cobros y pagos del mes', icon: Calendar, path: '/admin/finanzas/calendario', color: 'text-blue-400', border: 'border-blue-500/30' },
         { title: 'Flujo de Efectivo', desc: 'Proyección mensual', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
+        { title: 'Reportes', desc: 'Panorama financiero completo', icon: FileBarChart, path: '/admin/finanzas/reportes', color: 'text-yellow-400', border: 'border-yellow-500/30' },
     ]
 
     return (
