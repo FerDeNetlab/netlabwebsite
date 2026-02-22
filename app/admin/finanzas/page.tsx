@@ -47,7 +47,7 @@ export default function FinanzasPage() {
         { title: 'Facturas', desc: 'Cuentas por cobrar', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
         { title: 'Gastos', desc: 'Cuentas por pagar', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
         { title: 'Calendario', desc: 'Cobros y pagos del mes', icon: Calendar, path: '/admin/finanzas/calendario', color: 'text-blue-400', border: 'border-blue-500/30' },
-        { title: 'Flujo de Efectivo', desc: 'Proyección 90 días', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
+        { title: 'Flujo de Efectivo', desc: 'Proyección mensual', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
     ]
 
     return (
