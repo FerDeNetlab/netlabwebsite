@@ -25,16 +25,59 @@ export async function GET() {
       WHERE estado = 'pagado' AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
     ` as Record<string, unknown>[]
 
-    // ═══ CxC: por cobrar (total recurrente mensual + únicos pendientes) ═══
-    const recurrentes = await sql`SELECT COALESCE(SUM(total), 0) as total FROM facturas WHERE recurrente = true` as Record<string, unknown>[]
-    const unicosPendientes = await sql`
-      SELECT COALESCE(SUM(f.total), 0) as total
-      FROM facturas f LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
-      WHERE f.recurrente = false AND COALESCE(p.pagado, 0) < f.total
+    // ═══ CxC: POR COBRAR ESTE MES ═══
+    // Recurrentes: sum total of all recurring that haven't been paid this month
+    const facturasRecurrentesAll = await sql`
+      SELECT f.id, f.total FROM facturas f WHERE f.recurrente = true
     ` as Record<string, unknown>[]
 
-    // ═══ CxP: por pagar (gastos pendientes) ═══
-    const porPagar = await sql`SELECT COALESCE(SUM(monto), 0) as total, COUNT(*) as pendientes FROM gastos WHERE estado = 'pendiente'` as Record<string, unknown>[]
+    const pagosMesAll = await sql`
+      SELECT factura_id, SUM(monto) as total_pagado FROM pagos
+      WHERE EXTRACT(MONTH FROM fecha_pago) = ${mes} AND EXTRACT(YEAR FROM fecha_pago) = ${anio}
+      GROUP BY factura_id
+    ` as Record<string, unknown>[]
+    const pagosMesMap = new Map(pagosMesAll.map(p => [p.factura_id as string, Number(p.total_pagado)]))
+
+    let porCobrarMes = 0
+    let pendientesCobro = 0
+    for (const f of facturasRecurrentesAll) {
+      if (!pagosMesMap.has(f.id as string)) {
+        porCobrarMes += Number(f.total)
+        pendientesCobro++
+      }
+    }
+
+    // Únicos del mes: with fecha_vencimiento this month and not fully paid
+    const unicosMes = await sql`
+      SELECT f.id, f.total FROM facturas f
+      LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
+      WHERE f.recurrente = false
+        AND EXTRACT(MONTH FROM f.fecha_vencimiento) = ${mes}
+        AND EXTRACT(YEAR FROM f.fecha_vencimiento) = ${anio}
+        AND COALESCE(p.pagado, 0) < f.total
+    ` as Record<string, unknown>[]
+    for (const f of unicosMes) {
+      porCobrarMes += Number(f.total)
+      pendientesCobro++
+    }
+
+    // ═══ CxP: POR PAGAR ESTE MES ═══
+    // Gastos fijos recurrentes pendientes
+    const gastosFijosPendientes = await sql`
+      SELECT COALESCE(SUM(monto), 0) as total, COUNT(*) as pendientes
+      FROM gastos WHERE recurrente = true AND estado = 'pendiente'
+    ` as Record<string, unknown>[]
+
+    // Gastos únicos del mes pendientes
+    const gastosUnicosMesPendientes = await sql`
+      SELECT COALESCE(SUM(monto), 0) as total, COUNT(*) as pendientes
+      FROM gastos WHERE recurrente = false AND estado = 'pendiente'
+        AND EXTRACT(MONTH FROM fecha_vencimiento) = ${mes}
+        AND EXTRACT(YEAR FROM fecha_vencimiento) = ${anio}
+    ` as Record<string, unknown>[]
+
+    const porPagarMes = Number(gastosFijosPendientes[0].total) + Number(gastosUnicosMesPendientes[0].total)
+    const pendientesPago = Number(gastosFijosPendientes[0].pendientes) + Number(gastosUnicosMesPendientes[0].pendientes)
 
     // ═══ ALERTAS ═══
     const alertas: { tipo: string; severity: 'danger' | 'warning' | 'info'; titulo: string; detalle: string; link?: string }[] = []
@@ -170,8 +213,8 @@ export async function GET() {
     alertas.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
 
     return NextResponse.json({
-      cxc: { por_cobrar: Number(recurrentes[0].total) + Number(unicosPendientes[0].total), pendientes: facturasRecurrentes.length },
-      cxp: { por_pagar: Number(porPagar[0].total), pendientes: Number(porPagar[0].pendientes) },
+      cxc: { por_cobrar: porCobrarMes, pendientes: pendientesCobro },
+      cxp: { por_pagar: porPagarMes, pendientes: pendientesPago },
       ingresos_mes: ingresos,
       egresos_mes: egresos,
       balance_mes: ingresos - egresos,
