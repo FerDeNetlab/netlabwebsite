@@ -179,7 +179,7 @@ export default function AportesPage() {
                                         <tbody className="font-mono text-sm">
                                             {aportes.map(a => (
                                                 <tr key={a.id} className="border-b border-gray-800 last:border-0 hover:bg-zinc-800/30">
-                                                    <td className="p-3 text-gray-400">{new Date(a.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                                    <td className="p-3 text-gray-400">{new Date(String(a.fecha).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                                                     <td className="p-3 text-amber-400 font-bold">{a.socio}</td>
                                                     <td className="p-3 text-gray-300">{a.concepto || '—'}</td>
                                                     <td className="p-3 text-right text-amber-400 font-bold">{fmt(Number(a.monto))}</td>

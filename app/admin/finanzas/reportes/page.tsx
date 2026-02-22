@@ -293,7 +293,7 @@ export default function ReportesPage() {
                                                             <div>
                                                                 <div className="font-mono text-xs text-white">{a.socio}</div>
                                                                 <div className="font-mono text-[10px] text-gray-500">
-                                                                    {a.concepto}{a.fecha && ` · ${new Date(a.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                                    {a.concepto}{a.fecha && ` · ${new Date(String(a.fecha).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
                                                                 </div>
                                                             </div>
                                                             <span className="font-mono text-xs text-amber-400 font-bold">{fmtFull(a.monto)}</span>
@@ -321,7 +321,7 @@ export default function ReportesPage() {
                                                         <div>
                                                             <div className="font-mono text-xs text-white">{p.numero || p.concepto}</div>
                                                             <div className="font-mono text-[10px] text-gray-500">
-                                                                {p.cliente} • {p.fecha ? new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : ''}
+                                                                {p.cliente} • {p.fecha ? new Date(String(p.fecha).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : ''}
                                                                 {p.metodo && ` • ${p.metodo}`}
                                                             </div>
                                                         </div>
@@ -346,7 +346,7 @@ export default function ReportesPage() {
                                                         <div>
                                                             <div className="font-mono text-xs text-white">{g.concepto}</div>
                                                             <div className="font-mono text-[10px] text-gray-500">
-                                                                {g.fecha ? new Date(g.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : ''}
+                                                                {g.fecha ? new Date(String(g.fecha).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : ''}
                                                                 {g.categoria && <span style={{ color: g.color }}> • {g.categoria}</span>}
                                                                 {g.subtipo === 'sueldo' && ' • 🧑 Sueldo'}
                                                             </div>

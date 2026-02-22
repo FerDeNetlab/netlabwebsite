@@ -158,11 +158,11 @@ export default function MovimientosPage() {
                                                         </div>
                                                         <div className="font-mono text-xs text-gray-500 mt-0.5">
                                                             {m.cliente_nombre || 'Sin cliente'} • {m.concepto}
-                                                            {m.fecha_ideal && ` • Ideal: ${new Date(m.fecha_ideal + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                            {m.fecha_ideal && ` • Ideal: ${new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
                                                         </div>
                                                         {m.estado === 'cobrado' && m.fecha_pago && (
                                                             <div className="font-mono text-[10px] text-emerald-400 mt-0.5">
-                                                                Cobrado el {new Date(m.fecha_pago + 'T12:00:00').toLocaleDateString('es-MX')} • {m.metodo_pago}
+                                                                Cobrado el {new Date(String(m.fecha_pago).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX')} • {m.metodo_pago}
                                                             </div>
                                                         )}
                                                     </div>
@@ -248,7 +248,7 @@ export default function MovimientosPage() {
                                                         <div className="font-mono text-xs text-gray-500 mt-0.5">
                                                             {m.cliente_nombre || ''}
                                                             {m.categoria_nombre && <span style={{ color: m.categoria_color }}> • {m.categoria_nombre}</span>}
-                                                            {m.fecha_ideal && ` • Ideal: ${new Date(m.fecha_ideal + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                            {m.fecha_ideal && ` • Ideal: ${new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3">
