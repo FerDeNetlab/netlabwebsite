@@ -130,9 +130,12 @@ export default function AportesPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="font-mono text-xs text-gray-500">Socio *</label>
-                                                <input type="text" value={form.socio} onChange={e => setForm(f => ({ ...f, socio: e.target.value }))} placeholder="Nombre del socio"
-                                                    list="socios-list" className={inputCls + ' mt-1'} />
-                                                <datalist id="socios-list">{sociosUnicos.map(s => <option key={s} value={s} />)}</datalist>
+                                                <select value={form.socio} onChange={e => setForm(f => ({ ...f, socio: e.target.value }))} className={inputCls + ' mt-1'}>
+                                                    <option value="">Seleccionar socio</option>
+                                                    <option value="Fer">Fer</option>
+                                                    <option value="JC">JC</option>
+                                                    <option value="Edgar">Edgar</option>
+                                                </select>
                                             </div>
                                             <div>
                                                 <label className="font-mono text-xs text-gray-500">Monto *</label>
