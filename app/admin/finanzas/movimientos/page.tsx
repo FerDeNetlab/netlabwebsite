@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown, Undo2 } from 'lucide-react'
 
 interface Movimiento {
     id: string; concepto: string; monto: number; numero_factura?: string;
@@ -63,6 +63,13 @@ export default function MovimientosPage() {
         })
         if (r.ok) { setCobrandoId(null); fetchData() }
         else alert('Error al registrar')
+    }
+
+    const handleCancelar = async (mov: Movimiento) => {
+        if (!confirm(`¿Cancelar ${mov.tipo_mov === 'ingreso' ? 'cobro' : 'pago'} de ${mov.numero_factura || mov.concepto}?`)) return
+        const r = await fetch(`/api/finanzas/movimientos?tipo=${mov.tipo_mov}&id=${mov.id}&mes=${mes}&anio=${anio}`, { method: 'DELETE' })
+        if (r.ok) fetchData()
+        else alert('Error al cancelar')
     }
 
     const fmt = (n: number) => `$${Math.abs(Number(n)).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
@@ -166,6 +173,11 @@ export default function MovimientosPage() {
                                                                 <DollarSign className="h-3 w-3" /> Cobrar
                                                             </Button>
                                                         )}
+                                                        {m.estado === 'cobrado' && (
+                                                            <Button onClick={() => handleCancelar(m)} variant="ghost" className="font-mono gap-1 text-gray-500 hover:text-red-400" size="sm">
+                                                                <Undo2 className="h-3 w-3" /> Cancelar
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 {/* Inline form */}
@@ -244,6 +256,11 @@ export default function MovimientosPage() {
                                                         {m.estado === 'pendiente' && (
                                                             <Button onClick={() => openCobrar(m)} className="font-mono gap-1 bg-red-600 hover:bg-red-700" size="sm">
                                                                 <CreditCard className="h-3 w-3" /> Pagar
+                                                            </Button>
+                                                        )}
+                                                        {m.estado === 'pagado' && (
+                                                            <Button onClick={() => handleCancelar(m)} variant="ghost" className="font-mono gap-1 text-gray-500 hover:text-red-400" size="sm">
+                                                                <Undo2 className="h-3 w-3" /> Cancelar
                                                             </Button>
                                                         )}
                                                     </div>
