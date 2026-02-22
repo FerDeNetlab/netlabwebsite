@@ -30,7 +30,7 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
     const [saving, setSaving] = useState(false)
     const [editForm, setEditForm] = useState<Record<string, string | number | boolean | null>>({})
     const [showPagoForm, setShowPagoForm] = useState(false)
-    const [pagoData, setPagoData] = useState({ monto: '', metodo_pago: 'transferencia', referencia: '', notas: '' })
+    const [pagoData, setPagoData] = useState({ monto: '', metodo_pago: 'transferencia', fecha_pago: new Date().toISOString().split('T')[0], notas: '' })
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -87,7 +87,7 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...pagoData, monto: Number(pagoData.monto) })
         })
-        if (r.ok) { setShowPagoForm(false); setPagoData({ monto: '', metodo_pago: 'transferencia', referencia: '', notas: '' }); fetchFactura() }
+        if (r.ok) { setShowPagoForm(false); setPagoData({ monto: '', metodo_pago: 'transferencia', fecha_pago: new Date().toISOString().split('T')[0], notas: '' }); fetchFactura() }
         else alert('Error al registrar pago')
     }
 
@@ -253,8 +253,8 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="font-mono text-xs text-gray-500">Referencia</label>
-                                            <input type="text" value={pagoData.referencia} onChange={e => setPagoData(p => ({ ...p, referencia: e.target.value }))} placeholder="No. de operación" className={inputCls + ' mt-1'} />
+                                            <label className="font-mono text-xs text-gray-500">Fecha de Pago</label>
+                                            <input type="date" value={pagoData.fecha_pago} onChange={e => setPagoData(p => ({ ...p, fecha_pago: e.target.value }))} className={inputCls + ' mt-1'} />
                                         </div>
                                         <div>
                                             <label className="font-mono text-xs text-gray-500">Notas</label>

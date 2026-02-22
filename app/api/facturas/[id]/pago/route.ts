@@ -9,7 +9,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     try {
         const body = await request.json()
-        const { monto, metodo_pago, referencia, notas } = body
+        const { monto, metodo_pago, fecha_pago, notas } = body
+        const fechaPago = fecha_pago || new Date().toISOString().split('T')[0]
 
         // Get factura total
         const factura = await sql`SELECT total FROM facturas WHERE id = ${id}` as Record<string, unknown>[]
@@ -22,14 +23,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
         // Create pago
         const pago = await sql`
-      INSERT INTO pagos (id, factura_id, monto, metodo_pago, referencia, fecha_pago, notas, created_at)
-      VALUES (gen_random_uuid(), ${id}, ${monto}, ${metodo_pago || null}, ${referencia || null}, CURRENT_DATE, ${notas || null}, NOW())
+      INSERT INTO pagos (id, factura_id, monto, metodo_pago, fecha_pago, notas, created_at)
+      VALUES (gen_random_uuid(), ${id}, ${monto}, ${metodo_pago || null}, ${fechaPago}, ${notas || null}, NOW())
       RETURNING *
     ` as Record<string, unknown>[]
 
         // Auto-update factura estado
         if (totalPagado >= facturaTotal) {
-            await sql`UPDATE facturas SET estado = 'pagada', fecha_pago = CURRENT_DATE, metodo_pago = ${metodo_pago || null}, updated_at = NOW() WHERE id = ${id}`
+            await sql`UPDATE facturas SET estado = 'pagada', fecha_pago = ${fechaPago}, metodo_pago = ${metodo_pago || null}, updated_at = NOW() WHERE id = ${id}`
         } else {
             await sql`UPDATE facturas SET estado = 'parcial', updated_at = NOW() WHERE id = ${id}`
         }
