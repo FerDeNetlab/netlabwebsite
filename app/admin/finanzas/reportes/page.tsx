@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, DollarSign, Users, Briefcase, Wallet, PieChart, BarChart3, CalendarDays } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, DollarSign, Users, Briefcase, Wallet, PieChart, BarChart3, CalendarDays, Landmark } from 'lucide-react'
 
 interface Reporte {
     resumen: { mes: number; anio: number; ingresos_mes: number; egresos_mes: number; balance_mes: number; total_clientes: number }
@@ -23,6 +23,11 @@ interface Reporte {
     historico_mensual: { anio: number; mes: number; ingresos: number; egresos: number }[]
     cobranza_clientes: { id: string; nombre: string; pagos: number; total_cobrado: number; dias_promedio: number }[]
     gastos_por_categoria: { nombre: string; color: string; total: number; cantidad: number }[]
+    aportes_capital: {
+        total_global: number; total_mes: number;
+        socios: { nombre: string; total: number }[]
+        movimientos_mes: { socio: string; monto: number; concepto: string; fecha: string }[]
+    }
 }
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -55,7 +60,7 @@ export default function ReportesPage() {
     if (status === 'loading' || loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando reportes...</div></div>
     if (!data) return null
 
-    const { resumen, definiciones, movimientos_mes, historico_mensual, cobranza_clientes, gastos_por_categoria } = data
+    const { resumen, definiciones, movimientos_mes, historico_mensual, cobranza_clientes, gastos_por_categoria, aportes_capital } = data
     const maxHist = Math.max(...historico_mensual.map(h => Math.max(h.ingresos, h.egresos)), 1)
     const totalGastosCat = gastos_por_categoria.reduce((s, g) => s + g.total, 0)
 
@@ -250,7 +255,60 @@ export default function ReportesPage() {
                                 </div>
                             </div>
 
-                            {/* ═══ SECCIÓN 5: Movimientos detallados del mes ═══ */}
+                            {/* ═══ SECCIÓN 5: Aportes de Capital ═══ */}
+                            {aportes_capital && aportes_capital.total_global > 0 && (
+                                <div>
+                                    <h2 className="font-mono text-sm text-gray-500 mb-3 flex items-center gap-2"><Landmark className="h-4 w-4" /> APORTES DE CAPITAL</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-zinc-900/50 border border-amber-500/20 rounded-lg p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-mono text-xs text-gray-400">Capital total acumulado</span>
+                                                <span className="font-mono text-lg text-amber-400 font-bold">{fmtFull(aportes_capital.total_global)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center border-t border-gray-800 pt-2">
+                                                <span className="font-mono text-xs text-gray-400">Aportes de {MESES_FULL[mes - 1]}</span>
+                                                <span className="font-mono text-sm text-amber-400 font-bold">{fmtFull(aportes_capital.total_mes)}</span>
+                                            </div>
+                                            {/* Per-socio breakdown */}
+                                            {aportes_capital.socios.map(s => (
+                                                <div key={s.nombre}>
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="font-mono text-xs text-gray-300">{s.nombre}</span>
+                                                        <span className="font-mono text-xs text-amber-400 font-bold">{fmtFull(s.total)}</span>
+                                                    </div>
+                                                    <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-amber-500/60 rounded-full" style={{ width: `${(s.total / aportes_capital.total_global) * 100}%` }} />
+                                                    </div>
+                                                    <div className="font-mono text-[9px] text-gray-600 mt-0.5">{Math.round((s.total / aportes_capital.total_global) * 100)}% del capital</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {/* Monthly detail */}
+                                        <div className="bg-zinc-900/50 border border-amber-500/20 rounded-lg overflow-hidden">
+                                            <div className="p-3 border-b border-amber-500/10 font-mono text-xs text-amber-400">Aportes de {MESES_FULL[mes - 1]}</div>
+                                            {aportes_capital.movimientos_mes.length > 0 ? (
+                                                <div className="divide-y divide-gray-800">
+                                                    {aportes_capital.movimientos_mes.map((a, i) => (
+                                                        <div key={i} className="p-3 flex justify-between items-center">
+                                                            <div>
+                                                                <div className="font-mono text-xs text-white">{a.socio}</div>
+                                                                <div className="font-mono text-[10px] text-gray-500">
+                                                                    {a.concepto}{a.fecha && ` · ${new Date(a.fecha + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                                </div>
+                                                            </div>
+                                                            <span className="font-mono text-xs text-amber-400 font-bold">{fmtFull(a.monto)}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="p-4 text-center font-mono text-gray-500 text-xs">Sin aportes este mes</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ═══ SECCIÓN 6: Movimientos detallados del mes ═══ */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Cobros del mes */}
                                 <div>
