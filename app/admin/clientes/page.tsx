@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { Plus, Mail, Phone, Building2, Search } from 'lucide-react'
+import { Plus, Mail, Phone, Building2, Search, ArrowLeft } from 'lucide-react'
 
 interface Cliente {
   id: string
@@ -86,6 +86,9 @@ export default function ClientesPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-green-500/20 pb-4">
               <div>
+                <Button onClick={() => router.push('/admin')} variant="ghost" className="font-mono gap-2 text-sm mb-2">
+                  <ArrowLeft className="h-4 w-4" /> Dashboard
+                </Button>
                 <h1 className="text-3xl font-mono text-green-400 mb-2">
                   Gestión de Clientes
                 </h1>
