@@ -122,8 +122,8 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                 </div>
                             </div>
 
-                            {/* Invoice Timeline */}
-                            {factura.fecha_emision && (
+                            {/* Invoice Timeline — only for one-time entries */}
+                            {!factura.recurrente && factura.fecha_emision && (
                                 <div className="bg-zinc-900/50 border border-gray-700 rounded-lg p-4">
                                     <div className="flex items-center gap-0 font-mono text-xs">
                                         <div className="flex flex-col items-center">
