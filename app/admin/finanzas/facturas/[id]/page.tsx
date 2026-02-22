@@ -12,7 +12,7 @@ import { ArrowLeft, DollarSign, CheckCircle, Trash2, Building2, Mail, Phone, Fil
 
 interface FacturaDetalle {
     id: string; numero_factura: string; concepto: string; subtotal: number; iva: number; total: number;
-    estado: string; fecha_emision: string; fecha_vencimiento: string; fecha_pago: string; metodo_pago: string; notas: string;
+    estado: string; fecha_emision: string; fecha_vencimiento: string; fecha_envio: string; fecha_pago: string; metodo_pago: string; notas: string;
     cliente_nombre: string; cliente_empresa: string; cliente_email: string; cliente_telefono: string; cliente_rfc: string;
     total_pagado: number; archivo_nombre: string; tipo: string; recurrente: boolean; dia_mes: number; cliente_id: string;
     pagos: { id: string; monto: number; metodo_pago: string; referencia: string; fecha_pago: string; notas: string }[]
@@ -57,6 +57,7 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
             iva: Number(factura.iva),
             total: Number(factura.total),
             fecha_vencimiento: factura.fecha_vencimiento?.split('T')[0] || '',
+            fecha_envio: factura.fecha_envio?.split('T')[0] || '',
             notas: factura.notas || '',
             tipo: factura.tipo || 'unico',
             recurrente: factura.recurrente || false,
@@ -131,6 +132,48 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                 </div>
                             </div>
 
+                            {/* Invoice Timeline */}
+                            {factura.fecha_emision && (
+                                <div className="bg-zinc-900/50 border border-gray-700 rounded-lg p-4">
+                                    <div className="flex items-center gap-0 font-mono text-xs">
+                                        {/* Emitida */}
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-3 h-3 rounded-full bg-green-400" />
+                                            <div className="text-green-400 mt-1">Emitida</div>
+                                            <div className="text-gray-500 text-[10px]">{new Date(factura.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</div>
+                                        </div>
+                                        {/* Line to Enviada */}
+                                        <div className={`flex-1 h-0.5 mx-1 ${factura.fecha_envio ? 'bg-blue-400' : 'bg-gray-700 border-t border-dashed border-gray-600'}`}>
+                                            {factura.fecha_envio && factura.fecha_emision && (
+                                                <div className="text-center text-[10px] text-blue-400 -mt-4">
+                                                    {Math.round((new Date(factura.fecha_envio).getTime() - new Date(factura.fecha_emision).getTime()) / (1000 * 60 * 60 * 24))}d
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Enviada */}
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-3 h-3 rounded-full ${factura.fecha_envio ? 'bg-blue-400' : 'bg-gray-600'}`} />
+                                            <div className={factura.fecha_envio ? 'text-blue-400 mt-1' : 'text-gray-600 mt-1'}>Enviada</div>
+                                            <div className="text-gray-500 text-[10px]">{factura.fecha_envio ? new Date(factura.fecha_envio).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : '—'}</div>
+                                        </div>
+                                        {/* Line to Pagada */}
+                                        <div className={`flex-1 h-0.5 mx-1 ${factura.estado === 'pagada' ? 'bg-emerald-400' : 'bg-gray-700 border-t border-dashed border-gray-600'}`}>
+                                            {factura.estado === 'pagada' && (factura.fecha_envio || factura.fecha_emision) && factura.pagos?.[0]?.fecha_pago && (
+                                                <div className="text-center text-[10px] text-emerald-400 -mt-4">
+                                                    {Math.round((new Date(factura.pagos[0].fecha_pago).getTime() - new Date(factura.fecha_envio || factura.fecha_emision).getTime()) / (1000 * 60 * 60 * 24))}d
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Pagada */}
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-3 h-3 rounded-full ${factura.estado === 'pagada' ? 'bg-emerald-400' : 'bg-gray-600'}`} />
+                                            <div className={factura.estado === 'pagada' ? 'text-emerald-400 mt-1' : 'text-gray-600 mt-1'}>Pagada</div>
+                                            <div className="text-gray-500 text-[10px]">{factura.pagos?.[0]?.fecha_pago ? new Date(factura.pagos[0].fecha_pago).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) : '—'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Actions */}
                             <div className="flex flex-wrap gap-2">
                                 <Button onClick={startEdit} variant="outline" className="font-mono gap-2 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent" size="sm">
@@ -199,7 +242,7 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label className="font-mono text-xs text-gray-500">Tipo</label>
                                             <select value={String(editForm.tipo || 'unico')} onChange={e => setEditForm(f => ({ ...f, tipo: e.target.value, recurrente: e.target.value === 'recurrente' }))} className={inputCls + ' mt-1'}>
@@ -221,6 +264,10 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                                 <input type="date" value={String(editForm.fecha_vencimiento || '')} onChange={e => setEditForm(f => ({ ...f, fecha_vencimiento: e.target.value }))} className={inputCls + ' mt-1'} />
                                             </div>
                                         )}
+                                        <div>
+                                            <label className="font-mono text-xs text-gray-500">Fecha de Envío</label>
+                                            <input type="date" value={String(editForm.fecha_envio || '')} onChange={e => setEditForm(f => ({ ...f, fecha_envio: e.target.value }))} className={inputCls + ' mt-1'} />
+                                        </div>
                                         <div>
                                             <label className="font-mono text-xs text-gray-500">Notas</label>
                                             <input type="text" value={String(editForm.notas || '')} onChange={e => setEditForm(f => ({ ...f, notas: e.target.value }))} className={inputCls + ' mt-1'} />

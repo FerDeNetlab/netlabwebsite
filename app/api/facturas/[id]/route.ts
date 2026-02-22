@@ -38,7 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     try {
         const body = await request.json()
-        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, notas, tipo, recurrente, dia_mes, estado } = body
+        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, fecha_envio, notas, tipo, recurrente, dia_mes, estado } = body
 
         const result = await sql`
       UPDATE facturas SET
@@ -49,6 +49,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         iva = COALESCE(${iva !== undefined ? iva : null}, iva),
         total = COALESCE(${total !== undefined ? total : null}, total),
         fecha_vencimiento = COALESCE(${fecha_vencimiento || null}, fecha_vencimiento),
+        fecha_envio = ${fecha_envio !== undefined ? (fecha_envio || null) : null},
         notas = ${notas !== undefined ? notas : null},
         tipo = COALESCE(${tipo || null}, tipo),
         recurrente = COALESCE(${recurrente !== undefined ? recurrente : null}, recurrente),
