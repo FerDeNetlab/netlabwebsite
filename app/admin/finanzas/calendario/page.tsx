@@ -11,7 +11,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Evento {
     id: string; titulo: string; monto: number; fecha: string; estado: string;
-    cliente_nombre: string; tipo: string; categoria_color?: string
+    cliente_nombre: string; tipo: string; categoria_color?: string; subtipo?: string
 }
 
 const DIAS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
@@ -80,9 +80,12 @@ export default function CalendarioPage() {
                             </div>
 
                             {/* Legend */}
-                            <div className="flex gap-4 font-mono text-xs">
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span> Cobro esperado</span>
-                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Pago a realizar</span>
+                            <div className="flex flex-wrap gap-4 font-mono text-xs">
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span> Cobro único</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-400"></span> Cobro recurrente</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Gasto único</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400"></span> Gasto fijo</span>
+                                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400"></span> Sueldo</span>
                                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400"></span> Ingreso recibido</span>
                             </div>
 
@@ -99,22 +102,34 @@ export default function CalendarioPage() {
                                     {celdas.map((dia, i) => {
                                         if (dia === null) return <div key={`e${i}`} className="min-h-[80px] border-b border-r border-gray-800 bg-zinc-900/30" />
                                         const evts = eventosDelDia(dia)
-                                        const cobros = evts.filter(e => e.tipo === 'cobro' || e.tipo === 'ingreso')
-                                        const pagos = evts.filter(e => e.tipo === 'pago')
+                                        const cobros = evts.filter(e => ['cobro', 'cobro_recurrente', 'ingreso'].includes(e.tipo))
+                                        const pagos = evts.filter(e => ['pago', 'pago_fijo'].includes(e.tipo))
+                                        const hasCobros = cobros.length > 0
+                                        const hasPagos = pagos.length > 0
+                                        const hasSueldos = pagos.some(e => e.subtipo === 'sueldo')
+                                        const hasRecurrente = evts.some(e => e.tipo === 'cobro_recurrente')
                                         const isSelected = diaSeleccionado === dia
 
                                         return (
                                             <div key={dia} onClick={() => setDiaSeleccionado(dia === diaSeleccionado ? null : dia)}
                                                 className={`min-h-[80px] border-b border-r border-gray-800 p-1.5 cursor-pointer transition-colors
                           ${esHoy(dia) ? 'bg-green-500/5' : ''} ${isSelected ? 'bg-blue-500/10 ring-1 ring-blue-500/30' : 'hover:bg-zinc-800/30'}`}>
-                                                <div className={`font-mono text-xs mb-1 ${esHoy(dia) ? 'text-green-400 font-bold' : 'text-gray-500'}`}>{dia}</div>
-                                                {cobros.length > 0 && (
-                                                    <div className="text-[10px] font-mono text-green-400 bg-green-400/10 rounded px-1 py-0.5 mb-0.5 truncate">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className={`font-mono text-xs ${esHoy(dia) ? 'text-green-400 font-bold' : 'text-gray-500'}`}>{dia}</span>
+                                                    <div className="flex gap-0.5">
+                                                        {hasRecurrente && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
+                                                        {hasCobros && !hasRecurrente && <span className="w-1.5 h-1.5 rounded-full bg-green-400" />}
+                                                        {hasSueldos && <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />}
+                                                        {hasPagos && !hasSueldos && <span className="w-1.5 h-1.5 rounded-full bg-red-400" />}
+                                                    </div>
+                                                </div>
+                                                {hasCobros && (
+                                                    <div className={`text-[10px] font-mono rounded px-1 py-0.5 mb-0.5 truncate ${hasRecurrente ? 'text-cyan-400 bg-cyan-400/10' : 'text-green-400 bg-green-400/10'}`}>
                                                         +{fmt(cobros.reduce((s, e) => s + Number(e.monto), 0))}
                                                     </div>
                                                 )}
-                                                {pagos.length > 0 && (
-                                                    <div className="text-[10px] font-mono text-red-400 bg-red-400/10 rounded px-1 py-0.5 truncate">
+                                                {hasPagos && (
+                                                    <div className={`text-[10px] font-mono rounded px-1 py-0.5 truncate ${hasSueldos ? 'text-purple-400 bg-purple-400/10' : 'text-red-400 bg-red-400/10'}`}>
                                                         -{fmt(pagos.reduce((s, e) => s + Number(e.monto), 0))}
                                                     </div>
                                                 )}
@@ -131,17 +146,24 @@ export default function CalendarioPage() {
                                     <h3 className="font-mono text-blue-400 text-sm mb-3">{diaSeleccionado} de {MESES[mes - 1]} {anio}</h3>
                                     {eventosDiaSeleccionado.length > 0 ? (
                                         <div className="space-y-2">
-                                            {eventosDiaSeleccionado.map((e, i) => (
-                                                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-800 last:border-0">
-                                                    <div>
-                                                        <div className="font-mono text-sm text-white">{e.titulo}</div>
-                                                        <div className="font-mono text-xs text-gray-500">{e.cliente_nombre || ''} • {e.tipo}</div>
+                                            {eventosDiaSeleccionado.map((e, i) => {
+                                                const isEgreso = ['pago', 'pago_fijo'].includes(e.tipo)
+                                                const isSueldo = e.subtipo === 'sueldo'
+                                                const isRecurrente = e.tipo === 'cobro_recurrente' || e.tipo === 'pago_fijo'
+                                                const colorClass = isSueldo ? 'text-purple-400' : isEgreso ? 'text-red-400' : e.tipo === 'cobro_recurrente' ? 'text-cyan-400' : 'text-green-400'
+                                                const tipoLabel = isSueldo ? '🧑 Sueldo' : e.tipo === 'cobro_recurrente' ? '🔄 Cobro recurrente' : e.tipo === 'pago_fijo' ? '📌 Gasto fijo' : e.tipo === 'cobro' ? '⚡ Cobro' : e.tipo === 'ingreso' ? '✅ Ingreso' : '⚡ Gasto'
+                                                return (
+                                                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-800 last:border-0">
+                                                        <div>
+                                                            <div className="font-mono text-sm text-white">{e.titulo}</div>
+                                                            <div className="font-mono text-xs text-gray-500">{e.cliente_nombre || ''} • {tipoLabel}</div>
+                                                        </div>
+                                                        <div className={`font-mono text-sm font-bold ${colorClass}`}>
+                                                            {isEgreso ? '-' : '+'}{fmt(Number(e.monto))}
+                                                        </div>
                                                     </div>
-                                                    <div className={`font-mono text-sm font-bold ${e.tipo === 'pago' ? 'text-red-400' : 'text-green-400'}`}>
-                                                        {e.tipo === 'pago' ? '-' : '+'}{fmt(Number(e.monto))}
-                                                    </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     ) : (
                                         <p className="font-mono text-gray-500 text-sm">Sin eventos este día</p>
