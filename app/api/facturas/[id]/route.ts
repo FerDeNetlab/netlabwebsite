@@ -38,10 +38,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     try {
         const body = await request.json()
-        const { estado } = body
+        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, notas, tipo, recurrente, dia_mes, estado } = body
 
         const result = await sql`
-      UPDATE facturas SET estado = COALESCE(${estado}, estado), updated_at = NOW()
+      UPDATE facturas SET
+        cliente_id = COALESCE(${cliente_id !== undefined ? (cliente_id || null) : null}, cliente_id),
+        numero_factura = COALESCE(${numero_factura || null}, numero_factura),
+        concepto = COALESCE(${concepto || null}, concepto),
+        subtotal = COALESCE(${subtotal !== undefined ? subtotal : null}, subtotal),
+        iva = COALESCE(${iva !== undefined ? iva : null}, iva),
+        total = COALESCE(${total !== undefined ? total : null}, total),
+        fecha_vencimiento = COALESCE(${fecha_vencimiento || null}, fecha_vencimiento),
+        notas = ${notas !== undefined ? notas : null},
+        tipo = COALESCE(${tipo || null}, tipo),
+        recurrente = COALESCE(${recurrente !== undefined ? recurrente : null}, recurrente),
+        dia_mes = ${dia_mes !== undefined ? (dia_mes || null) : null},
+        estado = COALESCE(${estado || null}, estado),
+        updated_at = NOW()
       WHERE id = ${id} RETURNING *
     ` as Record<string, unknown>[]
 

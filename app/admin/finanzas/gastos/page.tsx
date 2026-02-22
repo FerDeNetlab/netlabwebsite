@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save } from 'lucide-react'
 
 interface Gasto {
     id: string; concepto: string; monto: number; estado: string; proveedor: string;
@@ -28,6 +28,8 @@ export default function GastosPage() {
         categoria_id: '', concepto: '', monto: '', fecha_vencimiento: '', proveedor: '',
         recurrente: false, dia_mes: '', subtipo: 'general', notas: ''
     })
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editForm, setEditForm] = useState<Record<string, string | number | boolean | null>>({})
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -72,6 +74,25 @@ export default function GastosPage() {
         if (!confirm('¿Eliminar gasto?')) return
         await fetch(`/api/gastos/${id}`, { method: 'DELETE' })
         fetchData()
+    }
+
+    const startEdit = (g: Gasto) => {
+        setEditForm({
+            concepto: g.concepto, monto: g.monto, proveedor: g.proveedor || '',
+            recurrente: g.recurrente, dia_mes: g.dia_mes || '',
+            subtipo: g.subtipo || 'general',
+            fecha_vencimiento: g.fecha_vencimiento?.split('T')[0] || '',
+        })
+        setEditingId(g.id)
+    }
+
+    const handleSaveEdit = async (id: string) => {
+        const r = await fetch(`/api/gastos/${id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...editForm, monto: Number(editForm.monto), dia_mes: editForm.dia_mes ? Number(editForm.dia_mes) : null })
+        })
+        if (r.ok) { setEditingId(null); fetchData() }
+        else alert('Error al guardar')
     }
 
     const filtered = gastos.filter(g => (g.concepto + g.proveedor + g.categoria_nombre).toLowerCase().includes(search.toLowerCase()))
@@ -212,9 +233,20 @@ export default function GastosPage() {
                                         <tbody className="font-mono text-sm">
                                             {filtered.map(g => (
                                                 <tr key={g.id} className="border-b border-gray-800 last:border-0 hover:bg-zinc-800/30">
-                                                    <td className="p-3 text-gray-300">{g.concepto}</td>
+                                                    <td className="p-3 text-gray-300">
+                                                        {editingId === g.id ? (
+                                                            <input type="text" value={String(editForm.concepto || '')} onChange={e => setEditForm(f => ({ ...f, concepto: e.target.value }))}
+                                                                className="w-full bg-zinc-800 border border-yellow-500/30 rounded px-2 py-1 font-mono text-sm text-white focus:outline-none" />
+                                                        ) : g.concepto}
+                                                    </td>
                                                     <td className="p-3">
-                                                        {g.recurrente ? (
+                                                        {editingId === g.id ? (
+                                                            <select value={String(editForm.subtipo || 'general')} onChange={e => setEditForm(f => ({ ...f, subtipo: e.target.value }))}
+                                                                className="bg-zinc-800 border border-yellow-500/30 rounded px-1 py-1 font-mono text-[10px] text-white focus:outline-none">
+                                                                <option value="general">Fijo</option>
+                                                                <option value="sueldo">Sueldo</option>
+                                                            </select>
+                                                        ) : g.recurrente ? (
                                                             <span className={`px-1.5 py-0.5 rounded text-[10px] ${g.subtipo === 'sueldo' ? 'text-purple-400 bg-purple-400/10' : 'text-orange-400 bg-orange-400/10'}`}>
                                                                 {g.subtipo === 'sueldo' ? '🧑 Sueldo' : '📌 Fijo'}
                                                             </span>
@@ -223,21 +255,47 @@ export default function GastosPage() {
                                                         )}
                                                     </td>
                                                     <td className="p-3"><span className="text-xs px-2 py-0.5 rounded" style={{ color: g.categoria_color, backgroundColor: `${g.categoria_color}15` }}>{g.categoria_nombre || '—'}</span></td>
-                                                    <td className="p-3 text-gray-400">{g.proveedor || '—'}</td>
-                                                    <td className="p-3 text-right text-red-400">{fmt(g.monto)}</td>
+                                                    <td className="p-3 text-gray-400">
+                                                        {editingId === g.id ? (
+                                                            <input type="text" value={String(editForm.proveedor || '')} onChange={e => setEditForm(f => ({ ...f, proveedor: e.target.value }))}
+                                                                className="w-full bg-zinc-800 border border-yellow-500/30 rounded px-2 py-1 font-mono text-sm text-white focus:outline-none" />
+                                                        ) : (g.proveedor || '—')}
+                                                    </td>
+                                                    <td className="p-3 text-right text-red-400">
+                                                        {editingId === g.id ? (
+                                                            <input type="number" value={String(editForm.monto || '')} onChange={e => setEditForm(f => ({ ...f, monto: e.target.value }))}
+                                                                className="w-20 bg-zinc-800 border border-yellow-500/30 rounded px-2 py-1 font-mono text-sm text-white focus:outline-none text-right" />
+                                                        ) : fmt(g.monto)}
+                                                    </td>
                                                     <td className="p-3 text-center">
                                                         <span className={`px-2 py-0.5 rounded border text-xs ${g.estado === 'pagado' ? 'text-green-400 bg-green-400/10 border-green-500/30' : 'text-yellow-400 bg-yellow-400/10 border-yellow-500/30'}`}>
                                                             {g.estado}
                                                         </span>
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">
-                                                        {g.recurrente && g.dia_mes ? `Día ${g.dia_mes}` : g.fecha_vencimiento ? new Date(g.fecha_vencimiento).toLocaleDateString('es-MX') : '—'}
+                                                        {editingId === g.id && g.recurrente ? (
+                                                            <select value={String(editForm.dia_mes || '')} onChange={e => setEditForm(f => ({ ...f, dia_mes: e.target.value }))}
+                                                                className="bg-zinc-800 border border-yellow-500/30 rounded px-1 py-1 font-mono text-xs text-white focus:outline-none">
+                                                                <option value="">—</option>
+                                                                {Array.from({ length: 31 }, (_, i) => <option key={i + 1} value={i + 1}>Día {i + 1}</option>)}
+                                                            </select>
+                                                        ) : g.recurrente && g.dia_mes ? `Día ${g.dia_mes}` : g.fecha_vencimiento ? new Date(g.fecha_vencimiento).toLocaleDateString('es-MX') : '—'}
                                                     </td>
                                                     <td className="p-3 text-right space-x-1">
-                                                        {g.estado === 'pendiente' && (
-                                                            <button onClick={() => handlePagar(g.id)} className="text-green-400 hover:text-green-300" title="Marcar pagado"><CheckCircle className="h-4 w-4 inline" /></button>
+                                                        {editingId === g.id ? (
+                                                            <>
+                                                                <button onClick={() => handleSaveEdit(g.id)} className="text-yellow-400 hover:text-yellow-300" title="Guardar"><Save className="h-4 w-4 inline" /></button>
+                                                                <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-300" title="Cancelar"><X className="h-4 w-4 inline" /></button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button onClick={() => startEdit(g)} className="text-yellow-400 hover:text-yellow-300" title="Editar"><Pencil className="h-4 w-4 inline" /></button>
+                                                                {g.estado === 'pendiente' && (
+                                                                    <button onClick={() => handlePagar(g.id)} className="text-green-400 hover:text-green-300" title="Marcar pagado"><CheckCircle className="h-4 w-4 inline" /></button>
+                                                                )}
+                                                                <button onClick={() => handleDelete(g.id)} className="text-red-400 hover:text-red-300" title="Eliminar"><X className="h-4 w-4 inline" /></button>
+                                                            </>
                                                         )}
-                                                        <button onClick={() => handleDelete(g.id)} className="text-red-400 hover:text-red-300" title="Eliminar"><X className="h-4 w-4 inline" /></button>
                                                     </td>
                                                 </tr>
                                             ))}

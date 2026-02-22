@@ -9,14 +9,21 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     try {
         const body = await request.json()
-        const { estado, fecha_pago, metodo_pago, referencia } = body
+        const { concepto, monto, proveedor, categoria_id, fecha_vencimiento, dia_mes, subtipo, recurrente, notas, estado, fecha_pago } = body
 
         const result = await sql`
       UPDATE gastos SET 
-        estado = COALESCE(${estado}, estado),
+        concepto = COALESCE(${concepto || null}, concepto),
+        monto = COALESCE(${monto !== undefined ? monto : null}, monto),
+        proveedor = ${proveedor !== undefined ? (proveedor || null) : null},
+        categoria_id = COALESCE(${categoria_id || null}, categoria_id),
+        fecha_vencimiento = ${fecha_vencimiento !== undefined ? (fecha_vencimiento || null) : null},
+        dia_mes = ${dia_mes !== undefined ? (dia_mes || null) : null},
+        subtipo = COALESCE(${subtipo || null}, subtipo),
+        recurrente = COALESCE(${recurrente !== undefined ? recurrente : null}, recurrente),
+        notas = ${notas !== undefined ? (notas || null) : null},
+        estado = COALESCE(${estado || null}, estado),
         fecha_pago = COALESCE(${fecha_pago || null}, fecha_pago),
-        metodo_pago = COALESCE(${metodo_pago || null}, metodo_pago),
-        referencia = COALESCE(${referencia || null}, referencia),
         updated_at = NOW()
       WHERE id = ${id} RETURNING *
     ` as Record<string, unknown>[]
