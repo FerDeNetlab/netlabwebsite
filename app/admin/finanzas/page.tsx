@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3 } from 'lucide-react'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { total: number; pendientes: number; pagadas: number; vencidas: number; por_cobrar: number }
@@ -44,8 +44,9 @@ export default function FinanzasPage() {
     const fmt = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
     const modules = [
-        { title: 'Facturas', desc: 'Cuentas por cobrar', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
-        { title: 'Gastos', desc: 'Cuentas por pagar', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
+        { title: 'Cuentas por Cobrar', desc: 'Ingresos pendientes', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
+        { title: 'Gastos', desc: 'Egresos y gastos fijos', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
+        { title: 'Ingresos y Egresos', desc: 'Cobranza y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
         { title: 'Calendario', desc: 'Cobros y pagos del mes', icon: Calendar, path: '/admin/finanzas/calendario', color: 'text-blue-400', border: 'border-blue-500/30' },
         { title: 'Flujo de Efectivo', desc: 'Proyección mensual', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
     ]
@@ -109,7 +110,7 @@ export default function FinanzasPage() {
                             </div>
 
                             {/* Module Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {modules.map((mod) => (
                                     <button key={mod.path} onClick={() => router.push(mod.path)}
                                         className={`bg-zinc-900/50 border ${mod.border} rounded-lg p-5 text-left hover:bg-zinc-800/50 transition-all group`}>

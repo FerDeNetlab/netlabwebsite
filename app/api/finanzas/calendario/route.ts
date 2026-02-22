@@ -12,6 +12,11 @@ export async function GET(request: Request) {
     const anio = Number(searchParams.get('anio') || new Date().getFullYear())
     const vista = searchParams.get('vista') || 'ideales'
 
+    // Only show data from January 2025 onward
+    if (anio < 2025) {
+      return NextResponse.json({ eventos: [], kpis: null, mes, anio, vista })
+    }
+
     if (vista === 'efectuados') {
       // === PAGOS EFECTUADOS: what actually happened ===
 
