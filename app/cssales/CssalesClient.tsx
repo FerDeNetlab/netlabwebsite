@@ -57,10 +57,10 @@ export default function CssalesClient() {
                 </div>
 
                 <div className="space-y-6 md:pl-6 border-l-2 border-slate-800 ml-1 md:ml-3 pl-4">
-                  <div className="flex items-center gap-4 mb-6">
-                    <Image src="/logo-netlab.png" alt="Netlab Logo" width={120} height={40} className="h-10 w-auto" />
-                    <span className="text-2xl text-slate-500">×</span>
-                    <div className="text-2xl font-bold text-orange-400 tracking-wider">CSSALES</div>
+                  <div className="flex items-center gap-3 md:gap-4 mb-6 flex-wrap">
+                    <Image src="/logo-netlab.png" alt="Netlab Logo" width={120} height={40} className="h-8 md:h-10 w-auto" />
+                    <span className="text-xl md:text-2xl text-slate-500">×</span>
+                    <div className="text-xl md:text-2xl font-bold text-orange-400 tracking-wider">CSSALES</div>
                   </div>
 
                   <motion.h1
