@@ -89,16 +89,16 @@ export default function CssalesClient() {
                           <Timer className="w-4 h-4 text-red-400" />
                           <span className="font-mono text-sm text-red-400 font-bold uppercase tracking-wider">Oferta válida hasta el 15 de marzo</span>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2 md:gap-3">
                           {[
                             { val: countdown.days, label: 'Días' },
                             { val: countdown.hours, label: 'Hrs' },
                             { val: countdown.minutes, label: 'Min' },
                             { val: countdown.seconds, label: 'Seg' },
                           ].map(({ val, label }) => (
-                            <div key={label} className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-center min-w-[70px]">
-                              <div className="text-2xl md:text-3xl font-bold font-mono text-red-400">{String(val).padStart(2, '0')}</div>
-                              <div className="text-[10px] font-mono text-red-400/60 uppercase tracking-wider">{label}</div>
+                            <div key={label} className="bg-red-500/10 border border-red-500/30 rounded-lg px-2 py-2 md:px-4 md:py-3 text-center min-w-[55px] md:min-w-[70px]">
+                              <div className="text-xl md:text-3xl font-bold font-mono text-red-400">{String(val).padStart(2, '0')}</div>
+                              <div className="text-[9px] md:text-[10px] font-mono text-red-400/60 uppercase tracking-wider">{label}</div>
                             </div>
                           ))}
                         </div>
@@ -389,25 +389,22 @@ export default function CssalesClient() {
                 <span className="font-mono text-sm text-red-400 font-bold uppercase tracking-wider">Precio regular de Netlab</span>
               </div>
               
-              <div className="flex items-center justify-center gap-4 flex-wrap">
+              <div className="grid grid-cols-2 md:flex md:items-center md:justify-center gap-3 md:gap-4">
                 <div className="text-center">
-                  <div className="text-sm text-slate-500 font-mono">Odoo ERP + CRM</div>
-                  <div className="text-2xl font-bold text-slate-500 line-through">{fmt(100000)}</div>
+                  <div className="text-xs md:text-sm text-slate-500 font-mono">Odoo ERP + CRM</div>
+                  <div className="text-lg md:text-2xl font-bold text-slate-500 line-through">{fmt(100000)}</div>
                 </div>
-                <span className="text-slate-600 text-2xl">+</span>
                 <div className="text-center">
-                  <div className="text-sm text-slate-500 font-mono">Sitio Web IT</div>
-                  <div className="text-2xl font-bold text-slate-500 line-through">{fmt(50000)}</div>
+                  <div className="text-xs md:text-sm text-slate-500 font-mono">Sitio Web IT</div>
+                  <div className="text-lg md:text-2xl font-bold text-slate-500 line-through">{fmt(50000)}</div>
                 </div>
-                <span className="text-slate-600 text-2xl">+</span>
                 <div className="text-center">
-                  <div className="text-sm text-slate-500 font-mono">Sitio Web Juguetes</div>
-                  <div className="text-2xl font-bold text-slate-500 line-through">{fmt(50000)}</div>
+                  <div className="text-xs md:text-sm text-slate-500 font-mono">Sitio Web Juguetes</div>
+                  <div className="text-lg md:text-2xl font-bold text-slate-500 line-through">{fmt(50000)}</div>
                 </div>
-                <span className="text-slate-600 text-2xl">=</span>
-                <div className="text-center">
-                  <div className="text-sm text-red-400 font-mono">Total regular</div>
-                  <div className="text-3xl font-bold text-red-400 line-through">{fmt(200000)}</div>
+                <div className="text-center col-span-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-800 md:border-l md:pl-4">
+                  <div className="text-xs md:text-sm text-red-400 font-mono">Total regular</div>
+                  <div className="text-2xl md:text-3xl font-bold text-red-400 line-through">{fmt(200000)}</div>
                 </div>
               </div>
             </div>
@@ -493,10 +490,10 @@ export default function CssalesClient() {
                 <span className="font-mono text-lg text-green-400 font-bold">INVERSIÓN TOTAL DEL PROYECTO</span>
               </div>
               
-              <div className="flex items-center justify-center gap-4">
-                <div className="text-3xl font-bold text-slate-500 line-through">{fmt(200000)}</div>
-                <ArrowRight className="w-6 h-6 text-green-400" />
-                <div className="text-5xl md:text-6xl font-bold text-green-400">{fmt(53800)}</div>
+              <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+                <div className="text-xl md:text-3xl font-bold text-slate-500 line-through">{fmt(200000)}</div>
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-green-400" />
+                <div className="text-4xl md:text-6xl font-bold text-green-400">{fmt(53800)}</div>
               </div>
               
               <p className="text-sm text-slate-400">Precio neto · IVA incluido · Todo el proyecto completo</p>
@@ -561,7 +558,7 @@ export default function CssalesClient() {
                     href="https://wa.me/526671944763?text=Hola%2C%20me%20interesa%20la%20propuesta%20de%20CSsales%20×%20Netlab.%20Quiero%20asegurar%20la%20oferta."
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative inline-flex items-center justify-center px-10 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg"
+                    className="group relative inline-flex items-center justify-center px-6 md:px-10 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-sm md:text-lg"
                   >
                     <span className="mr-2">Asegurar oferta por {fmt(5000)}</span>
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
