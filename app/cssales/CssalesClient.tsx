@@ -485,7 +485,7 @@ export default function CssalesClient() {
             </TerminalFrame>
           </div>
 
-          {/* Total */}
+          {/* Total + CTA combined */}
           <TerminalFrame className="border-green-500/30 mt-8">
             <div className="text-center py-8 space-y-4">
               <div className="flex items-center justify-center gap-2">
@@ -506,75 +506,69 @@ export default function CssalesClient() {
                   Ahorras {fmt(146200)} MXN
                 </span>
               </div>
-            </div>
-          </TerminalFrame>
-        </div>
-      </section>
 
-      {/* ═══ CTA: Asegura la oferta ═══ */}
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
-          <TerminalFrame className="border-green-500/30">
-            <div className="text-center space-y-8 py-8">
-              <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
-                <span className="text-lg">root@netlab:~/cssales#</span>
-                <span className="text-lg">asegurar-oferta</span>
-                <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
-              </div>
-
-              <Lock className="w-12 h-12 text-green-400 mx-auto" />
-
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Asegura esta oferta con solo <span className="text-green-400">{fmt(5000)}</span>
-              </h2>
-
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                Con un depósito de <span className="text-green-400 font-bold">{fmt(5000)} MXN</span> congelas el precio de la oferta durante un mes completo.
-                El resto se acuerda en un plan de pagos conforme avanza la implementación.
-              </p>
-
-              <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
-                  <Lock className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                  <p className="text-sm text-green-400 font-semibold">Precio congelado</p>
-                  <p className="text-xs text-slate-500">30 días garantizados</p>
+              {/* Divider */}
+              <div className="border-t border-slate-800 my-8 pt-8">
+                <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
+                  <span className="text-lg">root@netlab:~/cssales#</span>
+                  <span className="text-lg">asegurar-oferta</span>
+                  <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
                 </div>
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
-                  <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                  <p className="text-sm text-green-400 font-semibold">Sin compromiso</p>
-                  <p className="text-xs text-slate-500">Flexible y sin presión</p>
-                </div>
-                <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
-                  <Clock className="w-6 h-6 text-green-400 mx-auto mb-2" />
-                  <p className="text-sm text-green-400 font-semibold">Inicio inmediato</p>
-                  <p className="text-xs text-slate-500">Arrancamos al confirmar</p>
-                </div>
-              </div>
 
-              {/* Countdown reminder */}
-              {!countdown.expired && (
-                <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-lg inline-block">
-                  <div className="flex items-center gap-3">
-                    <Timer className="w-5 h-5 text-red-400" />
-                    <span className="font-mono text-sm text-red-400">
-                      Quedan <span className="font-bold">{countdown.days}d {countdown.hours}h {countdown.minutes}m</span> para aprovechar esta oferta
-                    </span>
+                <Lock className="w-12 h-12 text-green-400 mx-auto mb-4" />
+
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Asegura esta oferta con solo <span className="text-green-400">{fmt(5000)}</span>
+                </h2>
+
+                <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-6">
+                  Con un depósito de <span className="text-green-400 font-bold">{fmt(5000)} MXN</span> congelas el precio de la oferta durante un mes completo.
+                  El resto se acuerda en un plan de pagos conforme avanza la implementación.
+                </p>
+
+                <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-6">
+                  <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
+                    <Lock className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                    <p className="text-sm text-green-400 font-semibold">Precio congelado</p>
+                    <p className="text-xs text-slate-500">30 días garantizados</p>
+                  </div>
+                  <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
+                    <Shield className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                    <p className="text-sm text-green-400 font-semibold">Sin compromiso</p>
+                    <p className="text-xs text-slate-500">Flexible y sin presión</p>
+                  </div>
+                  <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
+                    <Clock className="w-6 h-6 text-green-400 mx-auto mb-2" />
+                    <p className="text-sm text-green-400 font-semibold">Inicio inmediato</p>
+                    <p className="text-xs text-slate-500">Arrancamos al confirmar</p>
                   </div>
                 </div>
-              )}
 
-              <div className="pt-6 space-y-4">
-                <a
-                  href="https://wa.me/5215513180427?text=Hola%2C%20me%20interesa%20la%20propuesta%20de%20CSsales%20×%20Netlab.%20Quiero%20asegurar%20la%20oferta."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative inline-flex items-center justify-center px-10 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg"
-                >
-                  <span className="mr-2">Asegurar oferta por {fmt(5000)}</span>
-                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </a>
+                {/* Countdown reminder */}
+                {!countdown.expired && (
+                  <div className="p-4 bg-red-500/5 border border-red-500/20 rounded-lg inline-block mb-6">
+                    <div className="flex items-center gap-3">
+                      <Timer className="w-5 h-5 text-red-400" />
+                      <span className="font-mono text-sm text-red-400">
+                        Quedan <span className="font-bold">{countdown.days}d {countdown.hours}h {countdown.minutes}m</span> para aprovechar esta oferta
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-                <p className="text-sm text-slate-500 font-mono">O escríbenos: contacto@netlab.mx</p>
+                <div className="pt-2 space-y-4">
+                  <a
+                    href="https://wa.me/5215513180427?text=Hola%2C%20me%20interesa%20la%20propuesta%20de%20CSsales%20×%20Netlab.%20Quiero%20asegurar%20la%20oferta."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative inline-flex items-center justify-center px-10 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg"
+                  >
+                    <span className="mr-2">Asegurar oferta por {fmt(5000)}</span>
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                  </a>
+
+                  <p className="text-sm text-slate-500 font-mono">O escríbenos: contacto@netlab.mx</p>
+                </div>
               </div>
             </div>
           </TerminalFrame>
