@@ -558,7 +558,7 @@ export default function CssalesClient() {
 
                 <div className="pt-2 space-y-4">
                   <a
-                    href="https://wa.me/5215513180427?text=Hola%2C%20me%20interesa%20la%20propuesta%20de%20CSsales%20×%20Netlab.%20Quiero%20asegurar%20la%20oferta."
+                    href="https://wa.me/526671944763?text=Hola%2C%20me%20interesa%20la%20propuesta%20de%20CSsales%20×%20Netlab.%20Quiero%20asegurar%20la%20oferta."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative inline-flex items-center justify-center px-10 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg"
