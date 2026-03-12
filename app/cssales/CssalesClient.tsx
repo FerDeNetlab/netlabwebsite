@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, CheckCircle2, Zap, Shield, Server, Globe, BarChart3, Gift, Clock, ShoppingCart, Cpu, Tag, Timer, Lock } from "lucide-react"
+import { ArrowRight, CheckCircle2, Zap, Shield, Server, Globe, BarChart3, Gift, Clock, ShoppingCart, Cpu, Tag, Timer, Lock, CalendarDays, Wallet } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { TerminalFrame } from "@/components/ui/terminal-frame"
 import { Footer } from "@/components/sections/footer"
@@ -211,7 +211,7 @@ export default function CssalesClient() {
                   <div>
                     <h4 className="text-purple-400 font-semibold mb-3">Módulos incluidos:</h4>
                     <ul className="space-y-2 text-sm text-slate-400">
-                      {['Gestión de inventarios multi-almacén', 'Facturación electrónica (CFDI 4.0)', 'Control de compras y proveedores', 'Contabilidad integrada', 'CRM con pipeline personalizado (GRATIS)', 'Punto de venta (POS)', 'Reportes y dashboards ejecutivos'].map(item => (
+                      {['Gestión de inventarios multi-almacén', 'Facturación electrónica (CFDI 4.0)', 'Control de compras y proveedores', 'Contabilidad integrada', 'CRM con pipeline personalizado (GRATIS)', 'Conexión a MercadoLibre, Amazon y Walmart', 'Punto de venta (POS)', 'Reportes y dashboards ejecutivos'].map(item => (
                         <li key={item} className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
                           {item}
@@ -373,6 +373,89 @@ export default function CssalesClient() {
         </div>
       </section>
 
+      {/* ═══ TIMELINE DE IMPLEMENTACIÓN ═══ */}
+      <section className="py-20 border-t border-slate-800">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <TerminalFrame>
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                <span className="text-lg">$</span>
+                <span className="text-lg">cat timeline-implementacion.txt</span>
+              </div>
+
+              <h2 className="text-3xl font-bold text-white">Cronograma de Implementación</h2>
+              <p className="text-slate-400">Proyecto dividido en fases con entregables claros. En aproximadamente <span className="text-green-400 font-semibold">6 semanas</span> tienes todo funcionando.</p>
+
+              <div className="space-y-6">
+                {/* Fase 1 */}
+                <div className="relative pl-8 border-l-2 border-purple-500/40 pb-6">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-purple-500 border-2 border-[#0c0c0c]" />
+                  <div className="flex items-center gap-3 mb-2">
+                    <CalendarDays className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-lg font-bold text-white">Fase 1 — Semanas 1 a 4</h3>
+                    <span className="px-3 py-0.5 bg-purple-500/10 border border-purple-500/30 rounded-full text-[10px] font-mono text-purple-400">Odoo + Sitio IT</span>
+                  </div>
+                  <ul className="space-y-1 text-sm text-slate-400 ml-8">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Implementación y configuración de Odoo ERP + CRM</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Conexión a MercadoLibre, Amazon y Walmart</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Desarrollo del sitio web de CSsales IT</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Integración sitio ↔ Odoo vía API</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Configuración de GA4 + Tag Manager</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />Capacitación del equipo</li>
+                  </ul>
+                  <div className="mt-3 ml-8 inline-block px-3 py-1 bg-purple-500/5 border border-purple-500/20 rounded text-xs font-mono text-purple-400">
+                    💰 Pago al iniciar: <span className="font-bold">{fmt(20000)}</span>
+                  </div>
+                </div>
+
+                {/* Fase 2 */}
+                <div className="relative pl-8 border-l-2 border-blue-500/40 pb-6">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-2 border-[#0c0c0c]" />
+                  <div className="flex items-center gap-3 mb-2">
+                    <CalendarDays className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-lg font-bold text-white">Fase 2 — Semana 5</h3>
+                    <span className="px-3 py-0.5 bg-blue-500/10 border border-blue-500/30 rounded-full text-[10px] font-mono text-blue-400">Lanzamiento IT</span>
+                  </div>
+                  <ul className="space-y-1 text-sm text-slate-400 ml-8">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />Lanzamiento del sitio web IT en producción</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />Odoo operando al 100%</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />Inicio del desarrollo del sitio de juguetes</li>
+                  </ul>
+                  <div className="mt-3 ml-8 inline-block px-3 py-1 bg-blue-500/5 border border-blue-500/20 rounded text-xs font-mono text-blue-400">
+                    💰 Segundo pago: <span className="font-bold">{fmt(20000)}</span>
+                  </div>
+                </div>
+
+                {/* Fase 3 */}
+                <div className="relative pl-8 border-l-2 border-orange-500/40">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-orange-500 border-2 border-[#0c0c0c]" />
+                  <div className="flex items-center gap-3 mb-2">
+                    <CalendarDays className="w-5 h-5 text-orange-400" />
+                    <h3 className="text-lg font-bold text-white">Fase 3 — Semanas 5 a 6</h3>
+                    <span className="px-3 py-0.5 bg-orange-500/10 border border-orange-500/30 rounded-full text-[10px] font-mono text-orange-400">Sitio Juguetes</span>
+                  </div>
+                  <ul className="space-y-1 text-sm text-slate-400 ml-8">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />Desarrollo y lanzamiento del sitio de juguetes</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />Configuración de GA4 + Tag Manager</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />Todo el ecosistema operando: Odoo + 2 sitios web</li>
+                  </ul>
+                  <div className="mt-3 ml-8 inline-block px-3 py-1 bg-orange-500/5 border border-orange-500/20 rounded text-xs font-mono text-orange-400">
+                    💰 Pago final: <span className="font-bold">{fmt(13800)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-lg">
+                <p className="text-sm text-slate-400">
+                  <span className="text-green-400 font-semibold">✓ Presupuesto por fases:</span> Liberas inversión conforme ves resultados. 
+                  Cada fase tiene entregables concretos antes del siguiente pago.
+                </p>
+              </div>
+            </div>
+          </TerminalFrame>
+        </div>
+      </section>
+
       {/* ═══ INVERSIÓN — Precios con descuento ═══ */}
       <section id="inversion" className="py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
@@ -426,10 +509,12 @@ export default function CssalesClient() {
                 <div className="space-y-1 text-xs text-slate-400">
                   <p>✓ Implementación completa</p>
                   <p>✓ CRM personalizado <span className="text-green-400 font-bold">GRATIS</span></p>
+                  <p>✓ MercadoLibre + Amazon + Walmart</p>
                   <p>✓ Capacitación incluida</p>
                 </div>
-                <div className="pt-2">
+                <div className="pt-2 space-y-1">
                   <span className="inline-block px-4 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full text-xs font-mono text-purple-400 font-bold">80% de descuento</span>
+                  <p className="text-[10px] text-slate-500">Renovación anual: ~$1,500 – $1,800 MXN</p>
                 </div>
               </div>
             </TerminalFrame>
@@ -502,6 +587,32 @@ export default function CssalesClient() {
                 <span className="inline-block px-6 py-2 bg-green-500/10 border border-green-500/30 rounded-full text-lg font-mono text-green-400 font-bold">
                   Ahorras {fmt(146200)} MXN
                 </span>
+              </div>
+
+              {/* Plan de pagos */}
+              <div className="border-t border-slate-800 mt-6 pt-6">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Wallet className="w-5 h-5 text-blue-400" />
+                  <span className="font-mono text-sm text-blue-400 font-bold uppercase tracking-wider">Plan de pagos en 3 exhibiciones</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto">
+                  <div className="p-3 bg-purple-500/5 border border-purple-500/20 rounded-lg text-center">
+                    <div className="text-[10px] text-slate-500 font-mono">Al iniciar</div>
+                    <div className="text-xl md:text-2xl font-bold text-purple-400">{fmt(20000)}</div>
+                    <div className="text-[10px] text-purple-400/60">Fase 1</div>
+                  </div>
+                  <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg text-center">
+                    <div className="text-[10px] text-slate-500 font-mono">Al mes</div>
+                    <div className="text-xl md:text-2xl font-bold text-blue-400">{fmt(20000)}</div>
+                    <div className="text-[10px] text-blue-400/60">Fase 2</div>
+                  </div>
+                  <div className="p-3 bg-orange-500/5 border border-orange-500/20 rounded-lg text-center">
+                    <div className="text-[10px] text-slate-500 font-mono">Al 2do mes</div>
+                    <div className="text-xl md:text-2xl font-bold text-orange-400">{fmt(13800)}</div>
+                    <div className="text-[10px] text-orange-400/60">Fase 3</div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-3">Renovación anual de Odoo: aprox. $1,500 – $1,800 MXN/año</p>
               </div>
 
               {/* Divider */}
