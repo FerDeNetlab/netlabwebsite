@@ -511,6 +511,12 @@ export default function RedesOpticasClient() {
                   <p className="text-xs text-orange-400/80 mb-2">Después de Fase 1 decides si continúas con Fases 2-5.</p>
                   <p className="text-xs text-orange-400/60">Sin obligación de continuar.</p>
                 </div>
+
+                <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-lg">
+                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de enganche 10%</p>
+                  <div className="text-sm font-bold text-orange-400 mb-1">{fmt(42900)} enganche</div>
+                  <p className="text-xs text-slate-500">Para respetar precio del dólar al momento de firma</p>
+                </div>
               </div>
             </TerminalFrame>
 
@@ -573,6 +579,12 @@ export default function RedesOpticasClient() {
                 <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
                   <p className="text-xs text-green-400/80 mb-1">✓ Máxima flexibilidad financiera</p>
                   <p className="text-xs text-green-400/60">Desarrollo en 29 semanas, pagos en 52 semanas</p>
+                </div>
+
+                <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-lg">
+                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de enganche 10%</p>
+                  <div className="text-sm font-bold text-green-400 mb-1">{fmt(94471)} enganche</div>
+                  <p className="text-xs text-slate-500">Para respetar precio del dólar al momento de firma</p>
                 </div>
               </div>
             </TerminalFrame>
