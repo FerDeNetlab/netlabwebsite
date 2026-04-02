@@ -456,7 +456,7 @@ export default function RedesOpticasClient() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Opción A */}
-            <TerminalFrame borderColor="orange">
+            <TerminalFrame borderColor="blue">
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-orange-500/10 border-2 border-orange-500 flex items-center justify-center text-orange-500 font-bold text-xl">A</div>
