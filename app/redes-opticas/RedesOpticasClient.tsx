@@ -513,8 +513,8 @@ export default function RedesOpticasClient() {
                 </div>
 
                 <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-lg">
-                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de enganche 10%</p>
-                  <div className="text-sm font-bold text-orange-400 mb-1">{fmt(42900)} enganche</div>
+                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de apartado 10% del enganche</p>
+                  <div className="text-sm font-bold text-orange-400 mb-1">{fmt(10725)} apartado</div>
                   <p className="text-xs text-slate-500">Para respetar precio del dólar al momento de firma</p>
                 </div>
               </div>
@@ -582,8 +582,8 @@ export default function RedesOpticasClient() {
                 </div>
 
                 <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-lg">
-                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de enganche 10%</p>
-                  <div className="text-sm font-bold text-green-400 mb-1">{fmt(94471)} enganche</div>
+                  <p className="text-xs text-slate-400 font-mono uppercase tracking-wider mb-2">✓ Opción de apartado 10% del enganche</p>
+                  <div className="text-sm font-bold text-green-400 mb-1">{fmt(12000)} apartado</div>
                   <p className="text-xs text-slate-500">Para respetar precio del dólar al momento de firma</p>
                 </div>
               </div>
