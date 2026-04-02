@@ -434,7 +434,6 @@ export default function RedesOpticasClient() {
                   )
                 })}
               </div>
-              </div>
 
               <div className="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-lg mt-6">
                 <p className="text-sm text-slate-400">
