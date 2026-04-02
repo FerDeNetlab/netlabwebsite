@@ -339,9 +339,16 @@ export default function RedesOpticasClient() {
                       </div>
 
                       <div className="p-4 bg-green-500/5 border-2 border-green-500/30 rounded lg:col-span-2">
-                        <div className="text-xs text-green-400 font-mono uppercase tracking-wider mb-2">✓ Frabe (Completo)</div>
-                        <div className="text-2xl font-bold text-green-400 mb-2">{fmt(429000)} - {fmt(944706)} TOTAL</div>
-                        <p className="text-xs text-green-400/70">Opción A: {fmt(429000)} (82.2K pago semanal). Opción B: {fmt(944706)} (29 semanas desarrollo + 52 semanas pago)</p>
+                        <div className="text-xs text-green-400 font-mono uppercase tracking-wider mb-2">✓ Frabe (Completo) — 2 Opciones</div>
+                        <div className="mb-3">
+                          <div className="text-xs text-slate-400 mb-1">Opción A (MVP — Fases 0+1)</div>
+                          <div className="text-xl font-bold text-green-400">{fmt(429000)}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-400 mb-1">Opción B (Proyecto completo)</div>
+                          <div className="text-xs text-slate-400 line-through mb-1">Precio lista: {fmt(1138200)}</div>
+                          <div className="text-xl font-bold text-green-400">Con descuento: {fmt(944706)}</div>
+                        </div>
                       </div>
                     </div>
 
@@ -469,7 +476,7 @@ export default function RedesOpticasClient() {
                 <div className="p-6 bg-orange-500/5 border border-orange-500/20 rounded-lg text-center">
                   <div className="text-sm text-slate-500 font-mono mb-2">Inversión total</div>
                   <div className="text-5xl font-bold text-orange-400 mb-1">{fmt(429000)}</div>
-                  <div className="text-xs text-slate-500">MXN + IVA</div>
+                  <div className="text-xs text-slate-500">MXN (neto)</div>
                 </div>
 
                 <div className="space-y-3">
@@ -527,10 +534,12 @@ export default function RedesOpticasClient() {
                 </div>
 
                 <div className="p-6 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
-                  <div className="text-sm text-slate-500 font-mono mb-2">Precio con 17% descuento</div>
+                  <div className="text-sm text-slate-500 font-mono mb-2">Precio de lista</div>
+                  <div className="text-4xl font-bold text-slate-500 line-through mb-3">{fmt(1138200)}</div>
+                  
+                  <div className="text-sm text-slate-500 font-mono mb-2">Con 17% descuento (pago 52 semanas)</div>
                   <div className="text-5xl font-bold text-green-400 mb-1">{fmt(944706)}</div>
-                  <div className="text-xs text-slate-500">MXN + IVA (pago en 52 semanas)</div>
-                  <div className="text-xs text-slate-400 line-through mt-1">Lista: {fmt(1138200)}</div>
+                  <div className="text-xs text-slate-500">MXN (neto)</div>
                 </div>
 
                 <div className="space-y-3">
