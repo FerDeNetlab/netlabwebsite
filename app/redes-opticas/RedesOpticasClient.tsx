@@ -339,16 +339,8 @@ export default function RedesOpticasClient() {
                       </div>
 
                       <div className="p-4 bg-green-500/5 border-2 border-green-500/30 rounded lg:col-span-2">
-                        <div className="text-xs text-green-400 font-mono uppercase tracking-wider mb-2">✓ Frabe (Completo) — 2 Opciones</div>
-                        <div className="mb-3">
-                          <div className="text-xs text-slate-400 mb-1">Opción A (MVP — Fases 0+1)</div>
-                          <div className="text-xl font-bold text-green-400">{fmt(429000)}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-400 mb-1">Opción B (Proyecto completo)</div>
-                          <div className="text-xs text-slate-400 line-through mb-1">Precio lista: {fmt(1138200)}</div>
-                          <div className="text-xl font-bold text-green-400">Con descuento: {fmt(944706)}</div>
-                        </div>
+                        <div className="text-xs text-green-400 font-mono uppercase tracking-wider mb-2">✓ Frabe (Completo)</div>
+                        <div className="text-2xl font-bold text-green-400">Precio de lista: {fmt(1138200)}</div>
                       </div>
                     </div>
 
