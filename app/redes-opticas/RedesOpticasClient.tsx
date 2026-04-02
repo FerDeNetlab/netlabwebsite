@@ -606,9 +606,6 @@ export default function RedesOpticasClient() {
               </li>
             </ul>
           </div>
-              </li>
-            </ul>
-          </div>
         </div>
       </section>
 
