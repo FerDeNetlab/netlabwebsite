@@ -201,57 +201,38 @@ export default function RedesOpticasClient() {
 
           <div className="space-y-6">
             {[
-              {
-                num: 1,
-                title: "Órdenes de Servicio",
-                desc: "Control de punta a punta: creación, asignación a instaladores, consumo de insumos, evidencias fotográficas, estados en tiempo real",
-                icon: ClipboardList,
-                color: "green"
-              },
-              {
-                num: 2,
-                title: "Almacenes & Herramientas",
-                desc: "Multi-almacén, inventario en tiempo real, resguardo de herramientas con firma digital, alertas de stock bajo, auditorías",
-                icon: Package,
-                color: "purple"
-              },
-              {
-                num: 3,
-                title: "Flotillas & Logística",
-                desc: "Control vehicular completo: seguros, mantenimiento, gasolina, llantas, refrendos. Cálculo automático de costos de traslado por orden",
-                icon: Truck,
-                color: "blue"
-              },
-              {
-                num: 4,
-                title: "Costos & Dirección",
-                desc: "Rentabilidad por orden: insumos + mano de obra + traslado. Exportación nativa a CONTPAQi, dashboards ejecutivos, KPIs",
-                icon: BarChart3,
-                color: "orange"
-              },
-              {
-                num: 5,
-                title: "App de Campo (PWA)",
-                desc: "Instaladores operan desde celular: ver órdenes, cambiar estados, subir evidencias, firmas digitales, sincronización cuando hay red",
-                icon: Smartphone,
-                color: "cyan"
+              { num: 1, title: "Órdenes de Servicio", desc: "Control de punta a punta: creación, asignación a instaladores, consumo de insumos, evidencias fotográficas, estados en tiempo real", icon: ClipboardList, color: "green", borderColor: "green" as const },
+              { num: 2, title: "Almacenes & Herramientas", desc: "Multi-almacén, inventario en tiempo real, resguardo de herramientas con firma digital, alertas de stock bajo, auditorías", icon: Package, color: "purple", borderColor: "purple" as const },
+              { num: 3, title: "Flotillas & Logística", desc: "Control vehicular completo: seguros, mantenimiento, gasolina, llantas, refrendos. Cálculo automático de costos de traslado por orden", icon: Truck, color: "blue", borderColor: "blue" as const },
+              { num: 4, title: "Costos & Dirección", desc: "Rentabilidad por orden: insumos + mano de obra + traslado. Exportación nativa a CONTPAQi, dashboards ejecutivos, KPIs", icon: BarChart3, color: "orange", borderColor: "blue" as const },
+              { num: 5, title: "App de Campo (PWA)", desc: "Instaladores operan desde celular: ver órdenes, cambiar estados, subir evidencias, firmas digitales, sincronización cuando hay red", icon: Smartphone, color: "cyan", borderColor: "blue" as const }
+            ].map((layer) => {
+              const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+                green: { bg: "bg-green-500/10", border: "border-green-500", text: "text-green-400" },
+                purple: { bg: "bg-purple-500/10", border: "border-purple-500", text: "text-purple-400" },
+                blue: { bg: "bg-blue-500/10", border: "border-blue-500", text: "text-blue-400" },
+                orange: { bg: "bg-orange-500/10", border: "border-orange-500", text: "text-orange-400" },
+                cyan: { bg: "bg-cyan-500/10", border: "border-cyan-500", text: "text-cyan-400" }
               }
-            ].map((layer, i) => (
-              <TerminalFrame key={i} borderColor={layer.color as any}>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full bg-${layer.color}-500/10 border-2 border-${layer.color}-500 flex items-center justify-center text-${layer.color}-500 font-bold text-xl`}>
-                      {layer.num}
+              const c = colorMap[layer.color]
+              const Icon = layer.icon
+              return (
+                <TerminalFrame key={layer.num} borderColor={layer.borderColor}>
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-full ${c.bg} border-2 ${c.border} flex items-center justify-center ${c.text} font-bold text-xl`}>
+                        {layer.num}
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{layer.title}</h3>
+                        <p className={`${c.text} font-mono text-sm`}>Capa {layer.num} del sistema</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className={`text-2xl font-bold text-white`}>{layer.title}</h3>
-                      <p className={`text-${layer.color}-400 font-mono text-sm`}>Capa {layer.num} del sistema</p>
-                    </div>
+                    <p className="text-slate-300 leading-relaxed">{layer.desc}</p>
                   </div>
-                  <p className="text-slate-300 leading-relaxed">{layer.desc}</p>
-                </div>
-              </TerminalFrame>
-            ))}
+                </TerminalFrame>
+              )
+            })}
 
             <div className="mt-8 p-6 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
               <p className="text-slate-300">
@@ -422,32 +403,37 @@ export default function RedesOpticasClient() {
 
               <div className="space-y-6">
                 {[
-                  { num: 0, title: "Arquitectura e Ingeniería Operativa", weeks: "2 sem", color: "slate", items: ["Infraestructura en Supabase", "Modelo de datos completo", "Levantamiento AS-IS del cliente"] },
-                  { num: 1, title: "Core Operativo (MVP)", weeks: "6 sem", color: "green", items: ["Órdenes de servicio", "Almacenes y herramientas", "Dashboard operativo", "Primer piloto en sucursal"] },
-                  { num: 2, title: "Logística y Flotillas", weeks: "4 sem", color: "blue", items: ["Control de flotilla", "Gestión de activos", "Integración con Fase 1"] },
-                  { num: 3, title: "Control de Costos y RH", weeks: "4 sem", color: "orange", items: ["Costeo por orden", "Exportación CONTPAQi", "Módulo de RRHH"] },
-                  { num: 4, title: "Dirección y Estrategia", weeks: "3 sem", color: "purple", items: ["Proyectos administrativos", "Dashboards ejecutivos", "KPIs y reportes"] },
-                  { num: 5, title: "App Móvil / Campo (PWA)", weeks: "3 sem", color: "cyan", items: ["PWA responsive", "Órdenes en campo", "Sincronización offline"] },
-                ].map((phase) => (
-                  <div key={phase.num} className="relative pl-8 border-l-2 border-slate-800/50 pb-6">
-                    <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-${phase.color}-500 border-2 border-[#0c0c0c]`} />
-                    <div className="flex items-center gap-3 mb-3 flex-wrap">
-                      <div className={`px-3 py-1 bg-${phase.color}-500/10 border border-${phase.color}-500/30 rounded-full text-[10px] font-mono text-${phase.color}-400 font-bold`}>
-                        Fase {phase.num}
+                  { num: 0, title: "Arquitectura e Ingeniería Operativa", weeks: "2 sem", colorClass: "bg-slate-500/10 border-slate-500", badgeClass: "bg-slate-500/10 border-slate-500/30 text-slate-400", items: ["Infraestructura en Supabase", "Modelo de datos completo", "Levantamiento AS-IS del cliente"] },
+                  { num: 1, title: "Core Operativo (MVP)", weeks: "6 sem", colorClass: "bg-green-500/10 border-green-500", badgeClass: "bg-green-500/10 border-green-500/30 text-green-400", items: ["Órdenes de servicio", "Almacenes y herramientas", "Dashboard operativo", "Primer piloto en sucursal"] },
+                  { num: 2, title: "Logística y Flotillas", weeks: "4 sem", colorClass: "bg-blue-500/10 border-blue-500", badgeClass: "bg-blue-500/10 border-blue-500/30 text-blue-400", items: ["Control de flotilla", "Gestión de activos", "Integración con Fase 1"] },
+                  { num: 3, title: "Control de Costos y RH", weeks: "4 sem", colorClass: "bg-orange-500/10 border-orange-500", badgeClass: "bg-orange-500/10 border-orange-500/30 text-orange-400", items: ["Costeo por orden", "Exportación CONTPAQi", "Módulo de RRHH"] },
+                  { num: 4, title: "Dirección y Estrategia", weeks: "3 sem", colorClass: "bg-purple-500/10 border-purple-500", badgeClass: "bg-purple-500/10 border-purple-500/30 text-purple-400", items: ["Proyectos administrativos", "Dashboards ejecutivos", "KPIs y reportes"] },
+                  { num: 5, title: "App Móvil / Campo (PWA)", weeks: "3 sem", colorClass: "bg-cyan-500/10 border-cyan-500", badgeClass: "bg-cyan-500/10 border-cyan-500/30 text-cyan-400", items: ["PWA responsive", "Órdenes en campo", "Sincronización offline"] },
+                ].map((phase) => {
+                  const circleColorMap: Record<number, string> = { 0: "bg-slate-500", 1: "bg-green-500", 2: "bg-blue-500", 3: "bg-orange-500", 4: "bg-purple-500", 5: "bg-cyan-500" }
+                  const itemColorMap: Record<number, string> = { 0: "text-slate-400", 1: "text-green-400", 2: "text-blue-400", 3: "text-orange-400", 4: "text-purple-400", 5: "text-cyan-400" }
+                  return (
+                    <div key={phase.num} className="relative pl-8 border-l-2 border-slate-800/50 pb-6">
+                      <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${circleColorMap[phase.num]} border-2 border-[#0c0c0c]`} />
+                      <div className="flex items-center gap-3 mb-3 flex-wrap">
+                        <div className={`px-3 py-1 ${phase.badgeClass} rounded-full text-[10px] font-mono font-bold`}>
+                          Fase {phase.num}
+                        </div>
+                        <h3 className="text-lg font-bold text-white">{phase.title}</h3>
+                        <span className="text-slate-500 text-sm">({phase.weeks})</span>
                       </div>
-                      <h3 className="text-lg font-bold text-white">{phase.title}</h3>
-                      <span className="text-slate-500 text-sm">({phase.weeks})</span>
+                      <ul className="space-y-1 text-sm text-slate-400 ml-4">
+                        {phase.items.map((item, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle2 className={`w-4 h-4 ${itemColorMap[phase.num]} mt-0.5 flex-shrink-0`} />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="space-y-1 text-sm text-slate-400 ml-4">
-                      {phase.items.map((item, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <CheckCircle2 className={`w-4 h-4 text-${phase.color}-400 mt-0.5 flex-shrink-0`} />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                  )
+                })}
+              </div>
               </div>
 
               <div className="p-4 bg-cyan-500/5 border border-cyan-500/20 rounded-lg mt-6">
