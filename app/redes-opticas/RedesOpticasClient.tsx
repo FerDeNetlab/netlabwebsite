@@ -266,10 +266,10 @@ export default function RedesOpticasClient() {
                       <tr className="border-b-2 border-slate-800">
                         <th className="text-left p-3 font-bold text-white bg-slate-900/50 min-w-[180px]">Criterio</th>
                         <th className="text-center p-3 font-bold text-green-400 bg-green-500/5 min-w-[120px]">Frabe</th>
-                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">SAP B1</th>
-                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">Dynamics 365</th>
-                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">Odoo Ent.</th>
-                        <th className="text-center p-3 font-bold text-red-400 bg-red-500/5 min-w-[120px]">Bitrix24</th>
+                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">Competencia 1</th>
+                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">Competencia 2</th>
+                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[120px]">Competencia 3</th>
+                        <th className="text-center p-3 font-bold text-red-400 bg-red-500/5 min-w-[120px]">Competencia 4</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800">
@@ -315,33 +315,33 @@ export default function RedesOpticasClient() {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div className="p-4 bg-slate-900/50 border border-slate-800 rounded">
-                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">SAP Business One</div>
+                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Competencia 1</div>
                         <div className="text-2xl font-bold text-slate-400 mb-2">~$1.5M - 2.4M MXN</div>
                         <p className="text-xs text-slate-500">$500K-800K/año por licencias, consultor y hosting</p>
                       </div>
 
                       <div className="p-4 bg-slate-900/50 border border-slate-800 rounded">
-                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Dynamics 365</div>
+                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Competencia 2</div>
                         <div className="text-2xl font-bold text-slate-400 mb-2">~$1.2M - 2.1M MXN</div>
                         <p className="text-xs text-slate-500">$400K-700K/año por licencias por usuario y customización</p>
                       </div>
 
                       <div className="p-4 bg-slate-900/50 border border-slate-800 rounded">
-                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Odoo Enterprise</div>
+                        <div className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Competencia 3</div>
                         <div className="text-2xl font-bold text-slate-400 mb-2">~$600K - 1.2M MXN</div>
                         <p className="text-xs text-slate-500">$200K-400K/año por módulos, usuarios e implementación</p>
                       </div>
 
                       <div className="p-4 bg-red-500/5 border border-red-500/20 rounded">
-                        <div className="text-xs text-red-500 font-mono uppercase tracking-wider mb-2">Bitrix24 (Barato pero incompleto)</div>
+                        <div className="text-xs text-red-500 font-mono uppercase tracking-wider mb-2">Competencia 4 (Barato pero incompleto)</div>
                         <div className="text-2xl font-bold text-red-400 mb-2">~$240K - 450K MXN</div>
                         <p className="text-xs text-red-500/70">Pero SIN campo, flotillas, herramientas ni CONTPAQi</p>
                       </div>
 
                       <div className="p-4 bg-green-500/5 border-2 border-green-500/30 rounded lg:col-span-2">
                         <div className="text-xs text-green-400 font-mono uppercase tracking-wider mb-2">✓ Frabe (Completo)</div>
-                        <div className="text-2xl font-bold text-green-400 mb-2">{fmt(295000)} - {fmt(815000)} TOTAL</div>
-                        <p className="text-xs text-green-400/70">+ ~{fmt(54)} - {fmt(108)}K en 3 años de hosting. Sistema TUYO para siempre.</p>
+                        <div className="text-2xl font-bold text-green-400 mb-2">{fmt(429000)} - {fmt(944706)} TOTAL</div>
+                        <p className="text-xs text-green-400/70">Opción A: {fmt(429000)} (82.2K pago semanal). Opción B: {fmt(944706)} (29 semanas desarrollo + 52 semanas pago)</p>
                       </div>
                     </div>
 
@@ -456,44 +456,40 @@ export default function RedesOpticasClient() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Opción A */}
-            <TerminalFrame borderColor="green">
+            <TerminalFrame borderColor="orange">
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-green-500/10 border-2 border-green-500 flex items-center justify-center text-green-500 font-bold text-xl">A</div>
+                  <div className="w-12 h-12 rounded-full bg-orange-500/10 border-2 border-orange-500 flex items-center justify-center text-orange-500 font-bold text-xl">A</div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white">MVP — Fases 0 + 1</h3>
-                    <p className="text-green-400 font-mono text-sm">Arrancar y validar</p>
+                    <h3 className="text-2xl font-bold text-white">MVP Rápido</h3>
+                    <p className="text-orange-400 font-mono text-sm">Fases 0 + 1 (11 semanas)</p>
                   </div>
                 </div>
 
-                <div className="p-6 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
+                <div className="p-6 bg-orange-500/5 border border-orange-500/20 rounded-lg text-center">
                   <div className="text-sm text-slate-500 font-mono mb-2">Inversión total</div>
-                  <div className="text-5xl font-bold text-green-400 mb-1">{fmt(295000)}</div>
+                  <div className="text-5xl font-bold text-orange-400 mb-1">{fmt(429000)}</div>
                   <div className="text-xs text-slate-500">MXN + IVA</div>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="font-semibold text-white text-sm">¿Qué incluye?</p>
+                  <p className="font-semibold text-white text-sm">Control desde el día 1:</p>
                   <ul className="space-y-2 text-sm text-slate-400">
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Infraestructura completa
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                       Órdenes de servicio operativas
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Almacenes y herramientas
+                      <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                      Almacenes multi-sucursal
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Dashboard operativo
+                      <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                      Herramientas con resguardo
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      Piloto en 1 sucursal
+                      <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                      Infraestructura completa
                     </li>
                   </ul>
                 </div>
@@ -503,61 +499,58 @@ export default function RedesOpticasClient() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded text-center">
                       <div className="text-[10px] text-slate-500">Enganche</div>
-                      <div className="text-lg font-bold text-green-400">{fmt(28182)}</div>
+                      <div className="text-lg font-bold text-orange-400">{fmt(107250)}</div>
                     </div>
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded text-center">
                       <div className="text-[10px] text-slate-500">10 pagos</div>
-                      <div className="text-lg font-bold text-green-400">{fmt(26682)}</div>
+                      <div className="text-lg font-bold text-orange-400">{fmt(32175)}/sem</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
-                  <p className="text-sm font-semibold text-green-400">Contado: <span className="text-2xl">{fmt(236000)}</span></p>
-                  <p className="text-xs text-green-400/70 mt-1">20% de descuento</p>
+                <div className="bg-orange-500/10 border border-orange-500/30 p-4 rounded-lg">
+                  <p className="text-xs text-orange-400/80 mb-2">Después de Fase 1 decides si continúas con Fases 2-5.</p>
+                  <p className="text-xs text-orange-400/60">Sin obligación de continuar.</p>
                 </div>
               </div>
             </TerminalFrame>
 
             {/* Opción B */}
-            <TerminalFrame borderColor="purple">
+            <TerminalFrame borderColor="green">
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-purple-500/10 border-2 border-purple-500 flex items-center justify-center text-purple-500 font-bold text-xl">B</div>
+                  <div className="w-12 h-12 rounded-full bg-green-500/10 border-2 border-green-500 flex items-center justify-center text-green-500 font-bold text-xl">B</div>
                   <div>
-                    <h3 className="text-2xl font-bold text-white">Proyecto Completo</h3>
-                    <p className="text-purple-400 font-mono text-sm">6 fases, 10 módulos</p>
+                    <h3 className="text-2xl font-bold text-white">Sistema Completo</h3>
+                    <p className="text-green-400 font-mono text-sm">Proyecto integro (52 semanas pago)</p>
                   </div>
                 </div>
 
-                <div className="p-6 bg-purple-500/5 border border-purple-500/20 rounded-lg text-center">
-                  <div className="text-sm text-slate-500 font-mono mb-2">Inversión total</div>
-                  <div className="text-5xl font-bold text-purple-400 mb-1">{fmt(815000)}</div>
-                  <div className="text-xs text-slate-500">MXN + IVA</div>
+                <div className="p-6 bg-green-500/5 border border-green-500/20 rounded-lg text-center">
+                  <div className="text-sm text-slate-500 font-mono mb-2">Precio con 17% descuento</div>
+                  <div className="text-5xl font-bold text-green-400 mb-1">{fmt(944706)}</div>
+                  <div className="text-xs text-slate-500">MXN + IVA (pago en 52 semanas)</div>
+                  <div className="text-xs text-slate-400 line-through mt-1">Lista: {fmt(1138200)}</div>
                 </div>
 
                 <div className="space-y-3">
-                  <p className="font-semibold text-white text-sm">¿Qué incluye?</p>
+                  <p className="font-semibold text-white text-sm">Sistema operativo 360°:</p>
                   <ul className="space-y-2 text-sm text-slate-400">
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      Todo de la Opción A
+                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      Control de flotillas y costos
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      Flotillas y logística
+                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      RH, nómina y expedientes digitales
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      Control de costos
+                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      PWA para instaladores en campo
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      Exportación CONTPAQi
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                      APP PWA para instaladores
+                      <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      Dashboard BI para dirección
                     </li>
                   </ul>
                 </div>
@@ -567,18 +560,18 @@ export default function RedesOpticasClient() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded text-center">
                       <div className="text-[10px] text-slate-500">Enganche</div>
-                      <div className="text-lg font-bold text-purple-400">{fmt(100000)}</div>
+                      <div className="text-lg font-bold text-green-400">{fmt(120000)}</div>
                     </div>
                     <div className="p-3 bg-slate-900/50 border border-slate-800 rounded text-center">
-                      <div className="text-[10px] text-slate-500">52 pagos</div>
-                      <div className="text-lg font-bold text-purple-400">{fmt(13750)}</div>
+                      <div className="text-[10px] text-slate-500">51 pagos</div>
+                      <div className="text-lg font-bold text-green-400">{fmt(16171)}/sem</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
-                  <p className="text-sm font-semibold text-purple-400">Contado: <span className="text-2xl">{fmt(652000)}</span></p>
-                  <p className="text-xs text-purple-400/70 mt-1">20% de descuento</p>
+                <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
+                  <p className="text-xs text-green-400/80 mb-1">✓ Máxima flexibilidad financiera</p>
+                  <p className="text-xs text-green-400/60">Desarrollo en 29 semanas, pagos en 52 semanas</p>
                 </div>
               </div>
             </TerminalFrame>
@@ -589,15 +582,30 @@ export default function RedesOpticasClient() {
             <ul className="space-y-2 text-sm text-slate-400">
               <li className="flex items-start gap-2">
                 <span className="text-slate-600">•</span>
-                <span>Hosting y mantenimiento post-lanzamiento: <span className="text-white font-semibold">$1,500 - $3,000 MXN/mes</span> (costo del cliente, pago directo a proveedor)</span>
+                <span><span className="text-white font-semibold">Opción A</span>: Fases 0 + 1 (MVP). Control operativo inmediato. {fmt(429000)} en 11 semanas.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-slate-600">•</span>
-                <span>Cada fase se contrata de manera independiente. La Opción A no obliga a contratar las fases restantes.</span>
+                <span><span className="text-white font-semibold">Opción B</span>: Todas las fases (0-5). Sistema 360°. 17% de descuento por pago en 52 semanas. {fmt(944706)} total.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-slate-600">•</span>
-                <span>Toda ampliación de alcance entra como Acta de Cambio. Sin scope creep.</span>
+                <span>Hosting y mantenimiento post-lanzamiento: <span className="text-white font-semibold">$1,500 - $3,000 MXN/mes</span> (responsabilidad del cliente, pago directo a proveedor)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-slate-600">•</span>
+                <span>En Opción A, después de Fase 1 decides si continúas con Fases 2-5. <span className="text-green-400">Sin obligación</span>.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-slate-600">•</span>
+                <span>Toda ampliación de alcance entra como <span className="text-white font-semibold">Acta de Cambio</span>. Scope duro por fase.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-slate-600">•</span>
+                <span>Cada fase requiere pago previo al inicio. <span className="text-white font-semibold">No se inician trabajos sin confirmación de pago.</span></span>
+              </li>
+            </ul>
+          </div>
               </li>
             </ul>
           </div>
