@@ -1,45 +1,37 @@
-import { ArrowRight, Terminal } from "lucide-react"
+import { Terminal } from "lucide-react"
 import { TerminalFrame } from "../ui/terminal-frame"
+import { BookingForm } from "@/components/booking-form"
 
 export function CtaSection() {
   return (
-    <section id="contacto" className="py-24 bg-[#0c0c0c] border-t border-slate-900">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <section id="contacto" className="py-12 bg-[#0c0c0c] border-t border-slate-900">
+      <div className="container mx-auto px-4 max-w-2xl">
         <TerminalFrame className="bg-[#050505] border-green-900/30">
-          <div className="text-center py-12 px-4 space-y-8">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 bg-green-500/10 rounded-full">
-                <Terminal className="w-12 h-12 text-green-500" />
+          <div className="py-8 px-4 space-y-6">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-green-500/10 rounded-full">
+                <Terminal className="w-8 h-8 text-green-500" />
               </div>
             </div>
 
-            <div className="font-mono text-sm text-green-500 mb-2">root@netlab:~/final-step# agendar-diagnostico</div>
+            <div className="font-mono text-xs md:text-sm text-green-500 mb-2">
+              root@netlab:~/agendar# diagnostic.py
+            </div>
 
-            <h2 className="text-3xl md:text-4xl font-bold text-white font-mono max-w-2xl mx-auto">
-              Hablemos de tu sistema para negocio y tu crecimiento
-            </h2>
-
-            <p className="text-lg text-slate-400 font-mono max-w-xl mx-auto">
-              Agenda un diagnóstico gratis para implementar Odoo, ERP, punto de venta, control de inventarios o
-              cualquier sistema para tu PyME.
-            </p>
-
-
-            <div className="pt-4">
-              <a
-                href="https://cal.com/ferdenetlab"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-4 text-lg font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] rounded-sm"
-              >
-                <span className="mr-2">Optimizar mi negocio ahora</span>
-                <ArrowRight className="w-5 h-5" />
-              </a>
-
-
-              <p className="mt-6 text-xs text-slate-600 font-mono">
-                {">"} Te contactaremos en menos de 24 horas hábiles.
+            <div className="space-y-3 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-white font-mono">
+                Agendar diagnóstico gratis
+              </h2>
+              <p className="text-sm text-slate-400 font-mono">
+                Cuéntanos sobre tu empresa y te contactaremos para una consulta sin compromiso.
               </p>
+            </div>
+
+            {/* Booking Form */}
+            <BookingForm />
+
+            <div className="pt-2 text-xs text-slate-600 font-mono text-center border-t border-slate-800">
+              Tus datos se guardan de forma segura y no serán compartidos.
             </div>
           </div>
         </TerminalFrame>

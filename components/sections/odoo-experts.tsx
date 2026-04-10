@@ -149,14 +149,14 @@ export function OdooExpertsSection() {
                 <span className="text-purple-400">{">"}</span> ls industrias-implementadas/
               </div>
               <h3 className="text-white font-mono font-bold text-base">Industrias en producción</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-2 gap-1.5">
                 {industries.map((ind, i) => (
                   <div
                     key={ind}
-                    className="flex items-center gap-1 text-xs md:text-sm font-mono text-slate-400 py-1 px-1.5 md:py-1.5 md:px-2 border border-slate-800 rounded-sm hover:border-purple-500/40 hover:text-slate-300 transition-colors"
+                    className="flex items-center gap-1 text-xs font-mono text-slate-400 py-1 px-1.5 md:py-1.5 md:px-2 border border-slate-800 rounded-sm hover:border-purple-500/40 hover:text-slate-300 transition-colors truncate"
                   >
-                    <span className="text-purple-400 text-xs hidden md:inline">{String(i + 1).padStart(2, "0")}/</span>
-                    {ind}
+                    <span className="text-purple-400 text-xs hidden md:inline shrink-0">{String(i + 1).padStart(2, "0")}/</span>
+                    <span className="truncate">{ind}</span>
                   </div>
                 ))}
               </div>
