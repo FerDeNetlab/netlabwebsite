@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { nombre, email, empresa, usuarios } = body
+    const { nombre, email, empresa, usuarios, descripcion } = body
 
     // Validar campos requeridos
     if (!nombre || !email) {
@@ -14,15 +14,22 @@ export async function POST(request: Request) {
       )
     }
 
+    // Asegurar que la columna descripcion existe
+    try {
+      await sql`ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS descripcion TEXT`
+    } catch (e) {
+      // Ignorar si ya existe
+    }
+
     // Guardar en tabla bookings
     const result = await sql`
       INSERT INTO public.bookings (
-        nombre, email, empresa, usuarios_count, created_at, updated_at
+        nombre, email, empresa, usuarios_count, descripcion, created_at, updated_at
       )
       VALUES (
-        ${nombre}, ${email}, ${empresa || null}, ${parseInt(usuarios) || 1}, NOW(), NOW()
+        ${nombre}, ${email}, ${empresa || null}, ${parseInt(usuarios) || 1}, ${descripcion || null}, NOW(), NOW()
       )
-      RETURNING id, nombre, email, empresa, usuarios_count as usuarios, created_at
+      RETURNING id, nombre, email, empresa, usuarios_count as usuarios, descripcion, created_at
     ` as Record<string, unknown>[]
 
     console.log('[Bookings API] Booking guardado:', result[0])
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const bookings = await sql`
-      SELECT id, nombre, email, empresa, usuarios_count as usuarios, created_at
+      SELECT id, nombre, email, empresa, usuarios_count as usuarios, descripcion, created_at
       FROM public.bookings
       ORDER BY created_at DESC
       LIMIT 50

@@ -15,9 +15,10 @@ export function BookingForm({ onSuccess }: BookingFormProps) {
     email: "",
     empresa: "",
     usuarios: "1",
+    descripcion: "",
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     setError("")
@@ -125,6 +126,18 @@ export function BookingForm({ onSuccess }: BookingFormProps) {
           <option value="100">50-100 usuarios</option>
           <option value="100+">100+ usuarios</option>
         </select>
+      </div>
+
+      {/* Descripción */}
+      <div>
+        <label className="block text-xs font-mono text-slate-400 mb-1.5">Cuéntanos un poco sobre tu empresa</label>
+        <textarea
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
+          placeholder="¿Qué industria? ¿Qué necesitas? ¿Desafíos actuales?..."
+          className="w-full px-3 py-2 bg-slate-900/50 border border-slate-700 rounded-sm text-white font-mono text-sm focus:border-green-500 focus:outline-none transition-colors placeholder:text-slate-600 resize-none h-24"
+        />
       </div>
 
       {/* Error */}
