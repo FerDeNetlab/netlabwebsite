@@ -19,6 +19,7 @@ export const footerServices = [
     { name: "Desarrollo Enterprise", href: "/desarrollo-enterprise" },
     { name: "Soluciones Hardware", href: "/soluciones-hardware" },
     { name: "Automatización", href: "/sistemas/automatizacion" },
+    { name: "Blog", href: "/blog" },
 ] as const
 
 // First 9 cities from seo-data to show in the footer
