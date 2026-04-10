@@ -269,18 +269,58 @@ export default function RootLayout({
     mainEntity: [
       {
         "@type": "Question",
-        name: "¿Qué ERP para negocios recomiendan?",
+        name: "¿Qué es Odoo Community Edition?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Recomendamos Odoo como ERP para PyMEs porque es completo, flexible y escalable. Incluye sistema de ventas, CRM, control de inventarios, punto de venta, facturación y más módulos en un solo sistema para negocio.",
+          text: "Odoo Community Edition es la versión gratuita y de código abierto del ERP Odoo. Incluye módulos de ventas, CRM, inventarios, punto de venta, contabilidad y facturación electrónica. A diferencia de Odoo Enterprise, no tiene costo de licencia anual, lo que representa un ahorro de más de $420,000 MXN en 5 años para 10 usuarios.",
         },
       },
       {
         "@type": "Question",
-        name: "¿Cuánto cuesta implementar Odoo?",
+        name: "¿Cuánto cuesta implementar Odoo Community en México?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "El costo de implementación Odoo varía según módulos y personalización. Para PyMEs, una implementación básica (ventas, inventarios, facturación) va desde $50,000 MXN. Agenda un diagnóstico gratuito para una cotización exacta.",
+          text: "La implementación de Odoo Community Edition en México parte desde $40,000 MXN para 10 usuarios (plan Starter). El plan Growth para 25 usuarios cuesta $90,000 MXN. Estos precios incluyen instalación, configuración, capacitación del equipo y soporte post-lanzamiento. No hay costo de licencia anual.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Cuál es la diferencia entre Odoo Community y Odoo Enterprise?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Odoo Community Edition es gratuito y de código abierto; Odoo Enterprise cuesta aproximadamente $7,000 MXN por usuario al año. Para 10 usuarios durante 5 años, Enterprise suma más de $420,000 MXN solo en licencias. Community incluye las funciones esenciales para la mayoría de las PyMEs: ventas, CRM, inventarios, POS, facturación CFDI y contabilidad.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Odoo Community Edition sirve para PyMEs mexicanas?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Sí. Odoo Community Edition está completamente adaptado para México: incluye facturación electrónica CFDI 4.0, soporte para regímenes fiscales del SAT, manejo de IVA y IEPS, y múltiples monedas. Es ideal para PyMEs con 5 a 100 usuarios en sectores como retail, manufactura, alimentos, logística y servicios.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Cuánto tiempo tarda implementar Odoo?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Una implementación básica de Odoo Community (ventas, inventarios, facturación) tarda entre 4 y 8 semanas. El proceso incluye análisis de procesos, configuración del sistema, migración de datos, capacitación del equipo y acompañamiento en el lanzamiento. Implementaciones más complejas con manufactura o integraciones pueden tomar 3 meses.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Qué ERP recomiendan para PyMEs en México?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Recomendamos Odoo Community Edition para PyMEs en México. Es el ERP más completo sin costo de licencia: integra ventas, CRM, inventarios, punto de venta, facturación electrónica CFDI y contabilidad en un solo sistema. Es escalable, de código abierto y tiene una comunidad global activa.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Odoo Community Edition es gratis?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Sí, la licencia de Odoo Community Edition es $0. Es software de código abierto bajo licencia LGPL. Solo se paga la implementación (instalación, configuración y capacitación) y opcionalmente el hosting. No existe costo de licencia anual ni por usuario.",
         },
       },
       {
@@ -288,23 +328,15 @@ export default function RootLayout({
         name: "¿Dan capacitación a mi equipo?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Absolutamente. La consultoría de negocios incluye entrenamiento a usuarios y administradores. Parte fundamental de la implementación Odoo es que tu equipo adopte el sistema en el día a día.",
+          text: "Sí, toda implementación incluye capacitación presencial o remota para usuarios y administradores. Enseñamos a tu equipo a usar Odoo en sus procesos diarios: cotizaciones, pedidos, inventario, facturación. También entregamos manuales personalizados adaptados a tu operación.",
         },
       },
       {
         "@type": "Question",
-        name: "¿Tienen oficinas en Guadalajara y otras ciudades?",
+        name: "¿El sistema funciona en la nube o se instala en mis servidores?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Nuestra oficina principal está en Guadalajara, pero atendemos empresas en toda la República Mexicana incluyendo Ciudad de México, Monterrey, Querétaro, Puebla y más ciudades. Ofrecemos reuniones presenciales y remotas.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿El sistema funciona en la nube o local?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Ofrecemos ambas opciones: Odoo en la nube (acceso desde cualquier lugar) o instalación local (en tus servidores). Para PyMEs recomendamos la nube por seguridad, actualizaciones automáticas y menor costo de infraestructura.",
+          text: "Ofrecemos ambas opciones. Odoo Community en la nube (VPS o servidor dedicado) parte desde $500 MXN/mes y permite acceso desde cualquier dispositivo. También instalamos en tus servidores locales si tienes infraestructura propia. Para PyMEs recomendamos la nube por menor costo y mantenimiento.",
         },
       },
       {
@@ -312,10 +344,105 @@ export default function RootLayout({
         name: "¿Qué industrias atienden?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Tenemos experiencia en Retail, Manufactura, Farmacéutica, Alimentos y Bebidas, Logística, Construcción, Automotriz y más. Cada implementación se adapta a los procesos específicos de tu industria y cumplimiento regulatorio.",
+          text: "Implementamos Odoo Community en Retail, Manufactura, Alimentos y Bebidas, Farmacéutica, Logística y Distribución, Construcción, Automotriz y Servicios profesionales. Cada implementación se adapta a los procesos y regulaciones de la industria.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Tienen soporte después de la implementación?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Sí. El plan Starter incluye 30 días de soporte post-lanzamiento; el plan Growth incluye 60 días. Después ofrecemos planes de mantenimiento mensual que incluyen soporte técnico, actualizaciones de módulos y consultoría continua según las necesidades de tu empresa.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "¿Dónde están ubicados? ¿Atienden fuera de Guadalajara?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Nuestra oficina principal está en Guadalajara, Jalisco. Atendemos empresas en toda la República Mexicana: Ciudad de México, Monterrey, Querétaro, Puebla, León, Tijuana, Mérida, Aguascalientes y más. Las implementaciones se realizan de forma remota o presencial según el proyecto.",
         },
       },
     ],
+  }
+
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Cómo implementar Odoo Community Edition en tu empresa",
+    description: "Proceso de implementación de Odoo Community en PyMEs mexicanas en 5 pasos",
+    totalTime: "P8W",
+    estimatedCost: {
+      "@type": "MonetaryAmount",
+      currency: "MXN",
+      value: "40000",
+    },
+    step: [
+      {
+        "@type": "HowToStep",
+        position: 1,
+        name: "Diagnóstico de procesos",
+        text: "Analizamos tus procesos actuales: ventas, inventario, facturación y operaciones. Identificamos qué módulos de Odoo CE necesitas y diseñamos el plan de implementación.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 2,
+        name: "Instalación y configuración",
+        text: "Instalamos Odoo Community Edition en tu servidor o en la nube. Configuramos empresas, usuarios, impuestos, CFDI y los módulos seleccionados según tu industria.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 3,
+        name: "Migración de datos",
+        text: "Importamos tus datos existentes: catálogo de productos, clientes, proveedores, inventario inicial y saldos contables desde tu sistema actual.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 4,
+        name: "Capacitación del equipo",
+        text: "Entrenamos a tus usuarios y administradores en el uso de Odoo. Materiales personalizados adaptados a tus procesos.",
+      },
+      {
+        "@type": "HowToStep",
+        position: 5,
+        name: "Lanzamiento y soporte",
+        text: "Salida en vivo con acompañamiento. Soporte técnico post-lanzamiento para resolver dudas y ajustes finales.",
+      },
+    ],
+  }
+
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Odoo Community Edition",
+    alternateName: "Odoo CE",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web, Linux, Windows",
+    description: "ERP open source gratuito para PyMEs. Incluye ventas, CRM, inventarios, POS y facturación electrónica CFDI. Implementado por Netlab en México.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "MXN",
+      description: "Licencia gratuita. Costo de implementación desde $40,000 MXN.",
+      seller: {
+        "@type": "Organization",
+        name: "Netlab Consulting",
+        url: "https://www.netlab.mx",
+      },
+    },
+    url: "https://www.odoo.com/page/community",
+  }
+
+  const speakableSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://www.netlab.mx/#webpage",
+    url: "https://www.netlab.mx",
+    name: "Netlab | Implementación Odoo Community en México",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "h2", "#faq"],
+    },
   }
 
   return (
@@ -326,6 +453,9 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableSchema) }} />
       </head>
       <body
         className={`${jetbrainsMono.variable} font-mono bg-[#0c0c0c] text-slate-300 antialiased min-h-screen selection:bg-[#22c55e] selection:text-black`}
