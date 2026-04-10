@@ -5,9 +5,10 @@ import { ArrowRight, Loader } from "lucide-react"
 
 interface BookingFormProps {
   onSuccess?: () => void
+  plan?: string
 }
 
-export function BookingForm({ onSuccess }: BookingFormProps) {
+export function BookingForm({ onSuccess, plan }: BookingFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
@@ -41,7 +42,7 @@ export function BookingForm({ onSuccess }: BookingFormProps) {
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, plan }),
       })
 
       if (!response.ok) {

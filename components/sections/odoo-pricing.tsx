@@ -190,9 +190,9 @@ export function OdooPricingSection() {
 
                   {/* CTA */}
                   <a
-                    href="https://cal.com/ferdenetlab"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={tier.id === "enterprise" ? "https://cal.com/ferdenetlab" : `/agendar?plan=${tier.id}`}
+                    target={tier.id === "enterprise" ? "_blank" : undefined}
+                    rel={tier.id === "enterprise" ? "noopener noreferrer" : undefined}
                     className={`inline-flex items-center justify-center gap-2 w-full px-3 py-2 font-mono font-bold text-xs md:text-sm transition-all rounded-sm ${tier.ctaStyle}`}
                   >
                     {tier.cta}

@@ -12,9 +12,7 @@ export function HeroAnimations() {
                 transition={{ delay: 0.5 }}
             >
                 <a
-                    href="https://cal.com/ferdenetlab"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/agendar"
                     className="group relative inline-flex items-center justify-center px-8 py-3 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 rounded-sm"
                 >
                     <span className="mr-2">Implementar Odoo en mi empresa</span>
