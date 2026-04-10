@@ -3,28 +3,29 @@ import { HeroAnimations } from "./hero-animations"
 
 export function HeroSection() {
   return (
-    <section className="relative pt-10 pb-32 md:pt-16 overflow-hidden">
+    <section className="relative pt-8 pb-24 md:pt-12 md:pb-32 overflow-hidden">
       <div className="container px-4 mx-auto max-w-5xl">
         <TerminalFrame className="min-h-[500px] border-slate-800 bg-[#050505]">
           <div className="font-mono space-y-8">
             <div className="flex flex-wrap items-center gap-3 text-sm md:text-lg mb-8">
-              <span className="text-green-500 font-bold">user@netlab:~$</span>
-              <span className="text-slate-100">iniciar-sistema</span>
-              <span className="text-purple-400">--odoo</span>
-              <span className="text-purple-400">--erp</span>
-              <span className="text-purple-400">--negocio</span>
+              <span className="text-green-500 font-bold">netlab@odoo:~$</span>
+              <span className="text-slate-100">implementar-odoo</span>
+              <span className="text-green-400">--community-edition</span>
+              <span className="text-purple-400">--sin-licencias</span>
+              <span className="text-purple-400">--desde-40k</span>
               <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
             </div>
 
             <div className="space-y-6 md:pl-6 border-l-2 border-slate-800 ml-1 md:ml-3 pl-4">
               <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight">
-                Transforma tu PyME con un <span className="text-purple-400">sistema comercial y operativo</span>{" "}
-                conectado a <span className="text-purple-400">Odoo</span>.
+                Implementamos <span className="text-green-400">Odoo Community</span> para empresas que{" "}
+                <span className="text-purple-400">crecen sin pagar licencias</span>.
               </h1>
 
               <p className="text-lg md:text-xl text-slate-400 max-w-2xl leading-relaxed">
-                Implementamos Odoo, ERP para negocios, sistemas de ventas, punto de venta y control de inventarios
-                para que tu empresa crezca y tenga una operación ordenada.
+                ERP completo con ventas, CRM, inventarios, punto de venta y facturación electrónica.
+                Odoo CE: código abierto, sin costo de licencia, de por vida — desde{" "}
+                <span className="text-green-400 font-bold">$40,000 MXN</span>.
               </p>
 
               <HeroAnimations />

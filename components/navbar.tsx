@@ -10,9 +10,9 @@ export function Navbar() {
   const navLinks = [
     { href: "/", label: "Inicio" },
     { href: "#servicios", label: "Servicios" },
-    { href: "#sistemas", label: "Sistemas para negocios" },
+    { href: "#sistemas", label: "Sistemas" },
     { href: "#proceso", label: "Proceso" },
-    { href: "#casos", label: "Casos de éxito" },
+    { href: "#precios", label: "Precios" },
     { href: "#faq", label: "FAQ" },
   ]
 
@@ -26,17 +26,17 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex items-center space-x-3 lg:space-x-5 text-xs lg:text-sm font-medium">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-slate-400 hover:text-green-400 transition-colors">
+            <Link key={link.href} href={link.href} className="text-slate-400 hover:text-green-400 transition-colors whitespace-nowrap">
               {link.label}
             </Link>
           ))}
           <Link
             href="#contacto"
-            className="px-4 py-2 bg-green-600/10 border border-green-500/50 text-green-400 hover:bg-green-600/20 hover:text-green-300 transition-all rounded-sm"
+            className="px-3 lg:px-4 py-1.5 lg:py-2 bg-green-600/10 border border-green-500/50 text-green-400 hover:bg-green-600/20 hover:text-green-300 transition-all rounded-sm text-xs lg:text-sm whitespace-nowrap"
           >
-            Agenda tu diagnóstico
+            Agenda
           </Link>
         </nav>
 
