@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark } from 'lucide-react'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { pendientes: number; por_cobrar: number }
@@ -43,6 +43,7 @@ export default function FinanzasPage() {
     const fmt = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
     const modules = [
+        { title: 'Anexo Financiero', desc: 'Matriz operativa y presupuesto', icon: PieChart, path: '/admin/finanzas/anexo', color: 'text-orange-400', border: 'border-orange-500/30' },
         { title: 'Cuentas por Cobrar', desc: 'Ingresos pendientes', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
         { title: 'Gastos', desc: 'Egresos y gastos fijos', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
         { title: 'Ingresos y Egresos', desc: 'Cobranza y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
