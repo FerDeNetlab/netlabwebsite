@@ -303,34 +303,57 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
 
 export async function getFlujoCaja(mes: number, ano: number): Promise<FlujoCaja> {
   try {
-    // Obtener datos de caja actual (últimos movimientos del mes anterior)
-    const cajaResultRaw = await sql`
-      SELECT 
-        COALESCE(SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE -monto END), 0) as saldo_neto
-      FROM movimientos
-      WHERE EXTRACT(MONTH FROM fecha) = ${mes} AND EXTRACT(YEAR FROM fecha) = ${ano}
-    `;
-    const cajaResult = cajaResultRaw as Array<{ saldo_neto: number }>;
-    const saldoNeto = cajaResult[0]?.saldo_neto || 0;
+    // Calculamos caja neta desde tablas existentes (facturas y gastos)
+    const [matrizIngresos, matrizGastos] = await Promise.all([
+      getMatrizIngresos(mes, ano),
+      getMatrizGastos(mes, ano),
+    ]);
 
-    // Proyección simple: 4 semanas
+    const saldoNeto =
+      matrizIngresos.totales.ingreso_mensual_real - matrizGastos.totales.total_egresos;
+
+    // Cuentas por cobrar: facturas pendientes del periodo
+    const cxcRaw = await sql`
+      SELECT COALESCE(SUM(total), 0) AS cuentas_por_cobrar
+      FROM facturas
+      WHERE EXTRACT(MONTH FROM fecha_emision) = ${mes}
+        AND EXTRACT(YEAR FROM fecha_emision) = ${ano}
+        AND estado IN ('pendiente', 'vencida', 'parcial')
+    `;
+    const cxc = (cxcRaw as Array<{ cuentas_por_cobrar: number }>)[0]?.cuentas_por_cobrar || 0;
+
+    // Cuentas por pagar: gastos pendientes del periodo
+    const cxpRaw = await sql`
+      SELECT COALESCE(SUM(monto), 0) AS cuentas_por_pagar
+      FROM gastos
+      WHERE EXTRACT(MONTH FROM COALESCE(fecha_pago, fecha_vencimiento, CURRENT_DATE)) = ${mes}
+        AND EXTRACT(YEAR FROM COALESCE(fecha_pago, fecha_vencimiento, CURRENT_DATE)) = ${ano}
+        AND estado = 'pendiente'
+    `;
+    const cxp = (cxpRaw as Array<{ cuentas_por_pagar: number }>)[0]?.cuentas_por_pagar || 0;
+
+    // Proyección simple: distribución semanal del neto del periodo
+    const semanal = saldoNeto / 4;
     const flujo_proyectado = Array.from({ length: 4 }, (_, i) => ({
       semana: i + 1,
-      ingresos_esperados: 0,
-      ingresos_comprometidos: 0,
-      egresos: 0,
-      balance: saldoNeto,
+      ingresos_esperados: matrizIngresos.totales.ingreso_mensual_real / 4,
+      ingresos_comprometidos: cxc / 4,
+      egresos: matrizGastos.totales.total_egresos / 4,
+      balance: semanal * (i + 1),
     }));
 
     return {
       caja_actual: {
         saldo_en_banco: saldoNeto,
-        cuentas_por_cobrar: 0,
-        cuentas_por_pagar: 0,
+        cuentas_por_cobrar: cxc,
+        cuentas_por_pagar: cxp,
       },
       flujo_proyectado_4_semanas: flujo_proyectado,
       lecturas_clave: {
-        margen_maniobra_semanas: 2,
+        margen_maniobra_semanas:
+          matrizGastos.totales.total_egresos > 0
+            ? Math.max(0, (saldoNeto / matrizGastos.totales.total_egresos) * 4)
+            : 0,
       },
     };
   } catch (error) {
