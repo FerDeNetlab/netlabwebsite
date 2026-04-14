@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // INSERT OR UPDATE
-    const result = await sql`
+    const resultRaw = await sql`
       INSERT INTO bolsas_presupuestarias 
         (mes, ano, bolsa_nombre, presupuesto_mensual, porcentaje_asignado, uso_descripcion)
       VALUES (${mes}, ${ano}, ${bolsa_nombre}, ${presupuesto_mensual}, ${porcentaje_asignado}, ${uso_descripcion})
@@ -66,11 +66,12 @@ export async function POST(request: NextRequest) {
         updated_at = NOW()
       RETURNING *
     `;
+    const result = resultRaw as Record<string, unknown>[];
 
     return NextResponse.json(
       {
         success: true,
-        data: result[0],
+        data: result[0] ?? null,
         message: 'Bolsa presupuestaria guardada',
       },
       { status: 200 }

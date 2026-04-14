@@ -5,6 +5,7 @@
 
 import { sql } from './db';
 import { AnexoFinanciero } from './types/anexo';
+import { generarAnexoFinanciero } from './finanzas-helpers';
 
 // =====================================================
 // HISTORIZACIÓN: Guardar snapshots mensuales
@@ -58,10 +59,11 @@ export async function guardarAnexoEnHistorial(
 
 export async function obtenerAnexoHistorico(mes: number, ano: number): Promise<AnexoFinanciero | null> {
   try {
-    const result = await sql`
+    const resultRaw = await sql`
       SELECT anexo_completo FROM anexos_historicos
       WHERE mes = ${mes} AND ano = ${ano}
     `;
+    const result = resultRaw as Array<{ anexo_completo: AnexoFinanciero }>;
 
     if (result.length === 0) return null;
     
@@ -122,12 +124,26 @@ export async function compararAnexos(
   ano2: number
 ): Promise<ComparativaAnexos | null> {
   try {
-    const anexo1Result = await sql`
+    const anexo1ResultRaw = await sql`
       SELECT * FROM anexos_historicos WHERE mes = ${mes1} AND ano = ${ano1}
     `;
-    const anexo2Result = await sql`
+    const anexo2ResultRaw = await sql`
       SELECT * FROM anexos_historicos WHERE mes = ${mes2} AND ano = ${ano2}
     `;
+    const anexo1Result = anexo1ResultRaw as Array<{
+      ingreso_total: number;
+      egreso_total: number;
+      balance: number;
+      cobertura_gastos_fijos_pct: number;
+      dependencia_variable_pct: number;
+    }>;
+    const anexo2Result = anexo2ResultRaw as Array<{
+      ingreso_total: number;
+      egreso_total: number;
+      balance: number;
+      cobertura_gastos_fijos_pct: number;
+      dependencia_variable_pct: number;
+    }>;
 
     if (anexo1Result.length === 0 || anexo2Result.length === 0) {
       console.warn(`Anexos no encontrados para comparación`);

@@ -21,6 +21,7 @@ import {
   Alertas,
   ConclusionFinanciera,
   AnexoFinanciero,
+  BolsaPresupuestaria,
   TipoIngreso,
   SeveridadAlerta,
   TipoAlerta,
@@ -44,7 +45,7 @@ import {
 export async function getMatrizIngresos(mes: number, ano: number): Promise<MatrizIngresos> {
   try {
     // Obtener facturas del mes
-    const facturas = await sql<Factura[]>`
+    const facturasResult = await sql`
       SELECT f.*, c.nombre as cliente_nombre
       FROM facturas f
       LEFT JOIN clientes c ON f.cliente_id = c.id
@@ -52,6 +53,7 @@ export async function getMatrizIngresos(mes: number, ano: number): Promise<Matri
         AND EXTRACT(YEAR FROM f.fecha_emision) = ${ano}
         AND f.estado != 'cancelada'
     `;
+    const facturas = facturasResult as Array<Factura & { cliente_nombre?: string }>;
 
     // Agrupar por cliente y tipo de ingreso
     const mapClientes: Record<string, Record<TipoIngreso, Partial<MatrizIngresosRow>>> = {};
@@ -148,12 +150,13 @@ export async function getMatrizIngresos(mes: number, ano: number): Promise<Matri
 
 export async function getMatrizGastos(mes: number, ano: number): Promise<MatrizGastos> {
   try {
-    const gastos = await sql<Gasto[]>`
+    const gastosResult = await sql`
       SELECT g.*
       FROM gastos g
       WHERE EXTRACT(MONTH FROM COALESCE(g.fecha_pago, g.fecha_vencimiento, CURRENT_DATE)) = ${mes}
         AND EXTRACT(YEAR FROM COALESCE(g.fecha_pago, g.fecha_vencimiento, CURRENT_DATE)) = ${ano}
     `;
+    const gastos = gastosResult as Gasto[];
 
     const costos_fijos = gastos
       .filter((g) => !g.recurrente || g.subtipo === 'sueldo')
@@ -190,10 +193,11 @@ export async function getMatrizGastos(mes: number, ano: number): Promise<MatrizG
 
 export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizBolsas> {
   try {
-    const bolsas = await sql<BolsaPresupuestariaRecord[]>`
+    const bolsasResult = await sql`
       SELECT * FROM bolsas_presupuestarias
       WHERE mes = ${mes} AND ano = ${ano}
     `;
+    const bolsas = bolsasResult as BolsaPresupuestariaRecord[];
 
     // Si no hay bolsas, crear defaults sugeridos
     let bolsasData = bolsas;
@@ -210,7 +214,7 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
           id: 'default-1',
           mes,
           ano,
-          bolsa_nombre: 'operacion_fija',
+          bolsa_nombre: BolsaPresupuestaria.OPERACION_FIJA,
           presupuesto_mensual: matrizGastos.totales.total_fijos,
           porcentaje_asignado: totalIngresos > 0 ? (matrizGastos.totales.total_fijos / totalIngresos) * 100 : 0,
           uso_descripcion: 'Nómina, estructura fija',
@@ -221,7 +225,7 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
           id: 'default-2',
           mes,
           ano,
-          bolsa_nombre: 'operacion_variable',
+          bolsa_nombre: BolsaPresupuestaria.OPERACION_VARIABLE,
           presupuesto_mensual: totalIngresos * 0.2,
           porcentaje_asignado: 20,
           uso_descripcion: 'Comisiones, proyectos variables',
@@ -232,7 +236,7 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
           id: 'default-3',
           mes,
           ano,
-          bolsa_nombre: 'reserva',
+          bolsa_nombre: BolsaPresupuestaria.RESERVA,
           presupuesto_mensual: (totalIngresos - totalGastos) * 0.5,
           porcentaje_asignado: 50,
           uso_descripcion: 'Caja de seguridad (3 meses)',
@@ -243,7 +247,7 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
           id: 'default-4',
           mes,
           ano,
-          bolsa_nombre: 'crecimiento',
+          bolsa_nombre: BolsaPresupuestaria.CRECIMIENTO,
           presupuesto_mensual: (totalIngresos - totalGastos) * 0.3,
           porcentaje_asignado: 30,
           uso_descripcion: 'Inversi\u00f3n en herramientas/personal',
@@ -254,7 +258,7 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
           id: 'default-5',
           mes,
           ano,
-          bolsa_nombre: 'utilidad',
+          bolsa_nombre: BolsaPresupuestaria.UTILIDAD,
           presupuesto_mensual: Math.max(0, totalIngresos - totalGastos - ((totalIngresos - totalGastos) * 0.8)),
           porcentaje_asignado: 20,
           uso_descripcion: 'Distribuci\u00f3n a socios',
@@ -300,13 +304,13 @@ export async function getMatrizBolsas(mes: number, ano: number): Promise<MatrizB
 export async function getFlujoCaja(mes: number, ano: number): Promise<FlujoCaja> {
   try {
     // Obtener datos de caja actual (últimos movimientos del mes anterior)
-    const cajaResult = await sql`
+    const cajaResultRaw = await sql`
       SELECT 
         COALESCE(SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE -monto END), 0) as saldo_neto
       FROM movimientos
       WHERE EXTRACT(MONTH FROM fecha) = ${mes} AND EXTRACT(YEAR FROM fecha) = ${ano}
     `;
-
+    const cajaResult = cajaResultRaw as Array<{ saldo_neto: number }>;
     const saldoNeto = cajaResult[0]?.saldo_neto || 0;
 
     // Proyección simple: 4 semanas
@@ -342,13 +346,14 @@ export async function getFlujoCaja(mes: number, ano: number): Promise<FlujoCaja>
 export async function getPipelineComercial(): Promise<PipelineComercial> {
   try {
     // Obtener oportunidades en etapas propuesta y negociación
-    const oportunidades = await sql<Oportunidad[]>`
+    const oportunidadesResult = await sql`
       SELECT o.*, c.nombre as cliente_nombre
       FROM oportunidades o
       LEFT JOIN clientes c ON o.cliente_id = c.id
-      WHERE o.etapa IN ('${EtapaOportunidad.PROPUESTA}', '${EtapaOportunidad.NEGOCIACION}')
+      WHERE o.etapa IN (${EtapaOportunidad.PROPUESTA}, ${EtapaOportunidad.NEGOCIACION})
         AND o.valor > 0
     `;
+    const oportunidades = oportunidadesResult as Oportunidad[];
 
     const proyectos = oportunidades.map((o) => ({
       cliente: o.cliente_id || 'Sin cliente',
@@ -404,10 +409,11 @@ export async function getReservaOperativa(mes: number, ano: number): Promise<Res
 
 export async function getDecisionesJunta(mes: number, ano: number): Promise<DecisionesJunta> {
   try {
-    const decisiones = await sql<DecisionJunta[]>`
+    const decisionesResult = await sql`
       SELECT * FROM decisiones_junta
       WHERE mes = ${mes} AND ano = ${ano}
     `;
+    const decisiones = decisionesResult as DecisionJunta[];
 
     const obligatorias = [
       { id: '1', pregunta: '¿Se puede cubrir operación fija con ingresos actuales?', completado: false },
@@ -430,7 +436,7 @@ export async function getDecisionesJunta(mes: number, ano: number): Promise<Deci
       acuerdos: decisiones
         .filter((d) => d.completado)
         .map((d) => ({
-          decision: d.decisión_detalle || '',
+          decision: d.decision_detalle || '',
           responsable: d.responsable_decision,
           fecha: d.updated_at,
         })),
@@ -447,10 +453,11 @@ export async function getDecisionesJunta(mes: number, ano: number): Promise<Deci
 
 export async function getAlertasFinancieras(mes: number, ano: number): Promise<Alertas> {
   try {
-    const alertas = await sql<AlertaFinanciera[]>`
+    const alertasResult = await sql`
       SELECT * FROM alertas_financieras
       WHERE mes = ${mes} AND ano = ${ano}
     `;
+    const alertas = alertasResult as AlertaFinanciera[];
 
     // Detectar alertas automáticas
     const calculadas = await calcularAlertasAutomaticas(mes, ano);

@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generarAnexoFinanciero, registrarExport } from '@/lib/finanzas-helpers';
+import { generarAnexoFinanciero } from '@/lib/finanzas-helpers';
 import { registrarExport as registrarExportFase2 } from '@/lib/finanzas-fase2-helpers';
 
 export async function GET(request: NextRequest) {

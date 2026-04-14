@@ -47,17 +47,18 @@ export async function POST(request: NextRequest) {
     }
 
     // INSERT
-    const result = await sql`
+    const resultRaw = await sql`
       INSERT INTO decisiones_junta 
         (mes, ano, pregunta, respuesta, decision_detalle, responsable_decision, completado)
       VALUES (${mes}, ${ano}, ${pregunta}, ${respuesta ?? null}, ${decision_detalle ?? null}, ${responsable_decision ?? null}, ${respuesta !== undefined})
       RETURNING *
     `;
+    const result = resultRaw as Record<string, unknown>[];
 
     return NextResponse.json(
       {
         success: true,
-        data: result[0],
+        data: result[0] ?? null,
         message: 'Decisión guardada',
       },
       { status: 200 }
