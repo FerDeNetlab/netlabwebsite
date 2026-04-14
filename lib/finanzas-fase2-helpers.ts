@@ -76,7 +76,7 @@ export async function obtenerAnexoHistorico(mes: number, ano: number): Promise<A
 
 export async function obtenerHistorialAnexos(ano: number) {
   try {
-    return await sql`
+    const resultRaw = await sql`
       SELECT 
         mes, ano, 
         ingreso_total, egreso_total, balance,
@@ -86,6 +86,17 @@ export async function obtenerHistorialAnexos(ano: number) {
       WHERE ano = ${ano}
       ORDER BY mes ASC
     `;
+    return resultRaw as Array<{
+      mes: number;
+      ano: number;
+      ingreso_total: number;
+      egreso_total: number;
+      balance: number;
+      cobertura_gastos_fijos_pct: number;
+      dependencia_variable_pct: number;
+      created_at: string;
+      updated_at: string;
+    }>;
   } catch (error) {
     console.error('Error obteniendo historial:', error);
     throw error;
