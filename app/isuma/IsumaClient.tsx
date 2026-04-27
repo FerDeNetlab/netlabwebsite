@@ -132,9 +132,9 @@ export default function IsumaClient() {
                 <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-lg mb-6 md:mb-8">
                   <span className="text-green-500 font-bold">netlab@isuma:~$</span>
                   <span className="text-slate-100">generar-propuesta</span>
-                  <span className="text-cyan-400">--growth</span>
-                  <span className="text-cyan-400">--odoo-ce</span>
-                  <span className="text-cyan-400">--operacion</span>
+                  <span className="text-purple-400">--growth</span>
+                  <span className="text-purple-400">--odoo-ce</span>
+                  <span className="text-purple-400">--sin-licencias</span>
                   <span className="w-2 h-4 md:w-2.5 md:h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
                 </div>
 
@@ -142,7 +142,7 @@ export default function IsumaClient() {
                   <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 flex-wrap">
                     <span className="text-lg md:text-2xl text-slate-500">netlab.mx</span>
                     <span className="text-lg md:text-2xl text-slate-500">x</span>
-                    <div className="text-lg md:text-2xl font-bold text-cyan-400 tracking-wider">ISUMA (SUNNY)</div>
+                    <div className="text-lg md:text-2xl font-bold text-purple-400 tracking-wider">ISUMA (SUNNY)</div>
                   </div>
 
                   <motion.h1
@@ -151,7 +151,7 @@ export default function IsumaClient() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
                   >
-                    Sistema operativo central para una distribuidora que necesita <span className="text-cyan-400">control real</span>
+                    Sistema operativo central para una distribuidora que necesita <span className="text-green-400">control real</span>
                   </motion.h1>
 
                   <motion.p
@@ -170,7 +170,7 @@ export default function IsumaClient() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2.2 }}
                   >
-                    <div className="inline-block px-3 md:px-4 py-2 bg-slate-900 border border-slate-800 text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                    <div className="inline-block px-3 md:px-4 py-2 bg-slate-900 border border-slate-800 text-[10px] text-purple-400 font-bold uppercase tracking-widest">
                       Propuesta Comercial · Growth v1.0
                     </div>
                   </motion.div>
@@ -252,7 +252,7 @@ export default function IsumaClient() {
 
                 <div className="mt-8 p-6 bg-slate-900/50 border-l-4 border-cyan-500 rounded">
                   <p className="text-slate-300">
-                    <span className="text-cyan-400 font-semibold">Valor Netlab:</span> Growth combina implementacion + soporte
+                    <span className="text-purple-400 font-semibold">Valor Netlab:</span> Growth combina implementacion + soporte
                     tecnico + asesoria TI para resolver la operacion, no solo para instalar un sistema.
                   </p>
                 </div>
@@ -508,6 +508,59 @@ export default function IsumaClient() {
                   </table>
                 </div>
 
+                <div className="p-5 md:p-6 bg-slate-900/40 border border-slate-800 rounded-lg">
+                  <div className="flex items-center gap-3 text-purple-400 font-mono mb-4 text-sm">
+                    <span>$</span>
+                    <span>./calcular-costo --usuarios=10 --plazo=3-anos</span>
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                    Ejemplo real: 10 usuarios operando durante 3 anos
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-6">
+                    Comparacion directa entre un ERP en la nube con licencias por usuario
+                    (referencia: Odoo Enterprise estandar) vs el paquete Growth de Netlab sobre Odoo Community.
+                  </p>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-4 md:p-5 bg-slate-900/60 border border-slate-800 rounded-lg">
+                      <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-3">ERP con licencia por usuario</p>
+                      <ul className="space-y-1.5 text-sm text-slate-400 font-mono">
+                        <li>10 usuarios x ~$620 MXN/mes</li>
+                        <li>= $6,200 MXN/mes en licencias</li>
+                        <li>x 36 meses (3 anos)</li>
+                        <li className="text-slate-500">+ implementacion aparte</li>
+                        <li className="text-slate-500">+ soporte por hora</li>
+                      </ul>
+                      <div className="mt-4 pt-4 border-t border-slate-800">
+                        <p className="text-xs text-slate-500 font-mono uppercase mb-1">Solo licencias (3 anos)</p>
+                        <p className="text-2xl md:text-3xl font-bold text-slate-300">~$223,200 MXN</p>
+                        <p className="text-xs text-slate-500 mt-1">Y el costo se mantiene cada ano siguiente.</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 md:p-5 bg-green-500/5 border border-green-500/30 rounded-lg">
+                      <p className="text-xs text-green-400 font-mono uppercase tracking-wider mb-3">Netlab Growth + Odoo CE</p>
+                      <ul className="space-y-1.5 text-sm text-slate-300 font-mono">
+                        <li><span className="text-green-400">$104,400 MXN</span> implementacion (unico)</li>
+                        <li><span className="text-green-400">$0 MXN</span> en licencias Odoo CE</li>
+                        <li><span className="text-green-400">incluido</span> soporte durante implementacion + 60 dias</li>
+                        <li className="text-slate-400">usuarios ilimitados sin costo extra</li>
+                        <li className="text-slate-400">crecimiento opcional bajo demanda</li>
+                      </ul>
+                      <div className="mt-4 pt-4 border-t border-green-500/20">
+                        <p className="text-xs text-green-400 font-mono uppercase mb-1">Total 3 anos</p>
+                        <p className="text-2xl md:text-3xl font-bold text-green-400">$104,400 MXN</p>
+                        <p className="text-xs text-slate-400 mt-1">Pago unico. Sin renovacion forzada.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 p-3 md:p-4 bg-purple-500/5 border border-purple-500/20 rounded text-sm text-slate-300">
+                    <span className="text-purple-400 font-semibold">Diferencia a 3 anos: ~$118,800 MXN</span>{" "}
+                    a favor de ISUMA, con un ERP propio, sin pagos recurrentes y con soporte incluido.
+                  </div>
+                </div>
+
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="p-5 bg-green-500/5 border border-green-500/20 rounded-lg">
                     <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Sin renta de software</p>
@@ -516,7 +569,7 @@ export default function IsumaClient() {
                     </p>
                   </div>
 
-                  <div className="p-5 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
+                  <div className="p-5 bg-purple-500/5 border border-purple-500/20 rounded-lg">
                     <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Implementacion rapida</p>
                     <p className="text-sm text-slate-300">
                       Metodologia por fases para llegar a operacion productiva sin proyectos eternos.
