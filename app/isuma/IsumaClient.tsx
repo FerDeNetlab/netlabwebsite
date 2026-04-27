@@ -545,19 +545,25 @@ export default function IsumaClient() {
                         <li><span className="text-green-400">$0 MXN</span> en licencias Odoo CE</li>
                         <li><span className="text-green-400">incluido</span> soporte durante implementacion + 60 dias</li>
                         <li className="text-slate-400">usuarios ilimitados sin costo extra</li>
-                        <li className="text-slate-400">crecimiento opcional bajo demanda</li>
+                        <li className="text-slate-400">+ VPS ~$200 MXN/mes (hosting)</li>
                       </ul>
                       <div className="mt-4 pt-4 border-t border-green-500/20">
                         <p className="text-xs text-green-400 font-mono uppercase mb-1">Total 3 anos</p>
-                        <p className="text-2xl md:text-3xl font-bold text-green-400">$104,400 MXN</p>
-                        <p className="text-xs text-slate-400 mt-1">Pago unico. Sin renovacion forzada.</p>
+                        <p className="text-2xl md:text-3xl font-bold text-green-400">~$111,600 MXN</p>
+                        <p className="text-xs text-slate-400 mt-1">$104,400 implementacion + ~$7,200 VPS (36 meses).</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-5 p-3 md:p-4 bg-purple-500/5 border border-purple-500/20 rounded text-sm text-slate-300">
-                    <span className="text-purple-400 font-semibold">Diferencia a 3 anos: ~$118,800 MXN</span>{" "}
-                    a favor de ISUMA, con un ERP propio, sin pagos recurrentes y con soporte incluido.
+                    <span className="text-purple-400 font-semibold">Diferencia a 3 anos: ~$111,600 MXN</span>{" "}
+                    a favor de ISUMA, con un ERP propio, sin pagos recurrentes de licencia y con soporte incluido.
+                  </div>
+
+                  <div className="mt-4 p-3 md:p-4 bg-slate-900/40 border border-slate-800 rounded text-xs md:text-sm text-slate-400 font-mono">
+                    <span className="text-green-400">{">"}</span> nota_infra: Odoo CE corre en un servidor propio. Para ISUMA es suficiente un{" "}
+                    <span className="text-slate-200">VPS de ~$200 MXN/mes</span> (Hetzner, DigitalOcean, Contabo o similar).
+                    Netlab deja la instalacion lista; el VPS lo contrata directo el cliente a su nombre.
                   </div>
                 </div>
 
