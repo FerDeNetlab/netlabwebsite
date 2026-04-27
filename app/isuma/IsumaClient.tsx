@@ -5,7 +5,6 @@ import { motion } from "framer-motion"
 import {
   ArrowRight,
   CheckCircle2,
-  X,
   AlertCircle,
   Boxes,
   ShoppingCart,
@@ -125,29 +124,29 @@ export default function IsumaClient() {
     <main className="min-h-screen bg-[#0c0c0c]">
       <Navbar />
 
-      <section className="relative pt-10 pb-20 md:pt-16 overflow-hidden">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="relative pt-6 pb-16 md:pt-16 md:pb-20 overflow-hidden">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <TerminalFrame className="min-h-[500px] border-slate-800 bg-[#050505]">
-              <div className="font-mono space-y-8">
-                <div className="flex flex-wrap items-center gap-3 text-sm md:text-lg mb-8">
+            <TerminalFrame className="min-h-[420px] md:min-h-[500px] border-slate-800 bg-[#050505]">
+              <div className="font-mono space-y-6 md:space-y-8">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-lg mb-6 md:mb-8">
                   <span className="text-green-500 font-bold">netlab@isuma:~$</span>
                   <span className="text-slate-100">generar-propuesta</span>
                   <span className="text-cyan-400">--growth</span>
                   <span className="text-cyan-400">--odoo-ce</span>
                   <span className="text-cyan-400">--operacion</span>
-                  <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
+                  <span className="w-2 h-4 md:w-2.5 md:h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
                 </div>
 
-                <div className="space-y-6 md:pl-6 border-l-2 border-slate-800 ml-1 md:ml-3 pl-4">
-                  <div className="flex items-center gap-3 mb-6 flex-wrap">
-                    <span className="text-xl md:text-2xl text-slate-500">netlab.mx</span>
-                    <span className="text-xl md:text-2xl text-slate-500">x</span>
-                    <div className="text-xl md:text-2xl font-bold text-cyan-400 tracking-wider">ISUMA (SUNNY)</div>
+                <div className="space-y-4 md:space-y-6 md:pl-6 border-l-2 border-slate-800 ml-1 md:ml-3 pl-3 md:pl-4">
+                  <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 flex-wrap">
+                    <span className="text-lg md:text-2xl text-slate-500">netlab.mx</span>
+                    <span className="text-lg md:text-2xl text-slate-500">x</span>
+                    <div className="text-lg md:text-2xl font-bold text-cyan-400 tracking-wider">ISUMA (SUNNY)</div>
                   </div>
 
                   <motion.h1
-                    className="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight"
+                    className="text-2xl md:text-5xl font-bold tracking-tight text-white leading-tight"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
@@ -156,7 +155,7 @@ export default function IsumaClient() {
                   </motion.h1>
 
                   <motion.p
-                    className="text-lg md:text-xl text-slate-400 max-w-3xl leading-relaxed"
+                    className="text-sm md:text-xl text-slate-400 max-w-3xl leading-relaxed"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
@@ -166,24 +165,22 @@ export default function IsumaClient() {
                   </motion.p>
 
                   <motion.div
-                    className="pt-6"
+                    className="pt-4 md:pt-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2.2 }}
                   >
-                    <div className="inline-block px-4 py-2 bg-slate-900 border border-slate-800 text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
+                    <div className="inline-block px-3 md:px-4 py-2 bg-slate-900 border border-slate-800 text-[10px] text-cyan-400 font-bold uppercase tracking-widest">
                       Propuesta Comercial · Growth v1.0
                     </div>
                   </motion.div>
 
                   <motion.div
-                    className="mt-8 p-4 bg-slate-900/50 border border-slate-800 rounded text-xs md:text-sm font-mono text-slate-500"
+                    className="mt-6 md:mt-8 p-3 md:p-4 bg-slate-900/50 border border-slate-800 rounded text-[11px] md:text-sm font-mono text-slate-500"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 2.8 }}
                   >
-                    <p>{">"} Decisor: Ernesto (Direccion) [OK]</p>
-                    <p>{">"} Contacto operativo: Oscar (Director de Operaciones) [OK]</p>
                     <p>{">"} Paquete seleccionado: Growth [READY]</p>
                   </motion.div>
                 </div>
@@ -196,8 +193,8 @@ export default function IsumaClient() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-[#0c0c0c]/80 to-[#0c0c0c]"></div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
               <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
@@ -265,11 +262,11 @@ export default function IsumaClient() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Paquete Growth en 7 modulos</h2>
-            <p className="text-slate-400 text-lg">Odoo Community como sistema operativo central para ISUMA</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Paquete Growth en 7 modulos</h2>
+            <p className="text-slate-400 text-base md:text-lg">Odoo Community como sistema operativo central para ISUMA</p>
           </div>
 
           <div className="space-y-6">
@@ -304,8 +301,8 @@ export default function IsumaClient() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
               <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
@@ -349,8 +346,8 @@ export default function IsumaClient() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
               <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
@@ -401,11 +398,11 @@ export default function IsumaClient() {
         </div>
       </section>
 
-      <section id="inversion" className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section id="inversion" className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Inversion</h2>
-            <p className="text-slate-400 text-lg">Paquete Growth - Odoo Community Edition</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Inversion</h2>
+            <p className="text-slate-400 text-base md:text-lg">Paquete Growth - Odoo Community Edition</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -461,49 +458,86 @@ export default function IsumaClient() {
         </div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-8">
-            <TerminalFrame borderColor="green">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
+          <TerminalFrame>
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                <span className="text-lg">$</span>
+                <span className="text-lg">cat comparativa-costos-y-valor.txt</span>
+              </div>
+
               <div className="space-y-6">
-                <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                  <CheckCircle2 className="w-6 h-6" />
-                  <span className="text-xl font-bold">Que SI incluye</span>
+                <h2 className="text-3xl md:text-4xl font-bold text-white">Comparativa de costos y modelo de trabajo</h2>
+                <p className="text-slate-400 text-base md:text-lg">
+                  Nuestro enfoque no es cobrar licencias. Nuestro enfoque es implementar rapido, dar soporte incluido
+                  y crecer el sistema con ustedes solo cuando haya negocio real para ISUMA.
+                </p>
+
+                <div className="overflow-x-auto -mx-6 md:mx-0">
+                  <table className="w-full text-sm border-collapse">
+                    <thead>
+                      <tr className="border-b-2 border-slate-800">
+                        <th className="text-left p-3 font-bold text-white bg-slate-900/50 min-w-[220px]">Criterio</th>
+                        <th className="text-center p-3 font-bold text-green-400 bg-green-500/5 min-w-[150px]">Netlab Growth + Odoo CE</th>
+                        <th className="text-center p-3 font-bold text-slate-400 bg-slate-900/30 min-w-[140px]">Esquema tradicional</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      <tr className="hover:bg-slate-900/30 transition">
+                        <td className="p-3 font-semibold text-slate-300 text-left">Licenciamiento</td>
+                        <td className="p-3 text-center text-green-400 font-bold bg-green-500/5">$0 MXN en licencias Odoo CE</td>
+                        <td className="p-3 text-center text-slate-400 bg-slate-900/20">Pago recurrente por usuario/modulo</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/30 transition">
+                        <td className="p-3 font-semibold text-slate-300 text-left">Tiempo de arranque</td>
+                        <td className="p-3 text-center text-green-400 font-bold bg-green-500/5">3-5 meses totales (Fase 0 + Core)</td>
+                        <td className="p-3 text-center text-slate-400 bg-slate-900/20">Implementaciones mas largas y rigidas</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/30 transition">
+                        <td className="p-3 font-semibold text-slate-300 text-left">Soporte tecnico</td>
+                        <td className="p-3 text-center text-green-400 font-bold bg-green-500/5">Incluido durante implementacion + 60 dias</td>
+                        <td className="p-3 text-center text-slate-400 bg-slate-900/20">Se cotiza aparte o por bolsa de horas</td>
+                      </tr>
+                      <tr className="hover:bg-slate-900/30 transition">
+                        <td className="p-3 font-semibold text-slate-300 text-left">Evolucion del sistema</td>
+                        <td className="p-3 text-center text-green-400 font-bold bg-green-500/5">Crecemos solo si mejora su negocio</td>
+                        <td className="p-3 text-center text-slate-400 bg-slate-900/20">Roadmap desconectado de impacto real</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                <ul className="space-y-3 text-slate-300">
-                  <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /><span>Implementacion de Fase 0 y Fase 1 del paquete Growth.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /><span>Migracion inicial desde ASPEL SAE.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /><span>Capacitacion por area y arranque operativo asistido.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /><span>60 dias de soporte tecnico.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" /><span>Asesoria TI para decisiones de operacion e infraestructura.</span></li>
-                </ul>
-              </div>
-            </TerminalFrame>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="p-5 bg-green-500/5 border border-green-500/20 rounded-lg">
+                    <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Sin renta de software</p>
+                    <p className="text-sm text-slate-300">
+                      No vendemos licencias mensuales. Invierten en implementacion y en resultado operativo.
+                    </p>
+                  </div>
 
-            <TerminalFrame borderColor="red">
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 text-red-400 font-mono mb-6">
-                  <X className="w-6 h-6" />
-                  <span className="text-xl font-bold">Que NO incluye</span>
+                  <div className="p-5 bg-cyan-500/5 border border-cyan-500/20 rounded-lg">
+                    <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Implementacion rapida</p>
+                    <p className="text-sm text-slate-300">
+                      Metodologia por fases para llegar a operacion productiva sin proyectos eternos.
+                    </p>
+                  </div>
+
+                  <div className="p-5 bg-purple-500/5 border border-purple-500/20 rounded-lg">
+                    <p className="text-xs text-slate-500 font-mono uppercase tracking-wider mb-2">Relacion de largo plazo</p>
+                    <p className="text-sm text-slate-300">
+                      Si a ISUMA le va mejor, nosotros podemos implementar mas sobre la base Odoo. Si no es negocio para ustedes, no avanzamos.
+                    </p>
+                  </div>
                 </div>
-
-                <ul className="space-y-3 text-slate-300">
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>Operacion de reempaquetado de alimento (manufactura, lotes, SENASICA).</span></li>
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>Marketplace propio (Mercado Libre, Amazon).</span></li>
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>Integracion con paqueteria para guias automaticas.</span></li>
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>Integracion con WhatsApp Business.</span></li>
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>E-commerce propio y contabilidad externa (CONTPAQi / Aspel COI).</span></li>
-                  <li className="flex items-start gap-3"><X className="w-5 h-5 text-red-400 mt-0.5 opacity-70" /><span>Nomina Mexico y desarrollos a medida fuera de alcance.</span></li>
-                </ul>
               </div>
-            </TerminalFrame>
-          </div>
+            </div>
+          </TerminalFrame>
         </div>
       </section>
 
-      <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-6xl">
+      <section className="py-14 md:py-20 border-t border-slate-800">
+        <div className="container px-3 md:px-4 mx-auto max-w-6xl">
           <TerminalFrame className="border-cyan-500/30">
             <div className="text-center space-y-8 py-8">
               <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
@@ -521,7 +555,7 @@ export default function IsumaClient() {
 
               <div className="pt-6 space-y-4">
                 <a
-                  href="https://wa.me/523300000000?text=Hola%2C%20quiero%20iniciar%20la%20Fase%200%20de%20ISUMA%20con%20el%20paquete%20Growth"
+                  href="https://wa.me/525513180427?text=Hola%2C%20quiero%20iniciar%20la%20Fase%200%20de%20ISUMA%20con%20el%20paquete%20Growth"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group relative inline-flex items-center justify-center px-8 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg w-full md:w-auto"
@@ -532,8 +566,8 @@ export default function IsumaClient() {
                 </a>
 
                 <p className="text-sm text-slate-500 font-mono">
-                  Contacto sugerido: <span className="text-slate-300 font-semibold">+52 33 XXXXXXXX</span> ·
-                  Correo: <span className="text-slate-300 font-semibold">contacto@netlab.mx</span>
+                  Contacto sugerido: <span className="text-slate-300 font-semibold">+52 55 1318 0427</span> ·
+                  Correo: <span className="text-slate-300 font-semibold">fer@netlab.mx</span>
                 </p>
 
                 <div className="pt-4 text-[10px] text-slate-600 uppercase tracking-widest">
