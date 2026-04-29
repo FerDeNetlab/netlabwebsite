@@ -100,9 +100,12 @@ export function Footer() {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-slate-900 py-6 text-center">
-        <p className="text-slate-600 font-mono text-xs">
-          © {new Date().getFullYear()} Netlab Consulting. System ready.
+      <div className="border-t border-slate-900 py-6 text-center space-y-1">
+        <p className="text-slate-500 font-mono text-xs">
+          © {new Date().getFullYear()} <span className="text-slate-300">HARDNETLABS S.A. DE C.V.</span> — Operando comercialmente como <span className="text-slate-300">Netlab Consulting</span>.
+        </p>
+        <p className="text-slate-600 font-mono text-[10px]">
+          México · System ready.
         </p>
       </div>
     </footer>
