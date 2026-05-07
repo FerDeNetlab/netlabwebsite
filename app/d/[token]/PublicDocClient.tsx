@@ -445,22 +445,22 @@ function PasosCarousel({
     }
 
     return (
-        <div className="space-y-4">
-            {/* Header del paso (texto ARRIBA, más grande) */}
-            <div className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-5 md:p-6">
-                <div className="flex items-center gap-3 flex-wrap mb-3">
-                    <span className={`text-sm font-mono ${colorClasses.text} ${colorClasses.bg} px-3 py-1.5 rounded font-bold`}>
-                        PASO {String(idx + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+        <div className="space-y-4 pb-24 md:pb-4">
+            {/* Header del paso — compacto en mobile */}
+            <div className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-3 md:p-6">
+                <div className="flex items-baseline gap-2 flex-wrap mb-2">
+                    <span className={`text-[11px] md:text-sm font-mono ${colorClasses.text} ${colorClasses.bg} px-2 py-0.5 md:px-3 md:py-1.5 rounded font-bold whitespace-nowrap`}>
+                        {String(idx + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
                     </span>
                     {paso.titulo && (
-                        <h3 className="text-xl md:text-2xl font-mono text-white">{paso.titulo}</h3>
+                        <h3 className="text-base md:text-2xl font-mono text-white leading-snug">{paso.titulo}</h3>
                     )}
                 </div>
                 {paso.accion && (
-                    <p className="text-base md:text-lg font-mono text-green-400 mb-2">→ {paso.accion}</p>
+                    <p className="text-sm md:text-lg font-mono text-green-400 mb-1.5">→ {paso.accion}</p>
                 )}
                 {paso.descripcion && (
-                    <p className="text-base md:text-lg font-mono text-gray-200 leading-relaxed whitespace-pre-wrap mt-2">
+                    <p className="text-sm md:text-lg font-mono text-gray-200 leading-relaxed whitespace-pre-wrap">
                         {paso.descripcion}
                     </p>
                 )}
@@ -473,8 +473,50 @@ function PasosCarousel({
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
             >
-                {/* Captura con marco terminal */}
-                <div className="p-3 bg-[#050505]">
+                {/* Mobile: imagen full sin chrome. Desktop: con chrome estilo terminal */}
+                <div className="md:hidden relative bg-black">
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={paso.id}
+                            src={paso.imagen_url}
+                            alt={paso.titulo || `Paso ${idx + 1}`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.18 }}
+                            onClick={() => setLightbox(true)}
+                            className="w-full max-h-[60vh] object-contain bg-black cursor-zoom-in"
+                            loading="eager"
+                        />
+                    </AnimatePresence>
+                    {/* Botón ampliar flotante */}
+                    <button
+                        onClick={() => setLightbox(true)}
+                        aria-label="Ampliar imagen"
+                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/70 border border-green-500/40 text-green-400 flex items-center justify-center"
+                    >
+                        <Maximize2 className="h-4 w-4" />
+                    </button>
+                    {/* Tap zones invisibles (solo mobile) para avanzar/retroceder tocando bordes */}
+                    {idx > 0 && (
+                        <button
+                            onClick={goPrev}
+                            aria-label="Paso anterior"
+                            className="absolute left-0 top-0 bottom-0 w-1/4 z-10"
+                            style={{ background: 'transparent' }}
+                        />
+                    )}
+                    {idx < total - 1 && (
+                        <button
+                            onClick={goNext}
+                            aria-label="Siguiente paso"
+                            className="absolute right-0 top-0 bottom-0 w-1/4 z-10"
+                            style={{ background: 'transparent' }}
+                        />
+                    )}
+                </div>
+
+                <div className="hidden md:block p-3 bg-[#050505]">
                     <div className="rounded-md border border-slate-800 overflow-hidden bg-[#0a0a0a] relative group">
                         <div className="flex items-center justify-between px-3 py-2 bg-[#1a1b26] border-b border-slate-800">
                             <div className="flex space-x-2">
@@ -507,7 +549,7 @@ function PasosCarousel({
                     </div>
                 </div>
 
-                {/* Flechas (overlay desktop) */}
+                {/* Flechas overlay desktop */}
                 {idx > 0 && (
                     <button
                         onClick={goPrev}
@@ -528,8 +570,8 @@ function PasosCarousel({
                 )}
             </div>
 
-            {/* Controles inferiores: barra + flechas (visible siempre) */}
-            <div className="space-y-3">
+            {/* Controles inferiores: solo desktop (mobile usa sticky bar) */}
+            <div className="hidden md:block space-y-3">
                 {/* Progreso */}
                 <div className="flex items-center gap-2">
                     <span className={`text-xs font-mono ${colorClasses.text} min-w-[3rem]`}>{idx + 1}/{total}</span>
@@ -594,6 +636,41 @@ function PasosCarousel({
                 <p className="text-[11px] font-mono text-gray-500 text-center hidden md:block">
                     ← → con el teclado o click en la imagen para ampliar
                 </p>
+            </div>
+
+            {/* Sticky bottom bar — solo mobile */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/95 backdrop-blur border-t border-green-500/30 px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+                {/* Barra de progreso */}
+                <div className="h-1 bg-zinc-800 rounded-full overflow-hidden mb-2">
+                    <div
+                        className="h-full bg-green-500 transition-all duration-300"
+                        style={{ width: `${((idx + 1) / total) * 100}%` }}
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={goPrev}
+                        disabled={idx === 0}
+                        aria-label="Paso anterior"
+                        className="h-11 w-11 flex-shrink-0 flex items-center justify-center rounded-full bg-zinc-800 disabled:opacity-30 text-gray-300 active:bg-zinc-700"
+                    >
+                        <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <div className="flex-1 text-center font-mono text-xs text-gray-400 leading-tight">
+                        <div className={`${colorClasses.text} font-bold text-sm`}>{idx + 1} / {total}</div>
+                        <div className="text-[10px] text-gray-500 truncate">
+                            {idx === total - 1 ? 'Último paso' : `Toca › o desliza`}
+                        </div>
+                    </div>
+                    <button
+                        onClick={goNext}
+                        disabled={idx === total - 1}
+                        aria-label="Siguiente paso"
+                        className="h-11 w-11 flex-shrink-0 flex items-center justify-center rounded-full bg-green-600 disabled:opacity-30 text-white active:bg-green-700"
+                    >
+                        <ChevronRight className="h-6 w-6" />
+                    </button>
+                </div>
             </div>
 
             {/* Lightbox modal */}
