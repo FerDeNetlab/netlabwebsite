@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
-import { ChevronRight, ChevronLeft, FolderOpen, Target, Zap, ExternalLink, Maximize2, X } from 'lucide-react'
+import { ChevronRight, ChevronLeft, FolderOpen, Target, Zap, ExternalLink, Maximize2, X, Menu } from 'lucide-react'
 import {
     DOC_COLORES,
     DOC_COLOR_CLASES,
@@ -28,8 +28,15 @@ export default function PublicDocClient({
     }, [proyecto])
 
     const [currentFlujoId, setCurrentFlujoId] = useState<string | null>(allFlujos[0]?.id ?? null)
+    const [menuOpen, setMenuOpen] = useState(false)
     const currentIdx = allFlujos.findIndex((f) => f.id === currentFlujoId)
     const currentFlujo = currentIdx >= 0 ? allFlujos[currentIdx] : null
+
+    // Cierra el drawer al cambiar de flujo desde mobile
+    const selectFlujo = (id: string) => {
+        setCurrentFlujoId(id)
+        setMenuOpen(false)
+    }
 
     return (
         <div className="container mx-auto px-4 pt-6 pb-16">
@@ -73,53 +80,38 @@ export default function PublicDocClient({
                                     Esta documentación aún no tiene contenido
                                 </p>
                             </div>
-                        ) : (
+        ) : (
                             <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-                                {/* Sidebar de categorías */}
-                                <aside className="space-y-4">
-                                    <div className="text-xs font-mono text-gray-500">
-                                        $ ls categorías/
-                                    </div>
-                                    {proyecto.categorias.map((cat) => {
-                                        const colorKey = (DOC_COLORES.includes(cat.color as DocColor)
-                                            ? cat.color
-                                            : 'green') as DocColor
-                                        const c = DOC_COLOR_CLASES[colorKey]
-                                        return (
-                                            <div key={cat.id}>
-                                                <div className={`px-3 py-2 rounded-md ${c.bg} ${c.border} border`}>
-                                                    <h3 className={`text-sm font-mono ${c.text}`}>{cat.nombre}</h3>
-                                                    {cat.modulo_odoo && (
-                                                        <p className="text-[10px] font-mono text-gray-500 mt-0.5">
-                                                            {cat.modulo_odoo}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <ul className="mt-1.5 space-y-0.5 ml-2">
-                                                    {cat.flujos.map((f) => (
-                                                        <li key={f.id}>
-                                                            <button
-                                                                onClick={() => setCurrentFlujoId(f.id)}
-                                                                className={`w-full text-left text-xs font-mono px-2 py-1.5 rounded transition-all flex items-start gap-1.5 ${currentFlujoId === f.id
-                                                                        ? 'bg-green-500/10 text-green-400'
-                                                                        : 'text-gray-400 hover:text-green-400 hover:bg-green-500/5'
-                                                                    }`}
-                                                            >
-                                                                <ChevronRight className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                                                                <span>{f.nombre}</span>
-                                                            </button>
-                                                        </li>
-                                                    ))}
-                                                    {cat.flujos.length === 0 && (
-                                                        <li className="text-xs font-mono text-gray-600 px-2 py-1">
-                                                            sin flujos aún
-                                                        </li>
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        )
-                                    })}
-                                </aside>
+                                {/* Selector de flujo MOBILE (botón que abre drawer) */}
+                                <div className="lg:hidden">
+                                    <button
+                                        onClick={() => setMenuOpen(true)}
+                                        className="w-full flex items-center justify-between gap-3 bg-zinc-900 border border-green-500/30 rounded-md px-4 py-3 font-mono text-left"
+                                    >
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[10px] text-gray-500 uppercase tracking-wide">Flujo actual</p>
+                                            <p className="text-sm text-green-400 truncate">
+                                                {currentFlujo ? currentFlujo.nombre : 'Selecciona un flujo'}
+                                            </p>
+                                            {currentFlujo && (
+                                                <p className="text-[10px] text-gray-500 truncate">{currentFlujo.categoria.nombre}</p>
+                                            )}
+                                        </div>
+                                        <Menu className="h-5 w-5 text-green-400 flex-shrink-0" />
+                                    </button>
+                                    <p className="text-[10px] font-mono text-gray-500 mt-2 text-center">
+                                        {allFlujos.length} flujo{allFlujos.length !== 1 ? 's' : ''} disponibles · toca arriba para ver el menu
+                                    </p>
+                                </div>
+
+                                {/* Sidebar (DESKTOP fija, MOBILE drawer) */}
+                                <Sidebar
+                                    proyecto={proyecto}
+                                    currentFlujoId={currentFlujoId}
+                                    onSelectFlujo={selectFlujo}
+                                    isOpen={menuOpen}
+                                    onClose={() => setMenuOpen(false)}
+                                />
 
                                 {/* Contenido principal */}
                                 <main className="min-w-0">
@@ -134,12 +126,12 @@ export default function PublicDocClient({
                                             categoriaNombre={currentFlujo.categoria.nombre}
                                             onPrev={
                                                 currentIdx > 0
-                                                    ? () => setCurrentFlujoId(allFlujos[currentIdx - 1].id)
+                                                    ? () => selectFlujo(allFlujos[currentIdx - 1].id)
                                                     : undefined
                                             }
                                             onNext={
                                                 currentIdx < allFlujos.length - 1
-                                                    ? () => setCurrentFlujoId(allFlujos[currentIdx + 1].id)
+                                                    ? () => selectFlujo(allFlujos[currentIdx + 1].id)
                                                     : undefined
                                             }
                                             prevLabel={
@@ -177,6 +169,100 @@ export default function PublicDocClient({
                 </TerminalFrame>
             </motion.div>
         </div>
+    )
+}
+
+// ───────────────────────────────────────────────────────────
+// Sidebar de navegación (sticky en desktop, drawer en mobile)
+// ───────────────────────────────────────────────────────────
+function Sidebar({
+    proyecto,
+    currentFlujoId,
+    onSelectFlujo,
+    isOpen,
+    onClose,
+}: {
+    proyecto: DocProyectoCompleto
+    currentFlujoId: string | null
+    onSelectFlujo: (id: string) => void
+    isOpen: boolean
+    onClose: () => void
+}) {
+    const content = (
+        <div className="space-y-4">
+            <div className="text-xs font-mono text-gray-500 hidden lg:block">$ ls categorías/</div>
+            {proyecto.categorias.map((cat) => {
+                const colorKey = (DOC_COLORES.includes(cat.color as DocColor) ? cat.color : 'green') as DocColor
+                const c = DOC_COLOR_CLASES[colorKey]
+                return (
+                    <div key={cat.id}>
+                        <div className={`px-3 py-2 rounded-md ${c.bg} ${c.border} border`}>
+                            <h3 className={`text-sm font-mono ${c.text}`}>{cat.nombre}</h3>
+                            {cat.modulo_odoo && (
+                                <p className="text-[10px] font-mono text-gray-500 mt-0.5">{cat.modulo_odoo}</p>
+                            )}
+                        </div>
+                        <ul className="mt-1.5 space-y-0.5 ml-2">
+                            {cat.flujos.map((f) => (
+                                <li key={f.id}>
+                                    <button
+                                        onClick={() => onSelectFlujo(f.id)}
+                                        className={`w-full text-left text-sm font-mono px-2 py-2 rounded transition-all flex items-start gap-1.5 ${
+                                            currentFlujoId === f.id
+                                                ? 'bg-green-500/10 text-green-400'
+                                                : 'text-gray-400 hover:text-green-400 hover:bg-green-500/5'
+                                        }`}
+                                    >
+                                        <ChevronRight className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                                        <span>{f.nombre}</span>
+                                    </button>
+                                </li>
+                            ))}
+                            {cat.flujos.length === 0 && (
+                                <li className="text-xs font-mono text-gray-600 px-2 py-1">sin flujos aún</li>
+                            )}
+                        </ul>
+                    </div>
+                )
+            })}
+        </div>
+    )
+
+    return (
+        <>
+            {/* Sidebar fijo en desktop */}
+            <aside className="hidden lg:block">{content}</aside>
+
+            {/* Drawer mobile */}
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={onClose}
+                            className="fixed inset-0 bg-black/80 z-40 lg:hidden"
+                        />
+                        <motion.aside
+                            initial={{ x: '-100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '-100%' }}
+                            transition={{ type: 'tween', duration: 0.25 }}
+                            className="fixed left-0 top-0 bottom-0 w-[85vw] max-w-sm bg-zinc-950 border-r border-green-500/30 z-50 lg:hidden overflow-y-auto"
+                        >
+                            <div className="sticky top-0 bg-zinc-950 border-b border-green-500/20 p-4 flex items-center justify-between">
+                                <h3 className="font-mono text-green-400 text-sm">Flujos</h3>
+                                <button onClick={onClose} aria-label="Cerrar menú" className="text-gray-400 hover:text-white">
+                                    <X className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <div className="p-4">{content}</div>
+                        </motion.aside>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
     )
 }
 
@@ -245,37 +331,42 @@ function FlujoView({
                     <PasosCarousel pasos={flujo.pasos} colorClasses={c} />
                 )}
 
-                {/* Navegación prev/next */}
+                {/* Navegacion entre FLUJOS (no confundir con la del carrusel) */}
                 {(onPrev || onNext) && (
-                    <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-800">
-                        {onPrev ? (
-                            <button
-                                onClick={onPrev}
-                                className="flex items-center gap-2 text-left bg-zinc-800/50 hover:bg-zinc-800 border border-gray-700 hover:border-green-500/50 rounded-sm px-4 py-2 text-gray-300 hover:text-green-400 transition-all flex-1 max-w-xs font-mono"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                                <div>
-                                    <p className="text-[10px] text-gray-500">Anterior</p>
-                                    <p className="text-xs truncate">{prevLabel}</p>
-                                </div>
-                            </button>
-                        ) : (
-                            <div />
-                        )}
-                        {onNext ? (
-                            <button
-                                onClick={onNext}
-                                className="flex items-center gap-2 text-right justify-end bg-green-600/10 border border-green-500/50 text-green-400 hover:bg-green-600/20 hover:text-green-300 rounded-sm px-4 py-2 transition-all flex-1 max-w-xs font-mono"
-                            >
-                                <div>
-                                    <p className="text-[10px] text-gray-500">Siguiente</p>
-                                    <p className="text-xs truncate">{nextLabel}</p>
-                                </div>
-                                <ChevronRight className="h-4 w-4" />
-                            </button>
-                        ) : (
-                            <div />
-                        )}
+                    <div className="pt-6 border-t border-gray-800">
+                        <p className="text-[10px] font-mono text-gray-500 mb-2 text-center uppercase tracking-wider">
+                            — Saltar a otro flujo —
+                        </p>
+                        <div className="flex items-stretch justify-between gap-3">
+                            {onPrev ? (
+                                <button
+                                    onClick={onPrev}
+                                    className="flex items-center gap-2 text-left bg-zinc-900/50 hover:bg-zinc-800 border border-gray-700 hover:border-green-500/50 rounded-md px-3 py-2.5 text-gray-300 hover:text-green-400 transition-all flex-1 min-w-0 font-mono"
+                                >
+                                    <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] text-gray-500">Flujo anterior</p>
+                                        <p className="text-xs truncate">{prevLabel}</p>
+                                    </div>
+                                </button>
+                            ) : (
+                                <div className="flex-1" />
+                            )}
+                            {onNext ? (
+                                <button
+                                    onClick={onNext}
+                                    className="flex items-center gap-2 text-right justify-end bg-green-600/10 border border-green-500/50 text-green-400 hover:bg-green-600/20 hover:text-green-300 rounded-md px-3 py-2.5 transition-all flex-1 min-w-0 font-mono"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] text-gray-500">Flujo siguiente</p>
+                                        <p className="text-xs truncate">{nextLabel}</p>
+                                    </div>
+                                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                                </button>
+                            ) : (
+                                <div className="flex-1" />
+                            )}
+                        </div>
                     </div>
                 )}
             </motion.div>
@@ -497,8 +588,11 @@ function PasosCarousel({
                     </div>
                 )}
 
-                <p className="text-[10px] font-mono text-gray-600 text-center">
-                    💡 Desliza con el dedo o usa ← → para navegar · Click en la imagen para ampliar
+                <p className="text-[11px] font-mono text-gray-500 text-center md:hidden">
+                    👆 Desliza con el dedo para ver el siguiente paso
+                </p>
+                <p className="text-[11px] font-mono text-gray-500 text-center hidden md:block">
+                    ← → con el teclado o click en la imagen para ampliar
                 </p>
             </div>
 
