@@ -72,6 +72,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Auth-protected internal docs editor (only Netlab team)
+  if (pathname.startsWith("/documentaciones") && !pathname.startsWith("/documentaciones/login")) {
+    const session = await auth()
+    if (!session) {
+      return NextResponse.redirect(new URL("/documentaciones/login", request.url))
+    }
+  }
+
   // Apply security headers to all responses
   const response = NextResponse.next()
   for (const [key, value] of Object.entries(securityHeaders)) {

@@ -3,6 +3,7 @@ import Google from 'next-auth/providers/google'
 import { sql } from '@/lib/db'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: { strategy: 'jwt' },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -41,6 +42,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       return true
+    },
+    async jwt({ token, user }) {
+      // En el primer login (cuando user existe), buscamos el id interno de la BD
+      if (user?.email) {
+        try {
+          const rows = await sql`
+            SELECT id FROM neon_auth.user WHERE email = ${user.email}
+          ` as { id: string }[]
+          if (rows[0]?.id) {
+            token.userId = rows[0].id
+          }
+        } catch (error) {
+          console.error('[Auth] Error fetching user id:', error)
+        }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token.userId && session.user) {
+        session.user.id = token.userId
+      }
+      return session
     },
   },
   pages: {
