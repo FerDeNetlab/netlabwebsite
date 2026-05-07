@@ -9,19 +9,31 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     try {
         const factura = await sql`
-      SELECT archivo_nombre, archivo_data FROM facturas WHERE id = ${id}
+      SELECT archivo_nombre, archivo_data, archivo_url, archivo_tipo FROM facturas WHERE id = ${id}
     ` as Record<string, unknown>[]
 
-        if (factura.length === 0 || !factura[0].archivo_data) {
+        if (factura.length === 0) {
+            return NextResponse.json({ error: 'Factura no encontrada' }, { status: 404 })
+        }
+
+        const f = factura[0]
+
+        // Preferir Vercel Blob (nuevo)
+        if (f.archivo_url) {
+            return NextResponse.redirect(f.archivo_url as string)
+        }
+
+        // Fallback legacy: bytea base64
+        if (!f.archivo_data) {
             return NextResponse.json({ error: 'PDF no encontrado' }, { status: 404 })
         }
 
-        const pdfBuffer = Buffer.from(factura[0].archivo_data as string, 'base64')
-        const filename = (factura[0].archivo_nombre as string) || 'factura.pdf'
+        const pdfBuffer = Buffer.from(f.archivo_data as string, 'base64')
+        const filename = (f.archivo_nombre as string) || 'factura.pdf'
 
-        return new NextResponse(pdfBuffer, {
+        return new NextResponse(new Uint8Array(pdfBuffer), {
             headers: {
-                'Content-Type': 'application/pdf',
+                'Content-Type': (f.archivo_tipo as string) || 'application/pdf',
                 'Content-Disposition': `inline; filename="${filename}"`,
             },
         })

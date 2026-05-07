@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
+import { bolsaDeGasto } from '@/lib/finanzas-bolsas'
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await auth()
@@ -9,7 +10,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     try {
         const body = await request.json()
-        const { concepto, monto, proveedor, categoria_id, fecha_vencimiento, dia_mes, subtipo, recurrente, notas, estado, fecha_pago } = body
+        const {
+            concepto, monto, proveedor, categoria_id, fecha_vencimiento, dia_mes,
+            subtipo, recurrente, notas, estado, fecha_pago,
+            tipo_gasto, bolsa_origen,
+            archivo_url, archivo_nombre, archivo_tipo,
+            recordatorios_activos,
+        } = body
+
+        // Si tipo_gasto cambia y no se manda bolsa_origen explícito, recalculamos
+        const bolsaCalc = tipo_gasto && !bolsa_origen ? bolsaDeGasto(tipo_gasto) : null
 
         const result = await sql`
       UPDATE gastos SET 
@@ -24,6 +34,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         notas = ${notas !== undefined ? (notas || null) : null},
         estado = COALESCE(${estado || null}, estado),
         fecha_pago = COALESCE(${fecha_pago || null}, fecha_pago),
+        tipo_gasto = COALESCE(${tipo_gasto || null}, tipo_gasto),
+        bolsa_origen = COALESCE(${bolsa_origen || bolsaCalc}, bolsa_origen),
+        archivo_url = COALESCE(${archivo_url !== undefined ? (archivo_url || null) : null}, archivo_url),
+        archivo_nombre = COALESCE(${archivo_nombre !== undefined ? (archivo_nombre || null) : null}, archivo_nombre),
+        archivo_tipo = COALESCE(${archivo_tipo !== undefined ? (archivo_tipo || null) : null}, archivo_tipo),
+        recordatorios_activos = COALESCE(${recordatorios_activos !== undefined ? recordatorios_activos : null}, recordatorios_activos),
         updated_at = NOW()
       WHERE id = ${id} RETURNING *
     ` as Record<string, unknown>[]

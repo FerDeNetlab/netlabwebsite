@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart } from 'lucide-react'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart, Wallet, Bell } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { pendientes: number; por_cobrar: number }
@@ -16,6 +16,13 @@ interface FinanzasStats {
     egresos_mes: number
     balance_mes: number
     alertas: { tipo: string; severity: 'danger' | 'warning' | 'info'; titulo: string; detalle: string; link?: string }[]
+    kpis_saf?: {
+        cartera_vencida: { monto: number; facturas: number }
+        presion_caja_porcentaje: number
+        runway_semanas: number
+        ingresos_proximos_30d: number
+        gastos_proximos_30d: number
+    }
 }
 
 export default function FinanzasPage() {
@@ -49,8 +56,10 @@ export default function FinanzasPage() {
         { title: 'Ingresos y Egresos', desc: 'Cobranza y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
         { title: 'Calendario', desc: 'Cobros y pagos del mes', icon: Calendar, path: '/admin/finanzas/calendario', color: 'text-blue-400', border: 'border-blue-500/30' },
         { title: 'Flujo de Efectivo', desc: 'Proyección mensual', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
+        { title: 'Bolsas (SAF)', desc: 'Operación, crecimiento, reserva', icon: Wallet, path: '/admin/finanzas/bolsas', color: 'text-fuchsia-400', border: 'border-fuchsia-500/30' },
         { title: 'Reportes', desc: 'Panorama financiero completo', icon: FileBarChart, path: '/admin/finanzas/reportes', color: 'text-yellow-400', border: 'border-yellow-500/30' },
-        { title: 'Aportes de Capital', desc: 'Inversiones de socios', icon: Landmark, path: '/admin/finanzas/aportes', color: 'text-amber-400', border: 'border-amber-500/30' },
+        { title: 'Aportes de Capital', desc: 'Inversiones, préstamos, financiamiento', icon: Landmark, path: '/admin/finanzas/aportes', color: 'text-amber-400', border: 'border-amber-500/30' },
+        { title: 'Recordatorios', desc: 'Cron, email y Telegram', icon: Bell, path: '/admin/finanzas/recordatorios', color: 'text-cyan-400', border: 'border-cyan-500/30' },
     ]
 
     return (
@@ -110,6 +119,44 @@ export default function FinanzasPage() {
                                     <div className="text-xs font-mono text-gray-500 mt-1">Ingresos - Egresos</div>
                                 </div>
                             </div>
+
+                            {/* SAF KPIs */}
+                            {stats?.kpis_saf && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {(() => {
+                                        const cv = stats.kpis_saf!.cartera_vencida
+                                        const pc = stats.kpis_saf!.presion_caja_porcentaje
+                                        const rw = stats.kpis_saf!.runway_semanas
+                                        const cvSeverity = cv.monto > 100000 ? 'red' : cv.monto > 0 ? 'yellow' : 'green'
+                                        const pcSeverity = pc > 100 ? 'red' : pc > 50 ? 'yellow' : 'green'
+                                        const rwSeverity = rw < 4 ? 'red' : rw < 12 ? 'yellow' : 'green'
+                                        const colorMap: Record<string, string> = {
+                                            red: 'border-red-500/30 text-red-400',
+                                            yellow: 'border-yellow-500/30 text-yellow-400',
+                                            green: 'border-green-500/30 text-green-400',
+                                        }
+                                        return (
+                                            <>
+                                                <div className={`bg-zinc-900/50 border rounded-lg p-4 ${colorMap[cvSeverity].split(' ')[0]}`}>
+                                                    <div className="font-mono text-xs text-gray-400 mb-1">📋 Cartera vencida</div>
+                                                    <div className={`text-xl font-mono ${colorMap[cvSeverity].split(' ')[1]}`}>{fmt(cv.monto)}</div>
+                                                    <div className="font-mono text-[10px] text-gray-500 mt-1">{cv.facturas} factura{cv.facturas !== 1 ? 's' : ''} con saldo</div>
+                                                </div>
+                                                <div className={`bg-zinc-900/50 border rounded-lg p-4 ${colorMap[pcSeverity].split(' ')[0]}`}>
+                                                    <div className="font-mono text-xs text-gray-400 mb-1">⚡ Presión de caja</div>
+                                                    <div className={`text-xl font-mono ${colorMap[pcSeverity].split(' ')[1]}`}>{pc.toFixed(0)}%</div>
+                                                    <div className="font-mono text-[10px] text-gray-500 mt-1">% del saldo que necesitamos para los próximos 30 días</div>
+                                                </div>
+                                                <div className={`bg-zinc-900/50 border rounded-lg p-4 ${colorMap[rwSeverity].split(' ')[0]}`}>
+                                                    <div className="font-mono text-xs text-gray-400 mb-1">🛟 Runway</div>
+                                                    <div className={`text-xl font-mono ${colorMap[rwSeverity].split(' ')[1]}`}>{rw.toFixed(1)} sem</div>
+                                                    <div className="font-mono text-[10px] text-gray-500 mt-1">Semanas de operación con el saldo actual</div>
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
+                                </div>
+                            )}
 
                             {/* Module Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

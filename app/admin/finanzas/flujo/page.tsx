@@ -48,10 +48,16 @@ export default function FlujoPage() {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <TerminalFrame title="root@netlab:~/finanzas/flujo-efectivo">
                         <div className="p-6 space-y-6">
-                            <div className="border-b border-green-500/20 pb-4">
-                                <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-2"><ArrowLeft className="h-4 w-4" /> Finanzas</Button>
-                                <h1 className="text-3xl font-mono text-green-400">Flujo de Efectivo</h1>
-                                <p className="text-gray-400 font-mono text-sm mt-1">Proyección mensual — próximos 6 meses</p>
+                            <div className="border-b border-green-500/20 pb-4 flex items-start justify-between">
+                                <div>
+                                    <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-2"><ArrowLeft className="h-4 w-4" /> Finanzas</Button>
+                                    <h1 className="text-3xl font-mono text-green-400">Flujo de Efectivo</h1>
+                                    <p className="text-gray-400 font-mono text-sm mt-1">Proyección mensual — próximos 6 meses</p>
+                                </div>
+                                <Button onClick={() => router.push('/admin/finanzas/flujo/semanal')} variant="outline"
+                                    className="font-mono gap-2 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 bg-transparent" size="sm">
+                                    Ver 4 semanas →
+                                </Button>
                             </div>
 
                             {/* KPIs */}

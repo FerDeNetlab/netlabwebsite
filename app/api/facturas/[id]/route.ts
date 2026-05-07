@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
+import { enriquecerFactura } from '@/lib/finanzas-status'
+import { bolsaDeIngreso } from '@/lib/finanzas-bolsas'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await auth()
@@ -24,7 +26,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
         const totalPagado = pagos.reduce((sum: number, p: Record<string, unknown>) => sum + Number(p.monto), 0)
 
-        return NextResponse.json({ ...factura[0], pagos, total_pagado: totalPagado })
+        const enriched = enriquecerFactura({
+            ...factura[0],
+            total_pagado: totalPagado,
+        } as Parameters<typeof enriquecerFactura>[0])
+
+        return NextResponse.json({ ...enriched, pagos, total_pagado: totalPagado })
     } catch (error) {
         console.error('[ERP] Error:', error)
         return NextResponse.json({ error: 'Error al obtener factura' }, { status: 500 })
@@ -38,7 +45,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     try {
         const body = await request.json()
-        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, fecha_envio, notas, tipo, recurrente, dia_mes, estado } = body
+        const {
+            cliente_id, numero_factura, concepto, subtotal, iva, total,
+            fecha_vencimiento, fecha_envio, notas, tipo, recurrente, dia_mes, estado,
+            tipo_ingreso,
+            archivo_url, archivo_nombre, archivo_tipo,
+            recordatorios_activos,
+        } = body
+
+        // Si tipo_ingreso cambió, recalculamos bolsa_destino
+        const bolsaDestino = tipo_ingreso ? bolsaDeIngreso(tipo_ingreso) : null
 
         const result = await sql`
       UPDATE facturas SET
@@ -55,6 +71,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         recurrente = COALESCE(${recurrente !== undefined ? recurrente : null}, recurrente),
         dia_mes = ${dia_mes !== undefined ? (dia_mes || null) : null},
         estado = COALESCE(${estado || null}, estado),
+        tipo_ingreso = COALESCE(${tipo_ingreso || null}, tipo_ingreso),
+        bolsa_destino = COALESCE(${bolsaDestino}, bolsa_destino),
+        archivo_url = COALESCE(${archivo_url !== undefined ? (archivo_url || null) : null}, archivo_url),
+        archivo_nombre = COALESCE(${archivo_nombre !== undefined ? (archivo_nombre || null) : null}, archivo_nombre),
+        archivo_tipo = COALESCE(${archivo_tipo !== undefined ? (archivo_tipo || null) : null}, archivo_tipo),
+        recordatorios_activos = COALESCE(${recordatorios_activos !== undefined ? recordatorios_activos : null}, recordatorios_activos),
         updated_at = NOW()
       WHERE id = ${id} RETURNING *
     ` as Record<string, unknown>[]

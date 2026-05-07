@@ -212,6 +212,46 @@ export async function GET() {
     const severityOrder = { danger: 0, warning: 1, info: 2 }
     alertas.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
 
+    // ═══ KPIs SAF: Cartera vencida + Presión de caja + Runway ═══
+    const carteraVencidaRows = await sql`
+      SELECT COALESCE(SUM(f.total - COALESCE(p.pagado, 0)), 0) as monto, COUNT(*) as n
+      FROM facturas f
+      LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
+      WHERE f.estado IN ('pendiente', 'parcial', 'vencida')
+        AND f.recurrente = false
+        AND f.fecha_vencimiento < CURRENT_DATE
+        AND COALESCE(p.pagado, 0) < f.total
+    ` as Record<string, unknown>[]
+    const carteraVencida = {
+      monto: Number(carteraVencidaRows[0]?.monto || 0),
+      facturas: Number(carteraVencidaRows[0]?.n || 0),
+    }
+
+    const ingresos30dRows = await sql`
+      SELECT COALESCE(SUM(f.total), 0) as monto FROM facturas f
+      WHERE f.estado IN ('pendiente', 'parcial', 'vencida')
+        AND (
+          (f.recurrente = true AND f.dia_mes IS NOT NULL)
+          OR (f.recurrente = false AND f.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days')
+        )
+    ` as Record<string, unknown>[]
+    const gastos30dRows = await sql`
+      SELECT COALESCE(SUM(g.monto), 0) as monto FROM gastos g
+      WHERE g.estado = 'pendiente'
+        AND (
+          (g.recurrente = true AND g.dia_mes IS NOT NULL)
+          OR (g.recurrente = false AND g.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days')
+        )
+    ` as Record<string, unknown>[]
+    const ingresos30d = Number(ingresos30dRows[0]?.monto || 0)
+    const gastos30d = Number(gastos30dRows[0]?.monto || 0)
+    const saldoActual = ingresos - egresos
+    const presionCaja = saldoActual > 0
+      ? Math.max(0, (gastos30d - ingresos30d) / saldoActual)
+      : (gastos30d > ingresos30d ? 9.99 : 0)
+    const gastoSemanal = gastos30d > 0 ? gastos30d / 4 : (egresos > 0 ? egresos / 4 : 1)
+    const runwaySemanas = saldoActual > 0 ? saldoActual / gastoSemanal : 0
+
     return NextResponse.json({
       cxc: { por_cobrar: porCobrarMes, pendientes: pendientesCobro },
       cxp: { por_pagar: porPagarMes, pendientes: pendientesPago },
@@ -219,6 +259,13 @@ export async function GET() {
       egresos_mes: egresos,
       balance_mes: ingresos - egresos,
       alertas,
+      kpis_saf: {
+        cartera_vencida: carteraVencida,
+        presion_caja_porcentaje: presionCaja * 100,
+        runway_semanas: runwaySemanas,
+        ingresos_proximos_30d: ingresos30d,
+        gastos_proximos_30d: gastos30d,
+      },
     })
   } catch (error) {
     console.error('[ERP] Error:', error)

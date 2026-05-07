@@ -218,9 +218,11 @@ export interface MatrizIngresos {
     };
   };
   totales: {
-    ingreso_mensual_real: number;
+    ingreso_mensual_real: number; // suma esperada (no cancelada)
+    ingreso_mensual_cobrado: number; // suma de pagos reales del período
     ingreso_fijo_estructural: number;
     dependencia_variable_porcentaje: number;
+    porcentaje_cobrado: number; // cobrado / esperado
   };
 }
 

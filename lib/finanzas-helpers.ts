@@ -44,24 +44,40 @@ import {
 
 export async function getMatrizIngresos(mes: number, ano: number): Promise<MatrizIngresos> {
   try {
-    // Obtener facturas del mes
+    // Obtener facturas del mes (esperadas) + pagos reales del mes (cobrados)
+    // Usamos fecha_vencimiento (o dia_mes para recurrentes) para asignar al período,
+    // NO fecha_emision — alinea ingresos con cuándo deberían cobrarse.
     const facturasResult = await sql`
-      SELECT f.*, c.nombre as cliente_nombre
+      SELECT f.*,
+        c.nombre as cliente_nombre,
+        COALESCE((SELECT SUM(p.monto) FROM pagos p
+                   WHERE p.factura_id = f.id
+                     AND EXTRACT(MONTH FROM p.fecha_pago) = ${mes}
+                     AND EXTRACT(YEAR FROM p.fecha_pago) = ${ano}), 0) as cobrado_periodo
       FROM facturas f
       LEFT JOIN clientes c ON f.cliente_id = c.id
-      WHERE EXTRACT(MONTH FROM f.fecha_emision) = ${mes}
-        AND EXTRACT(YEAR FROM f.fecha_emision) = ${ano}
-        AND f.estado != 'cancelada'
+      WHERE f.estado != 'cancelada'
+        AND (
+          (f.recurrente = true AND f.dia_mes IS NOT NULL)
+          OR (f.recurrente = false AND EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.fecha_emision)) = ${mes}
+              AND EXTRACT(YEAR FROM COALESCE(f.fecha_vencimiento, f.fecha_emision)) = ${ano})
+          OR EXISTS (
+            SELECT 1 FROM pagos p WHERE p.factura_id = f.id
+              AND EXTRACT(MONTH FROM p.fecha_pago) = ${mes}
+              AND EXTRACT(YEAR FROM p.fecha_pago) = ${ano}
+          )
+        )
     `;
-    const facturas = facturasResult as Array<Factura & { cliente_nombre?: string }>;
+    const facturas = facturasResult as Array<Factura & { cliente_nombre?: string; cobrado_periodo?: number }>;
 
     // Agrupar por cliente y tipo de ingreso
-    const mapClientes: Record<string, Record<TipoIngreso, Partial<MatrizIngresosRow>>> = {};
+    const mapClientes: Record<string, Record<TipoIngreso, Partial<MatrizIngresosRow> & { cobrado?: number }>> = {};
 
     facturas.forEach((f) => {
       const clienteId = f.cliente_id || 'sin-cliente';
       const clienteNombre = f.cliente_nombre || 'Sin Cliente';
-      const tipoIngreso = f.tipo_ingreso as TipoIngreso;
+      const tipoIngreso = (f.tipo_ingreso as TipoIngreso) || TipoIngreso.VARIABLE;
+      const cobrado = Number(f.cobrado_periodo || 0);
 
       if (!mapClientes[clienteId]) {
         mapClientes[clienteId] = {
@@ -79,27 +95,34 @@ export async function getMatrizIngresos(mes: number, ano: number): Promise<Matri
       row.cliente_id = clienteId;
       row.cliente_nombre = clienteNombre;
       row.tipo_ingreso = tipoIngreso;
-      row.monto_mensual = (row.monto_mensual || 0) + f.total;
+      row.monto_mensual = (row.monto_mensual || 0) + Number(f.total);
+      row.cobrado = (row.cobrado || 0) + cobrado;
     });
 
     // Convertir a filas
     const filas: MatrizIngresosRow[] = [];
     Object.entries(mapClientes).forEach(([_, tiposMap]) => {
-      Object.values(tiposMap).forEach((row: Partial<MatrizIngresosRow>) => {
+      Object.values(tiposMap).forEach((row) => {
         if (row.monto_mensual && row.monto_mensual > 0) {
+          const cobrado = row.cobrado || 0;
+          const esperado = row.monto_mensual || 0;
           filas.push({
             cliente_id: row.cliente_id || '',
             cliente_nombre: row.cliente_nombre || '',
             tipo_ingreso: row.tipo_ingreso || TipoIngreso.VARIABLE,
-            monto_mensual: row.monto_mensual || 0,
-            estatus: 'cerrado',
+            monto_mensual: esperado,
+            estatus: cobrado >= esperado ? 'cobrado' : cobrado > 0 ? 'parcial' : 'pendiente',
           });
         }
       });
     });
 
-    // Calcular totales
-    const totalIngreso = filas.reduce((sum, f) => sum + f.monto_mensual, 0);
+    // Calcular totales (esperado vs cobrado)
+    const totalEsperado = filas.reduce((sum, f) => sum + f.monto_mensual, 0);
+    const totalCobrado = Object.values(mapClientes).reduce((acc, tipos) => {
+      return acc + Object.values(tipos).reduce((s, r) => s + (r.cobrado || 0), 0);
+    }, 0);
+
     const ingresosPorTipo: Record<TipoIngreso, number> = {
       [TipoIngreso.FIJO]: 0,
       [TipoIngreso.RUN_RATE]: 0,
@@ -117,25 +140,27 @@ export async function getMatrizIngresos(mes: number, ano: number): Promise<Matri
       resumenPorTipo: {
         [TipoIngreso.FIJO]: {
           monto_mensual: ingresosPorTipo[TipoIngreso.FIJO],
-          porcentaje_total: totalIngreso > 0 ? (ingresosPorTipo[TipoIngreso.FIJO] / totalIngreso) * 100 : 0,
+          porcentaje_total: totalEsperado > 0 ? (ingresosPorTipo[TipoIngreso.FIJO] / totalEsperado) * 100 : 0,
           certidumbre: 'Alta',
         },
         [TipoIngreso.RUN_RATE]: {
           monto_mensual: ingresosPorTipo[TipoIngreso.RUN_RATE],
-          porcentaje_total: totalIngreso > 0 ? (ingresosPorTipo[TipoIngreso.RUN_RATE] / totalIngreso) * 100 : 0,
+          porcentaje_total: totalEsperado > 0 ? (ingresosPorTipo[TipoIngreso.RUN_RATE] / totalEsperado) * 100 : 0,
           certidumbre: 'Media',
         },
         [TipoIngreso.VARIABLE]: {
           monto_mensual: ingresosPorTipo[TipoIngreso.VARIABLE],
-          porcentaje_total: totalIngreso > 0 ? (ingresosPorTipo[TipoIngreso.VARIABLE] / totalIngreso) * 100 : 0,
+          porcentaje_total: totalEsperado > 0 ? (ingresosPorTipo[TipoIngreso.VARIABLE] / totalEsperado) * 100 : 0,
           certidumbre: 'Baja',
         },
       },
       totales: {
-        ingreso_mensual_real: totalIngreso,
+        ingreso_mensual_real: totalEsperado,
+        ingreso_mensual_cobrado: totalCobrado,
         ingreso_fijo_estructural: ingresoFijoYRunRate,
         dependencia_variable_porcentaje:
-          totalIngreso > 0 ? (ingresosPorTipo[TipoIngreso.VARIABLE] / totalIngreso) * 100 : 0,
+          totalEsperado > 0 ? (ingresosPorTipo[TipoIngreso.VARIABLE] / totalEsperado) * 100 : 0,
+        porcentaje_cobrado: totalEsperado > 0 ? (totalCobrado / totalEsperado) * 100 : 0,
       },
     };
   } catch (error) {
@@ -310,7 +335,7 @@ export async function getFlujoCaja(mes: number, ano: number): Promise<FlujoCaja>
     ]);
 
     const saldoNeto =
-      matrizIngresos.totales.ingreso_mensual_real - matrizGastos.totales.total_egresos;
+      matrizIngresos.totales.ingreso_mensual_cobrado - matrizGastos.totales.total_egresos;
 
     // Cuentas por cobrar: facturas pendientes del periodo
     const cxcRaw = await sql`

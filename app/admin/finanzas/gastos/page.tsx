@@ -7,12 +7,16 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip } from 'lucide-react'
+import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
 
 interface Gasto {
     id: string; concepto: string; monto: number; estado: string; proveedor: string;
     fecha_vencimiento: string; fecha_pago: string; categoria_nombre: string; categoria_color: string;
-    recurrente: boolean; dia_mes: number; subtipo: string
+    recurrente: boolean; dia_mes: number; subtipo: string;
+    tipo_gasto?: string; bolsa_origen?: string;
+    archivo_url?: string | null; archivo_nombre?: string | null;
+    estado_calculado?: string; dias_atraso?: number | null;
 }
 interface Categoria { id: string; nombre: string; color: string }
 
@@ -24,12 +28,20 @@ export default function GastosPage() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [showForm, setShowForm] = useState<false | 'fijo' | 'unico'>(false)
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<{
+        categoria_id: string; concepto: string; monto: string; fecha_vencimiento: string;
+        proveedor: string; recurrente: boolean; dia_mes: string; subtipo: string; notas: string;
+        tipo_gasto: string; bolsa_origen: string;
+        archivo_url: string | null; archivo_nombre: string | null; archivo_tipo: string | null;
+    }>({
         categoria_id: '', concepto: '', monto: '', fecha_vencimiento: '', proveedor: '',
-        recurrente: false, dia_mes: '', subtipo: 'general', notas: ''
+        recurrente: false, dia_mes: '', subtipo: 'general', notas: '',
+        tipo_gasto: 'variable', bolsa_origen: 'operacion_variable',
+        archivo_url: null, archivo_nombre: null, archivo_tipo: null,
     })
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<Record<string, string | number | boolean | null>>({})
+    const [uploadingId, setUploadingId] = useState<string | null>(null)
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -44,9 +56,48 @@ export default function GastosPage() {
     const openForm = (tipo: 'fijo' | 'unico') => {
         setForm({
             categoria_id: '', concepto: '', monto: '', fecha_vencimiento: '', proveedor: '',
-            recurrente: tipo === 'fijo', dia_mes: '', subtipo: 'general', notas: ''
+            recurrente: tipo === 'fijo', dia_mes: '', subtipo: 'general', notas: '',
+            tipo_gasto: tipo === 'fijo' ? 'estructural' : 'variable',
+            bolsa_origen: tipo === 'fijo' ? 'operacion_base' : 'operacion_variable',
+            archivo_url: null, archivo_nombre: null, archivo_tipo: null,
         })
         setShowForm(tipo)
+    }
+
+    const handleUploadComprobante = async (file: File): Promise<{ url: string; nombre: string; tipo: string } | null> => {
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('carpeta', 'gastos')
+        const r = await fetch('/api/finanzas/upload', { method: 'POST', body: fd })
+        if (!r.ok) {
+            const err = await r.json().catch(() => ({}))
+            alert('Error al subir comprobante: ' + (err.error || 'desconocido'))
+            return null
+        }
+        return r.json()
+    }
+
+    const handleFormFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        const up = await handleUploadComprobante(file)
+        if (up) setForm(f => ({ ...f, archivo_url: up.url, archivo_nombre: up.nombre, archivo_tipo: up.tipo }))
+    }
+
+    const handleRowFile = async (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setUploadingId(id)
+        try {
+            const up = await handleUploadComprobante(file)
+            if (up) {
+                const r = await fetch(`/api/gastos/${id}`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ archivo_url: up.url, archivo_nombre: up.nombre, archivo_tipo: up.tipo })
+                })
+                if (r.ok) fetchData()
+            }
+        } finally { setUploadingId(null) }
     }
 
     const handleCreate = async () => {
@@ -82,6 +133,8 @@ export default function GastosPage() {
             recurrente: g.recurrente, dia_mes: g.dia_mes || '',
             subtipo: g.subtipo || 'general',
             fecha_vencimiento: g.fecha_vencimiento?.split('T')[0] || '',
+            tipo_gasto: g.tipo_gasto || 'variable',
+            bolsa_origen: g.bolsa_origen || 'operacion_variable',
         })
         setEditingId(g.id)
     }
@@ -203,6 +256,51 @@ export default function GastosPage() {
                                                     className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-red-500 focus:outline-none mt-1" />
                                             </div>
                                         </div>
+
+                                        {/* SAF: tipo_gasto + bolsa_origen */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-800">
+                                            <div>
+                                                <label className="font-mono text-xs text-orange-400">Tipo de gasto (SAF) *</label>
+                                                <select value={form.tipo_gasto} onChange={e => {
+                                                    const tg = e.target.value
+                                                    const bo = tg === 'estructural' ? 'operacion_base' : tg === 'estrategico' ? 'crecimiento' : 'operacion_variable'
+                                                    setForm(f => ({ ...f, tipo_gasto: tg, bolsa_origen: bo }))
+                                                }}
+                                                    className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
+                                                    <option value="estructural">🏛️ Estructural (renta, sueldos, software)</option>
+                                                    <option value="variable">⚡ Variable (gasolina, comisiones)</option>
+                                                    <option value="estrategico">🚀 Estratégico (marketing, equipo)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="font-mono text-xs text-orange-400">Bolsa de origen</label>
+                                                <select value={form.bolsa_origen} onChange={e => setForm(f => ({ ...f, bolsa_origen: e.target.value }))}
+                                                    className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
+                                                    {BOLSAS_SAF.map(b => <option key={b} value={b}>{BOLSA_LABEL[b]}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* Comprobante (Vercel Blob) */}
+                                        <div className="pt-2">
+                                            <label className="font-mono text-xs text-gray-500">Comprobante (PDF / imagen) — opcional</label>
+                                            {form.archivo_nombre ? (
+                                                <div className="flex items-center gap-3 bg-zinc-900 border border-green-500/30 rounded px-3 py-2 mt-1">
+                                                    <Paperclip className="h-4 w-4 text-green-400" />
+                                                    <span className="font-mono text-xs text-white truncate flex-1">{form.archivo_nombre}</span>
+                                                    <button onClick={() => setForm(f => ({ ...f, archivo_url: null, archivo_nombre: null, archivo_tipo: null }))}>
+                                                        <X className="h-4 w-4 text-gray-500" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <label className="flex items-center justify-center gap-2 mt-1 w-full bg-zinc-900 border-2 border-dashed border-gray-600 hover:border-orange-500/50 rounded px-3 py-3 cursor-pointer transition-colors">
+                                                    <Upload className="h-4 w-4 text-gray-500" />
+                                                    <span className="font-mono text-xs text-gray-500">Click para subir</span>
+                                                    <input type="file" accept=".pdf,image/*" onChange={handleFormFile} className="hidden" />
+                                                </label>
+                                            )}
+                                        </div>
+
                                         <Button onClick={handleCreate} className={`font-mono ${showForm === 'fijo' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-red-600 hover:bg-red-700'}`} size="sm"
                                             disabled={!form.concepto || !form.monto || (showForm === 'fijo' && !form.dia_mes)}>
                                             {showForm === 'fijo' ? 'Guardar Gasto Fijo' : 'Guardar Gasto Único'}
@@ -227,7 +325,9 @@ export default function GastosPage() {
                                                 <th className="text-left p-3">Concepto</th><th className="text-left p-3">Tipo</th>
                                                 <th className="text-left p-3">Categoría</th><th className="text-left p-3">Proveedor</th>
                                                 <th className="text-right p-3">Monto</th><th className="text-center p-3">Estado</th>
-                                                <th className="text-right p-3">Día/Vence</th><th className="p-3"></th>
+                                                <th className="text-right p-3">Día/Vence</th>
+                                                <th className="text-center p-3">📎</th>
+                                                <th className="p-3"></th>
                                             </tr>
                                         </thead>
                                         <tbody className="font-mono text-sm">
@@ -268,9 +368,20 @@ export default function GastosPage() {
                                                         ) : fmt(g.monto)}
                                                     </td>
                                                     <td className="p-3 text-center">
-                                                        <span className={`px-2 py-0.5 rounded border text-xs ${g.estado === 'pagado' ? 'text-green-400 bg-green-400/10 border-green-500/30' : 'text-yellow-400 bg-yellow-400/10 border-yellow-500/30'}`}>
-                                                            {g.estado}
-                                                        </span>
+                                                        {(() => {
+                                                            const est = g.estado_calculado || g.estado
+                                                            const cls = est === 'pagado' ? 'text-green-400 bg-green-400/10 border-green-500/30'
+                                                                : est === 'vencido' ? 'text-red-400 bg-red-400/10 border-red-500/30'
+                                                                    : 'text-yellow-400 bg-yellow-400/10 border-yellow-500/30'
+                                                            return (
+                                                                <div className="flex flex-col items-center gap-0.5">
+                                                                    <span className={`px-2 py-0.5 rounded border text-xs ${cls}`}>{est}</span>
+                                                                    {typeof g.dias_atraso === 'number' && g.dias_atraso > 0 && est !== 'pagado' && (
+                                                                        <span className="text-[10px] text-red-400">⏰ {g.dias_atraso}d</span>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        })()}
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">
                                                         {editingId === g.id && g.recurrente ? (
@@ -280,6 +391,18 @@ export default function GastosPage() {
                                                                 {Array.from({ length: 31 }, (_, i) => <option key={i + 1} value={i + 1}>Día {i + 1}</option>)}
                                                             </select>
                                                         ) : g.recurrente && g.dia_mes ? `Día ${g.dia_mes}` : g.fecha_vencimiento ? new Date(g.fecha_vencimiento).toLocaleDateString('es-MX') : '—'}
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                        {g.archivo_url ? (
+                                                            <a href={g.archivo_url} target="_blank" rel="noopener noreferrer" title={g.archivo_nombre || 'Ver comprobante'}>
+                                                                <Eye className="h-4 w-4 inline text-blue-400 hover:text-blue-300" />
+                                                            </a>
+                                                        ) : (
+                                                            <label className={`cursor-pointer text-gray-500 hover:text-cyan-400 ${uploadingId === g.id ? 'opacity-50' : ''}`} title="Subir comprobante">
+                                                                {uploadingId === g.id ? <span className="text-[10px]">...</span> : <Upload className="h-4 w-4 inline" />}
+                                                                <input type="file" accept=".pdf,image/*" onChange={(e) => handleRowFile(g.id, e)} className="hidden" disabled={uploadingId === g.id} />
+                                                            </label>
+                                                        )}
                                                     </td>
                                                     <td className="p-3 text-right space-x-1">
                                                         {editingId === g.id ? (

@@ -18,6 +18,7 @@ export default function NuevaFacturaPage() {
     const [loading, setLoading] = useState(false)
     const [pdfFile, setPdfFile] = useState<File | null>(null)
     const [tipo, setTipo] = useState<'unico' | 'recurrente'>('unico')
+    const [tipoIngreso, setTipoIngreso] = useState<'fijo' | 'run_rate' | 'variable'>('variable')
     const [form, setForm] = useState({
         cliente_id: '', numero_factura: '', concepto: '', subtotal: '', iva: '', total: '',
         fecha_vencimiento: '', dia_mes: '', notas: ''
@@ -27,6 +28,11 @@ export default function NuevaFacturaPage() {
     useEffect(() => {
         if (status === 'authenticated') fetch('/api/clientes').then(r => r.json()).then(setClientes).catch(() => { })
     }, [status])
+
+    // Cuando cambia el tipo de pago, sugerimos un tipo_ingreso por default
+    useEffect(() => {
+        setTipoIngreso(tipo === 'recurrente' ? 'fijo' : 'variable')
+    }, [tipo])
 
     const handleSubtotalChange = (value: string) => {
         const sub = Number(value) || 0
@@ -45,21 +51,32 @@ export default function NuevaFacturaPage() {
         if (tipo === 'recurrente' && !form.dia_mes) { alert('Selecciona el día del mes'); return }
         setLoading(true)
         try {
-            let archivo_nombre = null, archivo_data = null
+            // Subir PDF a Vercel Blob si hay archivo
+            let archivo_url = null, archivo_nombre = null, archivo_tipo = null
             if (pdfFile) {
-                archivo_nombre = pdfFile.name
-                const bytes = new Uint8Array(await pdfFile.arrayBuffer())
-                let binary = ''
-                for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
-                archivo_data = btoa(binary)
+                const fd = new FormData()
+                fd.append('file', pdfFile)
+                fd.append('carpeta', 'facturas')
+                const upRes = await fetch('/api/finanzas/upload', { method: 'POST', body: fd })
+                if (!upRes.ok) {
+                    const err = await upRes.json().catch(() => ({}))
+                    alert('Error al subir PDF: ' + (err.error || 'desconocido'))
+                    setLoading(false)
+                    return
+                }
+                const upData = await upRes.json()
+                archivo_url = upData.url
+                archivo_nombre = upData.nombre
+                archivo_tipo = upData.tipo
             }
+
             const response = await fetch('/api/facturas', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    ...form, tipo,
+                    ...form, tipo, tipo_ingreso: tipoIngreso,
                     subtotal: Number(form.subtotal) || 0, iva: Number(form.iva) || 0, total: Number(form.total) || 0,
                     recurrente: tipo === 'recurrente', dia_mes: form.dia_mes ? Number(form.dia_mes) : null,
-                    archivo_nombre, archivo_data,
+                    archivo_url, archivo_nombre, archivo_tipo,
                 }),
             })
             if (response.ok) {
@@ -109,6 +126,31 @@ export default function NuevaFacturaPage() {
                                         <div className="text-xs opacity-70">Cliente paga cada mes</div>
                                     </div>
                                 </button>
+                            </div>
+
+                            {/* Tipo de Ingreso (clasificación SAF) */}
+                            <div className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="font-mono text-xs text-green-400">Tipo de ingreso *</label>
+                                    <span className="font-mono text-[10px] text-gray-500">Define la bolsa donde caerá este ingreso</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <button onClick={() => setTipoIngreso('fijo')}
+                                        className={`p-3 rounded border-2 transition-all font-mono text-left ${tipoIngreso === 'fijo' ? 'border-green-500 bg-green-500/10 text-green-400' : 'border-gray-700 text-gray-500 hover:border-gray-500'}`}>
+                                        <div className="font-bold text-xs">📌 Fijo</div>
+                                        <div className="text-[10px] opacity-70 mt-0.5">Contrato indefinido. Va a Operación Base.</div>
+                                    </button>
+                                    <button onClick={() => setTipoIngreso('run_rate')}
+                                        className={`p-3 rounded border-2 transition-all font-mono text-left ${tipoIngreso === 'run_rate' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400' : 'border-gray-700 text-gray-500 hover:border-gray-500'}`}>
+                                        <div className="font-bold text-xs">🔄 Run-rate</div>
+                                        <div className="text-[10px] opacity-70 mt-0.5">Recurrencia esperada. Va a Operación Variable.</div>
+                                    </button>
+                                    <button onClick={() => setTipoIngreso('variable')}
+                                        className={`p-3 rounded border-2 transition-all font-mono text-left ${tipoIngreso === 'variable' ? 'border-purple-500 bg-purple-500/10 text-purple-400' : 'border-gray-700 text-gray-500 hover:border-gray-500'}`}>
+                                        <div className="font-bold text-xs">⚡ Variable</div>
+                                        <div className="text-[10px] opacity-70 mt-0.5">Cobro puntual. Va a Crecimiento.</div>
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Form */}

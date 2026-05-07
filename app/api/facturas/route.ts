@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
+import { enriquecerFactura } from '@/lib/finanzas-status'
+import { bolsaDeIngreso } from '@/lib/finanzas-bolsas'
 
 export async function GET() {
     const session = await auth()
@@ -13,8 +15,13 @@ export async function GET() {
       FROM facturas f
       LEFT JOIN clientes cl ON f.cliente_id = cl.id
       ORDER BY f.created_at DESC
-    `
-        return NextResponse.json(facturas)
+    ` as Record<string, unknown>[]
+
+        const enriched = facturas.map((f) =>
+            enriquecerFactura(f as Parameters<typeof enriquecerFactura>[0])
+        )
+
+        return NextResponse.json(enriched)
     } catch (error) {
         console.error('[ERP] Error fetching facturas:', error)
         return NextResponse.json({ error: 'Error al obtener facturas' }, { status: 500 })
@@ -27,8 +34,19 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json()
-        const { cliente_id, numero_factura, concepto, subtotal, iva, total, fecha_vencimiento, notas, archivo_nombre, archivo_data, tipo, recurrente, dia_mes } = body
+        const {
+            cliente_id, numero_factura, concepto, subtotal, iva, total,
+            fecha_vencimiento, notas,
+            archivo_nombre, archivo_url, archivo_tipo,
+            tipo, recurrente, dia_mes,
+            tipo_ingreso,
+        } = body
         const tipoVal = tipo || 'unico'
+        const tipoIngresoVal: 'fijo' | 'run_rate' | 'variable' =
+            tipo_ingreso === 'fijo' || tipo_ingreso === 'run_rate' || tipo_ingreso === 'variable'
+                ? tipo_ingreso
+                : (recurrente ? 'fijo' : 'variable')
+        const bolsaDestino = bolsaDeIngreso(tipoIngresoVal)
 
         // Auto-generate numero_factura if not provided
         let numFactura = numero_factura
@@ -41,8 +59,23 @@ export async function POST(request: Request) {
         }
 
         const factura = await sql`
-      INSERT INTO facturas (id, cliente_id, numero_factura, concepto, subtotal, iva, total, estado, fecha_emision, fecha_vencimiento, notas, archivo_nombre, archivo_data, tipo, recurrente, dia_mes, created_at, updated_at)
-      VALUES (gen_random_uuid(), ${cliente_id || null}, ${numFactura}, ${concepto}, ${subtotal}, ${iva || 0}, ${total}, 'pendiente', CURRENT_DATE, ${fecha_vencimiento || null}, ${notas || null}, ${archivo_nombre || null}, ${archivo_data || null}, ${tipoVal}, ${recurrente || false}, ${dia_mes || null}, NOW(), NOW())
+      INSERT INTO facturas (
+        id, cliente_id, numero_factura, concepto, subtotal, iva, total,
+        estado, fecha_emision, fecha_vencimiento, notas,
+        archivo_nombre, archivo_url, archivo_tipo,
+        tipo, recurrente, dia_mes,
+        tipo_ingreso, bolsa_destino,
+        created_at, updated_at
+      )
+      VALUES (
+        gen_random_uuid(), ${cliente_id || null}, ${numFactura}, ${concepto},
+        ${subtotal}, ${iva || 0}, ${total},
+        'pendiente', CURRENT_DATE, ${fecha_vencimiento || null}, ${notas || null},
+        ${archivo_nombre || null}, ${archivo_url || null}, ${archivo_tipo || null},
+        ${tipoVal}, ${recurrente || false}, ${dia_mes || null},
+        ${tipoIngresoVal}, ${bolsaDestino},
+        NOW(), NOW()
+      )
       RETURNING *
     ` as Record<string, unknown>[]
 

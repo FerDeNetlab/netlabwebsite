@@ -8,13 +8,18 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Trash2, Building2, Mail, Phone, FileText, Eye, Pencil, X, Save } from 'lucide-react'
+import { ArrowLeft, Trash2, Building2, Mail, Phone, FileText, Eye, Pencil, X, Save, Upload } from 'lucide-react'
 
 interface FacturaDetalle {
     id: string; numero_factura: string; concepto: string; subtotal: number; iva: number; total: number;
     estado: string; fecha_emision: string; fecha_vencimiento: string; fecha_envio: string; notas: string;
     cliente_nombre: string; cliente_empresa: string; cliente_email: string; cliente_telefono: string; cliente_rfc: string;
-    archivo_nombre: string; tipo: string; recurrente: boolean; dia_mes: number; cliente_id: string;
+    archivo_nombre: string; archivo_url?: string | null; tipo: string; recurrente: boolean; dia_mes: number; cliente_id: string;
+    tipo_ingreso?: 'fijo' | 'run_rate' | 'variable';
+    bolsa_destino?: string;
+    estado_calculado?: string;
+    dias_atraso?: number | null;
+    recordatorios_activos?: boolean;
 }
 interface Cliente { id: string; nombre: string; empresa: string }
 
@@ -28,6 +33,7 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
     const [editing, setEditing] = useState(false)
     const [saving, setSaving] = useState(false)
     const [editForm, setEditForm] = useState<Record<string, string | number | boolean | null>>({})
+    const [uploadingPdf, setUploadingPdf] = useState(false)
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -59,8 +65,39 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
             tipo: factura.tipo || 'unico',
             recurrente: factura.recurrente || false,
             dia_mes: factura.dia_mes || '',
+            tipo_ingreso: factura.tipo_ingreso || 'variable',
+            recordatorios_activos: factura.recordatorios_activos !== false,
         })
         setEditing(true)
+    }
+
+    const handleUploadPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        if (file.type !== 'application/pdf') { alert('Solo se permiten archivos PDF'); return }
+        setUploadingPdf(true)
+        try {
+            const fd = new FormData()
+            fd.append('file', file)
+            fd.append('carpeta', 'facturas')
+            const upRes = await fetch('/api/finanzas/upload', { method: 'POST', body: fd })
+            if (!upRes.ok) {
+                const err = await upRes.json().catch(() => ({}))
+                alert('Error al subir PDF: ' + (err.error || 'desconocido'))
+                return
+            }
+            const upData = await upRes.json()
+            const r = await fetch(`/api/facturas/${id}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    archivo_url: upData.url,
+                    archivo_nombre: upData.nombre,
+                    archivo_tipo: upData.tipo,
+                }),
+            })
+            if (r.ok) fetchFactura()
+            else alert('Error al asociar PDF')
+        } finally { setUploadingPdf(false) }
     }
 
     const handleSave = async () => {
@@ -158,14 +195,52 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                 <Button onClick={startEdit} variant="outline" className="font-mono gap-2 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 bg-transparent" size="sm">
                                     <Pencil className="h-4 w-4" /> Editar
                                 </Button>
-                                {factura.archivo_nombre && (
+                                {(factura.archivo_url || factura.archivo_nombre) && (
                                     <Button onClick={() => window.open(`/api/facturas/${id}/pdf`, '_blank')} variant="outline" className="font-mono gap-2 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 bg-transparent" size="sm">
                                         <Eye className="h-4 w-4" /> Ver PDF
                                     </Button>
                                 )}
+                                <label className={`font-mono gap-2 inline-flex items-center px-3 h-9 rounded-md border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 bg-transparent cursor-pointer text-sm ${uploadingPdf ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <Upload className="h-4 w-4" />
+                                    {uploadingPdf ? 'Subiendo...' : (factura.archivo_url || factura.archivo_nombre) ? 'Reemplazar PDF' : 'Subir PDF'}
+                                    <input type="file" accept=".pdf" onChange={handleUploadPdf} className="hidden" disabled={uploadingPdf} />
+                                </label>
                                 <Button onClick={handleDelete} variant="outline" className="font-mono gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 bg-transparent ml-auto" size="sm">
                                     <Trash2 className="h-4 w-4" /> Eliminar
                                 </Button>
+                            </div>
+
+                            {/* Estado real (calculado) + bolsa */}
+                            <div className="flex flex-wrap gap-2 text-xs font-mono">
+                                {factura.estado_calculado && (
+                                    <span className={`px-2 py-1 rounded border ${factura.estado_calculado === 'vencida' ? 'text-red-400 bg-red-400/10 border-red-500/30' :
+                                        factura.estado_calculado === 'pagada' ? 'text-green-400 bg-green-400/10 border-green-500/30' :
+                                            factura.estado_calculado === 'parcial' ? 'text-yellow-400 bg-yellow-400/10 border-yellow-500/30' :
+                                                'text-gray-400 bg-gray-400/10 border-gray-500/30'
+                                        }`}>
+                                        Estado: {factura.estado_calculado}
+                                    </span>
+                                )}
+                                {typeof factura.dias_atraso === 'number' && factura.dias_atraso > 0 && (
+                                    <span className="px-2 py-1 rounded border text-red-400 bg-red-400/10 border-red-500/30">
+                                        ⏰ {factura.dias_atraso} día{factura.dias_atraso !== 1 ? 's' : ''} de atraso
+                                    </span>
+                                )}
+                                {typeof factura.dias_atraso === 'number' && factura.dias_atraso <= 0 && factura.dias_atraso >= -7 && (
+                                    <span className="px-2 py-1 rounded border text-cyan-400 bg-cyan-400/10 border-cyan-500/30">
+                                        ⏳ Vence en {Math.abs(factura.dias_atraso)} día{Math.abs(factura.dias_atraso) !== 1 ? 's' : ''}
+                                    </span>
+                                )}
+                                {factura.tipo_ingreso && (
+                                    <span className="px-2 py-1 rounded border text-purple-400 bg-purple-400/10 border-purple-500/30">
+                                        Tipo: {factura.tipo_ingreso === 'fijo' ? '📌 Fijo' : factura.tipo_ingreso === 'run_rate' ? '🔄 Run-rate' : '⚡ Variable'}
+                                    </span>
+                                )}
+                                {factura.bolsa_destino && (
+                                    <span className="px-2 py-1 rounded border text-green-400 bg-green-400/10 border-green-500/30">
+                                        Bolsa: {factura.bolsa_destino.replace('_', ' ')}
+                                    </span>
+                                )}
                             </div>
 
                             {/* Edit Form */}
@@ -240,6 +315,26 @@ export default function FacturaDetallePage({ params }: { params: Promise<{ id: s
                                         <div>
                                             <label className="font-mono text-xs text-gray-500">Notas</label>
                                             <input type="text" value={String(editForm.notas || '')} onChange={e => setEditForm(f => ({ ...f, notas: e.target.value }))} className={inputCls + ' mt-1'} />
+                                        </div>
+                                    </div>
+
+                                    {/* SAF: tipo_ingreso + recordatorios */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-800">
+                                        <div>
+                                            <label className="font-mono text-xs text-green-400">Tipo de ingreso *</label>
+                                            <select value={String(editForm.tipo_ingreso || 'variable')} onChange={e => setEditForm(f => ({ ...f, tipo_ingreso: e.target.value }))} className={inputCls + ' mt-1'}>
+                                                <option value="fijo">📌 Fijo (contrato indefinido) → Operación Base</option>
+                                                <option value="run_rate">🔄 Run-rate (recurrencia esperada) → Operación Variable</option>
+                                                <option value="variable">⚡ Variable (cobro puntual) → Crecimiento</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex items-end gap-2">
+                                            <label className="flex items-center gap-2 font-mono text-xs text-gray-400 cursor-pointer">
+                                                <input type="checkbox" checked={editForm.recordatorios_activos !== false}
+                                                    onChange={e => setEditForm(f => ({ ...f, recordatorios_activos: e.target.checked }))}
+                                                    className="accent-green-500" />
+                                                Enviar recordatorios automáticos (email + Telegram)
+                                            </label>
                                         </div>
                                     </div>
 
