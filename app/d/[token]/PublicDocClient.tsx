@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
-import { ChevronRight, ChevronLeft, FolderOpen, Target, Zap, ExternalLink } from 'lucide-react'
+import { ChevronRight, ChevronLeft, FolderOpen, Target, Zap, ExternalLink, Maximize2, X } from 'lucide-react'
 import {
     DOC_COLORES,
     DOC_COLOR_CLASES,
@@ -236,64 +236,13 @@ function FlujoView({
                     )}
                 </div>
 
-                {/* Pasos */}
+                {/* Pasos: carrusel uno por uno */}
                 {flujo.pasos.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 font-mono">
                         Este flujo aún no tiene pasos documentados
                     </div>
                 ) : (
-                    <div className="space-y-6">
-                        {flujo.pasos.map((paso, idx) => (
-                            <motion.div
-                                key={paso.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                                className="bg-zinc-900/50 border border-green-500/20 rounded-lg overflow-hidden"
-                            >
-                                <div className="p-4 border-b border-green-500/10">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <span className={`text-xs font-mono ${c.text} ${c.bg} px-2 py-1 rounded`}>
-                                            PASO {String(idx + 1).padStart(2, '0')}
-                                        </span>
-                                        {paso.titulo && (
-                                            <h3 className="text-lg font-mono text-white">{paso.titulo}</h3>
-                                        )}
-                                    </div>
-                                    {paso.accion && (
-                                        <p className="text-sm font-mono text-green-400 mt-1">→ {paso.accion}</p>
-                                    )}
-                                </div>
-
-                                {/* Captura con marco terminal */}
-                                <div className="p-3 bg-[#050505]">
-                                    <div className="rounded-md border border-slate-800 overflow-hidden bg-[#0a0a0a]">
-                                        <div className="flex items-center px-3 py-2 bg-[#1a1b26] border-b border-slate-800">
-                                            <div className="flex space-x-2">
-                                                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                                                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                                                <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                                            </div>
-                                        </div>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={paso.imagen_url}
-                                            alt={paso.titulo || `Paso ${idx + 1}`}
-                                            className="w-full max-h-[700px] object-contain bg-black"
-                                        />
-                                    </div>
-                                </div>
-
-                                {paso.descripcion && (
-                                    <div className="p-4 border-t border-green-500/10">
-                                        <p className="text-sm font-mono text-gray-300 leading-relaxed whitespace-pre-wrap">
-                                            {paso.descripcion}
-                                        </p>
-                                    </div>
-                                )}
-                            </motion.div>
-                        ))}
-                    </div>
+                    <PasosCarousel pasos={flujo.pasos} colorClasses={c} />
                 )}
 
                 {/* Navegación prev/next */}
@@ -331,5 +280,276 @@ function FlujoView({
                 )}
             </motion.div>
         </AnimatePresence>
+    )
+}
+
+// ───────────────────────────────────────────────────────────
+// Carrusel de pasos: un paso a la vez con flechas, swipe y teclado
+// ───────────────────────────────────────────────────────────
+function PasosCarousel({
+    pasos,
+    colorClasses,
+}: {
+    pasos: DocFlujoConPasos['pasos']
+    colorClasses: { bg: string; border: string; text: string }
+}) {
+    const [idx, setIdx] = useState(0)
+    const [lightbox, setLightbox] = useState(false)
+    const touchStartX = useRef<number | null>(null)
+    const touchEndX = useRef<number | null>(null)
+
+    // Reset al cambiar de flujo (cuando cambian los pasos)
+    useEffect(() => { setIdx(0) }, [pasos])
+
+    const total = pasos.length
+    const paso = pasos[idx]
+    const goPrev = () => setIdx(i => Math.max(0, i - 1))
+    const goNext = () => setIdx(i => Math.min(total - 1, i + 1))
+
+    // Atajos de teclado
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (lightbox) {
+                if (e.key === 'Escape') setLightbox(false)
+                if (e.key === 'ArrowLeft') goPrev()
+                if (e.key === 'ArrowRight') goNext()
+                return
+            }
+            // Solo navega si no estás escribiendo en un input
+            const tag = (e.target as HTMLElement)?.tagName
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return
+            if (e.key === 'ArrowLeft') goPrev()
+            if (e.key === 'ArrowRight') goNext()
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lightbox, total])
+
+    // Preload de la siguiente captura para que el swipe sea instantáneo
+    useEffect(() => {
+        const next = pasos[idx + 1]
+        if (next?.imagen_url) {
+            const img = new window.Image()
+            img.src = next.imagen_url
+        }
+    }, [idx, pasos])
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        touchStartX.current = e.touches[0].clientX
+        touchEndX.current = null
+    }
+    const onTouchMove = (e: React.TouchEvent) => {
+        touchEndX.current = e.touches[0].clientX
+    }
+    const onTouchEnd = () => {
+        if (touchStartX.current == null || touchEndX.current == null) return
+        const diff = touchStartX.current - touchEndX.current
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) goNext()
+            else goPrev()
+        }
+        touchStartX.current = null
+        touchEndX.current = null
+    }
+
+    return (
+        <div className="space-y-4">
+            {/* Header del paso (texto ARRIBA, más grande) */}
+            <div className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-5 md:p-6">
+                <div className="flex items-center gap-3 flex-wrap mb-3">
+                    <span className={`text-sm font-mono ${colorClasses.text} ${colorClasses.bg} px-3 py-1.5 rounded font-bold`}>
+                        PASO {String(idx + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+                    </span>
+                    {paso.titulo && (
+                        <h3 className="text-xl md:text-2xl font-mono text-white">{paso.titulo}</h3>
+                    )}
+                </div>
+                {paso.accion && (
+                    <p className="text-base md:text-lg font-mono text-green-400 mb-2">→ {paso.accion}</p>
+                )}
+                {paso.descripcion && (
+                    <p className="text-base md:text-lg font-mono text-gray-200 leading-relaxed whitespace-pre-wrap mt-2">
+                        {paso.descripcion}
+                    </p>
+                )}
+            </div>
+
+            {/* Carrusel de imagen */}
+            <div
+                className="relative bg-zinc-900/50 border border-green-500/20 rounded-lg overflow-hidden select-none"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+            >
+                {/* Captura con marco terminal */}
+                <div className="p-3 bg-[#050505]">
+                    <div className="rounded-md border border-slate-800 overflow-hidden bg-[#0a0a0a] relative group">
+                        <div className="flex items-center justify-between px-3 py-2 bg-[#1a1b26] border-b border-slate-800">
+                            <div className="flex space-x-2">
+                                <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                            </div>
+                            <button
+                                onClick={() => setLightbox(true)}
+                                className="text-gray-500 hover:text-green-400 transition-colors"
+                                aria-label="Ampliar imagen"
+                            >
+                                <Maximize2 className="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                        <AnimatePresence mode="wait">
+                            <motion.img
+                                key={paso.id}
+                                src={paso.imagen_url}
+                                alt={paso.titulo || `Paso ${idx + 1}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.18 }}
+                                onClick={() => setLightbox(true)}
+                                className="w-full max-h-[70vh] object-contain bg-black cursor-zoom-in"
+                                loading="eager"
+                            />
+                        </AnimatePresence>
+                    </div>
+                </div>
+
+                {/* Flechas (overlay desktop) */}
+                {idx > 0 && (
+                    <button
+                        onClick={goPrev}
+                        aria-label="Paso anterior"
+                        className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 items-center justify-center h-12 w-12 rounded-full bg-black/70 hover:bg-green-600/90 border border-green-500/40 text-green-400 hover:text-white transition-all"
+                    >
+                        <ChevronLeft className="h-6 w-6" />
+                    </button>
+                )}
+                {idx < total - 1 && (
+                    <button
+                        onClick={goNext}
+                        aria-label="Siguiente paso"
+                        className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 items-center justify-center h-12 w-12 rounded-full bg-black/70 hover:bg-green-600/90 border border-green-500/40 text-green-400 hover:text-white transition-all"
+                    >
+                        <ChevronRight className="h-6 w-6" />
+                    </button>
+                )}
+            </div>
+
+            {/* Controles inferiores: barra + flechas (visible siempre) */}
+            <div className="space-y-3">
+                {/* Progreso */}
+                <div className="flex items-center gap-2">
+                    <span className={`text-xs font-mono ${colorClasses.text} min-w-[3rem]`}>{idx + 1}/{total}</span>
+                    <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-green-500 transition-all duration-300"
+                            style={{ width: `${((idx + 1) / total) * 100}%` }}
+                        />
+                    </div>
+                </div>
+
+                {/* Botones prev/next */}
+                <div className="flex items-center justify-between gap-3">
+                    <button
+                        onClick={goPrev}
+                        disabled={idx === 0}
+                        className="flex-1 flex items-center justify-center gap-2 bg-zinc-800/60 hover:bg-zinc-800 border border-gray-700 hover:border-green-500/50 disabled:opacity-30 disabled:cursor-not-allowed text-gray-300 hover:text-green-400 disabled:hover:text-gray-300 disabled:hover:border-gray-700 rounded-md px-4 py-2.5 font-mono text-sm transition-all"
+                    >
+                        <ChevronLeft className="h-4 w-4" /> Anterior
+                    </button>
+                    <button
+                        onClick={goNext}
+                        disabled={idx === total - 1}
+                        className="flex-1 flex items-center justify-center gap-2 bg-green-600/20 hover:bg-green-600/40 border border-green-500/50 hover:border-green-500 disabled:opacity-30 disabled:cursor-not-allowed text-green-300 hover:text-white rounded-md px-4 py-2.5 font-mono text-sm transition-all"
+                    >
+                        Siguiente <ChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Mini-thumbnails (desktop) */}
+                {total > 1 && (
+                    <div className="hidden md:flex gap-2 overflow-x-auto pb-2 pt-1">
+                        {pasos.map((p, i) => (
+                            <button
+                                key={p.id}
+                                onClick={() => setIdx(i)}
+                                aria-label={`Ir al paso ${i + 1}`}
+                                className={`relative flex-shrink-0 w-20 h-14 rounded border-2 overflow-hidden transition-all ${
+                                    i === idx
+                                        ? 'border-green-500 ring-2 ring-green-500/30'
+                                        : 'border-gray-800 opacity-60 hover:opacity-100 hover:border-green-500/50'
+                                }`}
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={p.imagen_url}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
+                                <span className="absolute bottom-0 right-0 bg-black/80 text-green-400 font-mono text-[9px] px-1 rounded-tl">
+                                    {i + 1}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <p className="text-[10px] font-mono text-gray-600 text-center">
+                    💡 Desliza con el dedo o usa ← → para navegar · Click en la imagen para ampliar
+                </p>
+            </div>
+
+            {/* Lightbox modal */}
+            <AnimatePresence>
+                {lightbox && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+                        onClick={() => setLightbox(false)}
+                    >
+                        <button
+                            onClick={() => setLightbox(false)}
+                            className="absolute top-4 right-4 text-white hover:text-green-400 transition-colors"
+                            aria-label="Cerrar"
+                        >
+                            <X className="h-8 w-8" />
+                        </button>
+                        {idx > 0 && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); goPrev() }}
+                                aria-label="Paso anterior"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-full bg-black/60 hover:bg-green-600 border border-green-500/40 text-white flex items-center justify-center transition-all"
+                            >
+                                <ChevronLeft className="h-7 w-7" />
+                            </button>
+                        )}
+                        {idx < total - 1 && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); goNext() }}
+                                aria-label="Siguiente paso"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-full bg-black/60 hover:bg-green-600 border border-green-500/40 text-white flex items-center justify-center transition-all"
+                            >
+                                <ChevronRight className="h-7 w-7" />
+                            </button>
+                        )}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={paso.imagen_url}
+                            alt={paso.titulo || `Paso ${idx + 1}`}
+                            className="max-w-full max-h-full object-contain"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 border border-green-500/30 rounded-md px-4 py-2 font-mono text-xs text-green-400">
+                            Paso {idx + 1} de {total} {paso.titulo && `· ${paso.titulo}`}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     )
 }
