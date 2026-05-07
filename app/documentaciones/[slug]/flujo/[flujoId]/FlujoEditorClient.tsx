@@ -346,7 +346,7 @@ function NuevoPasoUploader({ flujoId, onUploaded }: { flujoId: string; onUploade
                     <div className="flex flex-col items-center gap-2 text-green-400 font-mono">
                         <Upload className="h-8 w-8" />
                         <p className="text-sm">Subir captura para nuevo paso</p>
-                        <p className="text-xs text-gray-500">PNG, JPG, WEBP o GIF (máx 5MB)</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, WEBP o GIF (máx 4MB)</p>
                     </div>
                 )}
             </button>
