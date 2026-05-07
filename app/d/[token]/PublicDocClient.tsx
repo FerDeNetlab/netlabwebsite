@@ -493,7 +493,7 @@ function PasosCarousel({
                     <button
                         onClick={() => setLightbox(true)}
                         aria-label="Ampliar imagen"
-                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/70 border border-green-500/40 text-green-400 flex items-center justify-center"
+                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/70 border border-green-500/40 text-green-400 flex items-center justify-center z-20"
                     >
                         <Maximize2 className="h-4 w-4" />
                     </button>
