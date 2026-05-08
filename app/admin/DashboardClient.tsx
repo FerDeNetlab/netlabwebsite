@@ -14,7 +14,8 @@ import {
   Briefcase,
   ClipboardList,
   Package,
-  Plus
+  Plus,
+  UserCog
 } from 'lucide-react'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
@@ -136,6 +137,15 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       bgColor: 'bg-emerald-400/10',
       borderColor: 'border-emerald-500/20',
       path: '/admin/finanzas',
+    },
+    {
+      title: 'Recursos Humanos',
+      description: 'Empleados, documentos y datos laborales',
+      icon: UserCog,
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-400/10',
+      borderColor: 'border-orange-500/20',
+      path: '/admin/rh',
     },
   ]
 
