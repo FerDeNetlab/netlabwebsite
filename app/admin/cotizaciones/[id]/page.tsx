@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
 import {
   ArrowLeft, Building2, Mail, Phone, FileText, MapPin,
-  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send, Download, Copy
+  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send, Download, Copy, ExternalLink
 } from 'lucide-react'
 
 interface CotizacionDetalle {
@@ -52,14 +52,6 @@ const estadoConfig: Record<string, { label: string; color: string; bg: string }>
   rechazada: { label: 'Rechazada', color: 'text-red-400', bg: 'bg-red-400/10 border-red-500/30' },
 }
 
-function getPublicLink(token: string) {
-  if (!token) return ''
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/cotizacion/${token}`
-  }
-  return ''
-}
-
 export default function CotizacionDetallePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: session, status } = useSession()
@@ -67,10 +59,18 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
   const [cotizacion, setCotizacion] = useState<CotizacionDetalle | null>(null)
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
+  const [publicLink, setPublicLink] = useState('')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/admin/login')
   }, [status, router])
+
+  useEffect(() => {
+    if (cotizacion?.public_token) {
+      setPublicLink(`${window.location.origin}/cotizacion/${cotizacion.public_token}`)
+    }
+  }, [cotizacion?.public_token])
 
   useEffect(() => {
     const fetchCotizacion = async () => {
@@ -193,25 +193,32 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
               </div>
 
               {/* Public Link */}
-              {cotizacion.public_token && (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-mono text-xs text-gray-400">Link público:</span>
-                  <span className="font-mono text-xs text-green-400 bg-zinc-900 px-2 py-1 rounded select-all">
-                    {typeof window !== 'undefined' ? `${window.location.origin}/cotizacion/${cotizacion.public_token}` : ''}
-                  </span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-green-400 hover:bg-green-900/20"
-                    title="Copiar link público"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        navigator.clipboard.writeText(`${window.location.origin}/cotizacion/${cotizacion.public_token}`)
-                      }
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+              {publicLink && (
+                <div className="flex items-center gap-2 flex-wrap bg-zinc-900/60 border border-green-500/20 rounded-lg px-4 py-2 mb-2">
+                  <span className="font-mono text-xs text-gray-400">🔗 Link para cliente:</span>
+                  <span className="font-mono text-xs text-green-400 flex-1 truncate select-all">{publicLink}</span>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="font-mono text-xs text-green-400 hover:bg-green-900/20 gap-1 h-7 px-2"
+                      onClick={() => {
+                        navigator.clipboard.writeText(publicLink)
+                        setCopied(true)
+                        setTimeout(() => setCopied(false), 2000)
+                      }}
+                    >
+                      <Copy className="h-3 w-3" />{copied ? 'Copiado!' : 'Copiar'}
+                    </Button>
+                    <a
+                      href={publicLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-mono text-xs text-gray-400 hover:text-green-400 px-2 h-7"
+                    >
+                      <ExternalLink className="h-3 w-3" /> Ver
+                    </a>
+                  </div>
                 </div>
               )}
 
