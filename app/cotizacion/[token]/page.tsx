@@ -105,20 +105,18 @@ export default function CotizacionPublicaPage() {
           <span className={`font-mono text-xs px-3 py-1 rounded border ${estado.cls}`}>{estado.label}</span>
         </div>
 
-        <TerminalFrame title={`cotizacion/${cotizacion.numero_cotizacion || token.slice(0, 8)}`}>
-          <div className="p-6 space-y-6">
+        <TerminalFrame title={cotizacion.numero_cotizacion || 'Cotización'}>
+          <div className="p-4 md:p-6 space-y-5">
             {/* Encabezado */}
-            <div className="border-b border-green-500/20 pb-5">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="text-xs font-mono text-green-500 uppercase tracking-widest mb-1">
-                    {cotizacion.numero_cotizacion || 'Cotización'}
-                  </p>
-                  <h1 className="text-2xl font-mono text-white leading-tight">{cotizacion.concepto}</h1>
-                </div>
-                <div className="text-right">
+            <div className="border-b border-green-500/20 pb-4">
+              <p className="text-xs font-mono text-green-500 uppercase tracking-widest mb-1">
+                {cotizacion.numero_cotizacion || 'Cotización'}
+              </p>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-lg md:text-2xl font-mono text-white leading-tight flex-1">{cotizacion.concepto}</h1>
+                <div className="text-right shrink-0">
                   <p className="text-xs font-mono text-gray-500">Total</p>
-                  <p className="text-3xl font-mono text-green-400">${fmt(cotizacion.total)}</p>
+                  <p className="text-2xl md:text-3xl font-mono text-green-400">${fmt(cotizacion.total)}</p>
                   <p className="text-xs font-mono text-gray-500">MXN</p>
                 </div>
               </div>
@@ -163,13 +161,32 @@ export default function CotizacionPublicaPage() {
               </div>
             </div>
 
-            {/* Tabla de items */}
+            {/* Partidas */}
             {cotizacion.items && cotizacion.items.length > 0 && (
               <div>
                 <p className="text-xs font-mono text-green-500 uppercase tracking-wider mb-3 flex items-center gap-1">
                   <FileText className="h-3 w-3" /> Partidas
                 </p>
-                <div className="overflow-x-auto rounded-lg border border-green-500/15">
+
+                {/* Mobile: cards */}
+                <div className="md:hidden space-y-2">
+                  {cotizacion.items.map((item) => (
+                    <div key={item.id} className="bg-zinc-900/50 border border-green-500/15 rounded-lg p-3 space-y-1">
+                      <p className="font-mono text-sm text-white">{item.descripcion}</p>
+                      <div className="flex justify-between font-mono text-xs text-gray-400">
+                        <span>Cant. {item.cantidad}</span>
+                        {item.descuento ? <span>Desc. {item.descuento}%</span> : null}
+                        <span className="text-gray-500">P.U. ${fmt(item.precio_unitario)}</span>
+                      </div>
+                      <div className="flex justify-end">
+                        <span className="font-mono text-sm text-green-400 font-bold">${fmt(item.subtotal)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop: tabla */}
+                <div className="hidden md:block overflow-x-auto rounded-lg border border-green-500/15">
                   <table className="w-full font-mono text-sm">
                     <thead>
                       <tr className="bg-zinc-900 text-gray-400 text-xs uppercase tracking-wider">
