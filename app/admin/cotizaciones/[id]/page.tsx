@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
 import {
   ArrowLeft, Building2, Mail, Phone, FileText, MapPin,
-  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send, Download
+  Calendar, DollarSign, Trash2, CheckCircle, XCircle, Send, Download, Copy
 } from 'lucide-react'
 
 interface CotizacionDetalle {
@@ -49,6 +49,14 @@ const estadoConfig: Record<string, { label: string; color: string; bg: string }>
   enviada: { label: 'Enviada', color: 'text-blue-400', bg: 'bg-blue-400/10 border-blue-500/30' },
   aprobada: { label: 'Aprobada', color: 'text-green-400', bg: 'bg-green-400/10 border-green-500/30' },
   rechazada: { label: 'Rechazada', color: 'text-red-400', bg: 'bg-red-400/10 border-red-500/30' },
+}
+
+function getPublicLink(token: string) {
+  if (!token) return ''
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/cotizacion/${token}`
+  }
+  return ''
 }
 
 export default function CotizacionDetallePage({ params }: { params: Promise<{ id: string }> }) {
@@ -182,6 +190,29 @@ export default function CotizacionDetallePage({ params }: { params: Promise<{ id
                   </span>
                 </div>
               </div>
+
+              {/* Public Link */}
+              {cotizacion.public_token && (
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-mono text-xs text-gray-400">Link público:</span>
+                  <span className="font-mono text-xs text-green-400 bg-zinc-900 px-2 py-1 rounded select-all">
+                    {typeof window !== 'undefined' ? `${window.location.origin}/cotizacion/${cotizacion.public_token}` : ''}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-green-400 hover:bg-green-900/20"
+                    title="Copiar link público"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        navigator.clipboard.writeText(`${window.location.origin}/cotizacion/${cotizacion.public_token}`)
+                      }
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2">
