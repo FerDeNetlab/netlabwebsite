@@ -25,6 +25,7 @@ interface CotizacionDetalle {
   fecha_vencimiento: string
   condiciones_pago: string
   notas: string
+  public_token: string
   cliente_nombre: string
   cliente_empresa: string
   cliente_email: string
