@@ -11,30 +11,40 @@ export async function GET(request: Request) {
     const mes = Number(searchParams.get('mes') || new Date().getMonth() + 1)
     const anio = Number(searchParams.get('anio') || new Date().getFullYear())
 
-    // Build list of expected pendientes for this month
+    // Último día del mes seleccionado (para el corte de rolling unpaid)
+    const lastDay = new Date(anio, mes, 0).toISOString().split('T')[0]
+    const today = new Date().toISOString().split('T')[0]
 
     // --- INGRESOS ---
 
-    // 1. Recurrentes: all active recurring facturas generate 1 pending per month
+    // 1. Recurrentes: todas las facturas recurrentes activas generan 1 pendiente por mes
     const facturasRecurrentes = await sql`
       SELECT f.id, f.numero_factura, f.concepto, f.total as monto, f.dia_mes,
-        cl.nombre as cliente_nombre, f.fecha_emision, f.fecha_envio,
+        f.fecha_emision, f.fecha_vencimiento,
+        cl.nombre as cliente_nombre,
         'ingreso' as categoria, 'recurrente' as subtipo
       FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
       WHERE f.recurrente = true AND f.dia_mes IS NOT NULL
       ORDER BY f.dia_mes
     ` as Record<string, unknown>[]
 
-    // 2. Únicos: facturas with fecha_vencimiento in this month
+    // 2. Únicas: rolling — aparecen si vencen <= fin del mes Y (no tienen ningún pago ó pagaron este mes)
     const facturasUnicas = await sql`
       SELECT f.id, f.numero_factura, f.concepto, f.total as monto,
-        f.fecha_vencimiento, cl.nombre as cliente_nombre,
-        f.fecha_emision, f.fecha_envio,
+        f.fecha_vencimiento, f.fecha_emision,
+        cl.nombre as cliente_nombre,
         'ingreso' as categoria, 'unico' as subtipo
       FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
       WHERE f.recurrente = false
-        AND EXTRACT(MONTH FROM f.fecha_vencimiento) = ${mes}
-        AND EXTRACT(YEAR FROM f.fecha_vencimiento) = ${anio}
+        AND f.fecha_vencimiento <= ${lastDay}::date
+        AND (
+          NOT EXISTS (SELECT 1 FROM pagos p WHERE p.factura_id = f.id)
+          OR EXISTS (
+            SELECT 1 FROM pagos p WHERE p.factura_id = f.id
+            AND EXTRACT(MONTH FROM p.fecha_pago) = ${mes}
+            AND EXTRACT(YEAR FROM p.fecha_pago) = ${anio}
+          )
+        )
       ORDER BY f.fecha_vencimiento
     ` as Record<string, unknown>[]
 
@@ -43,7 +53,7 @@ export async function GET(request: Request) {
     // 3. Gastos fijos recurrentes
     const gastosFijos = await sql`
       SELECT g.id, g.concepto, g.monto, g.dia_mes, g.subtipo,
-        g.proveedor as cliente_nombre,
+        g.fecha_vencimiento, g.proveedor as cliente_nombre,
         cg.nombre as categoria_nombre, cg.color as categoria_color,
         'egreso' as categoria
       FROM gastos g LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
@@ -51,20 +61,28 @@ export async function GET(request: Request) {
       ORDER BY g.dia_mes
     ` as Record<string, unknown>[]
 
-    // 4. Gastos únicos with fecha_vencimiento in this month
+    // 4. Gastos únicos: rolling — aparecen si vencen <= fin del mes Y (pendiente ó pagado este mes)
     const gastosUnicos = await sql`
       SELECT g.id, g.concepto, g.monto, g.fecha_vencimiento, g.subtipo,
+        g.fecha_pago as fecha_pago_real,
         g.proveedor as cliente_nombre,
         cg.nombre as categoria_nombre, cg.color as categoria_color,
-        'egreso' as categoria
+        'egreso' as categoria, g.estado as estado_db
       FROM gastos g LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
       WHERE g.recurrente = false
-        AND EXTRACT(MONTH FROM g.fecha_vencimiento) = ${mes}
-        AND EXTRACT(YEAR FROM g.fecha_vencimiento) = ${anio}
+        AND g.fecha_vencimiento <= ${lastDay}::date
+        AND (
+          g.estado = 'pendiente'
+          OR (
+            g.estado = 'pagado'
+            AND EXTRACT(MONTH FROM g.fecha_pago) = ${mes}
+            AND EXTRACT(YEAR FROM g.fecha_pago) = ${anio}
+          )
+        )
       ORDER BY g.fecha_vencimiento
     ` as Record<string, unknown>[]
 
-    // --- PAGOS REALIZADOS (to know what's already paid) ---
+    // --- PAGOS REALIZADOS EN ESTE MES ---
     const pagosRealizados = await sql`
       SELECT p.factura_id, p.monto, p.fecha_pago, p.metodo_pago, p.notas
       FROM pagos p
@@ -73,7 +91,7 @@ export async function GET(request: Request) {
       ORDER BY p.fecha_pago
     ` as Record<string, unknown>[]
 
-    const gastosPagados = await sql`
+    const gastosPagadosMes = await sql`
       SELECT g.id, g.fecha_pago, g.monto
       FROM gastos g
       WHERE g.estado = 'pagado'
@@ -81,7 +99,7 @@ export async function GET(request: Request) {
         AND EXTRACT(YEAR FROM g.fecha_pago) = ${anio}
     ` as Record<string, unknown>[]
 
-    // Map pagos by factura_id for this month
+    // Maps
     const pagosPorFactura: Record<string, { total: number; fecha_pago: string; metodo: string }> = {}
     for (const p of pagosRealizados) {
       const fid = p.factura_id as string
@@ -91,9 +109,17 @@ export async function GET(request: Request) {
       pagosPorFactura[fid].metodo = (p.metodo_pago as string) || ''
     }
 
-    const gastosPagadosSet = new Set(gastosPagados.map(g => g.id as string))
+    const gastosPagadosSet = new Set(gastosPagadosMes.map(g => g.id as string))
 
-    // Build unified movements list
+    // Helper: días de atraso respecto a hoy
+    const diasAtraso = (fechaVenc: string | null): number => {
+      if (!fechaVenc) return 0
+      const venc = new Date(String(fechaVenc).split('T')[0] + 'T12:00:00')
+      const hoy = new Date(today + 'T12:00:00')
+      const diff = Math.floor((hoy.getTime() - venc.getTime()) / 86400000)
+      return Math.max(0, diff)
+    }
+
     const movimientos: Record<string, unknown>[] = []
 
     // Ingresos recurrentes
@@ -109,24 +135,27 @@ export async function GET(request: Request) {
         metodo_pago: pago?.metodo || null,
         monto_pagado: pago?.total || 0,
         tipo_mov: 'ingreso',
+        dias_atraso: pago ? 0 : diasAtraso(fechaIdeal),
       })
     }
 
-    // Ingresos únicos
+    // Ingresos únicos (rolling)
     for (const f of facturasUnicas) {
+      const fv = (f.fecha_vencimiento as string)?.split('T')[0] || null
       const pago = pagosPorFactura[f.id as string]
       movimientos.push({
         ...f,
-        fecha_ideal: (f.fecha_vencimiento as string)?.split('T')[0] || null,
+        fecha_ideal: fv,
         estado: pago ? 'cobrado' : 'pendiente',
         fecha_pago: pago?.fecha_pago || null,
         metodo_pago: pago?.metodo || null,
         monto_pagado: pago?.total || 0,
         tipo_mov: 'ingreso',
+        dias_atraso: pago ? 0 : diasAtraso(fv),
       })
     }
 
-    // Egresos fijos
+    // Egresos fijos recurrentes
     for (const g of gastosFijos) {
       const dia = Math.min(Number(g.dia_mes), new Date(anio, mes, 0).getDate())
       const fechaIdeal = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
@@ -136,23 +165,26 @@ export async function GET(request: Request) {
         fecha_ideal: fechaIdeal,
         estado: pagado ? 'pagado' : 'pendiente',
         tipo_mov: 'egreso',
+        dias_atraso: pagado ? 0 : diasAtraso(fechaIdeal),
       })
     }
 
-    // Egresos únicos
+    // Egresos únicos (rolling)
     for (const g of gastosUnicos) {
-      const pagado = gastosPagadosSet.has(g.id as string)
+      const fv = (g.fecha_vencimiento as string)?.split('T')[0] || null
+      const pagado = g.estado_db === 'pagado'
       movimientos.push({
         ...g,
-        fecha_ideal: (g.fecha_vencimiento as string)?.split('T')[0] || null,
+        fecha_ideal: fv,
         estado: pagado ? 'pagado' : 'pendiente',
         tipo_mov: 'egreso',
+        dias_atraso: pagado ? 0 : diasAtraso(fv),
       })
     }
 
     return NextResponse.json({ movimientos, mes, anio })
   } catch (error) {
-    console.error('[ERP] Error:', error)
+    console.error('[ERP] Error movimientos:', error)
     return NextResponse.json({ error: 'Error al obtener movimientos' }, { status: 500 })
   }
 }

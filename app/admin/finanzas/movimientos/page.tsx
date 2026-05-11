@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown, Undo2 } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown, Undo2, AlertTriangle } from 'lucide-react'
 
 interface Movimiento {
     id: string; concepto: string; monto: number; numero_factura?: string;
@@ -15,6 +15,7 @@ interface Movimiento {
     tipo_mov: 'ingreso' | 'egreso'; subtipo?: string; categoria?: string;
     fecha_pago?: string; metodo_pago?: string; monto_pagado?: number;
     categoria_nombre?: string; categoria_color?: string;
+    fecha_emision?: string; fecha_vencimiento?: string; dias_atraso?: number;
 }
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -147,7 +148,7 @@ export default function MovimientosPage() {
                                             <div key={`i-${m.id}`} className="p-4 hover:bg-zinc-800/30 transition-colors">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="font-mono text-sm text-white font-bold">{m.numero_factura || m.concepto}</span>
                                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${m.subtipo === 'recurrente' ? 'text-cyan-400 bg-cyan-400/10' : 'text-green-400 bg-green-400/10'}`}>
                                                                 {m.subtipo === 'recurrente' ? '🔄' : '⚡'}
@@ -155,10 +156,17 @@ export default function MovimientosPage() {
                                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${m.estado === 'cobrado' ? 'text-emerald-400 bg-emerald-400/10' : 'text-yellow-400 bg-yellow-400/10'}`}>
                                                                 {m.estado === 'cobrado' ? '✅ Cobrado' : '⏳ Pendiente'}
                                                             </span>
+                                                            {m.estado !== 'cobrado' && m.dias_atraso && m.dias_atraso > 0 ? (
+                                                                <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono text-red-400 bg-red-400/10">
+                                                                    <AlertTriangle className="h-2.5 w-2.5" /> {m.dias_atraso}d atraso
+                                                                </span>
+                                                            ) : null}
                                                         </div>
-                                                        <div className="font-mono text-xs text-gray-500 mt-0.5">
-                                                            {m.cliente_nombre || 'Sin cliente'} • {m.concepto}
-                                                            {m.fecha_ideal && ` • Ideal: ${new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                        <div className="font-mono text-xs text-gray-500 mt-0.5 flex flex-wrap gap-2">
+                                                            <span>{m.cliente_nombre || 'Sin cliente'}</span>
+                                                            {m.concepto && m.numero_factura && <span>· {m.concepto}</span>}
+                                                            {m.fecha_emision && <span>· Emitida: {new Date(String(m.fecha_emision).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+                                                            {m.fecha_ideal && <span>· Vence: {new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
                                                         </div>
                                                         {m.estado === 'cobrado' && m.fecha_pago && (
                                                             <div className="font-mono text-[10px] text-emerald-400 mt-0.5">
@@ -236,7 +244,7 @@ export default function MovimientosPage() {
                                             <div key={`e-${m.id}`} className="p-4 hover:bg-zinc-800/30 transition-colors">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex-1">
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 flex-wrap">
                                                             <span className="font-mono text-sm text-white font-bold">{m.concepto}</span>
                                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${m.subtipo === 'sueldo' ? 'text-purple-400 bg-purple-400/10' : m.categoria === 'egreso' && !m.subtipo ? 'text-red-400 bg-red-400/10' : 'text-orange-400 bg-orange-400/10'}`}>
                                                                 {m.subtipo === 'sueldo' ? '🧑' : '📌'}
@@ -244,11 +252,16 @@ export default function MovimientosPage() {
                                                             <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${m.estado === 'pagado' ? 'text-emerald-400 bg-emerald-400/10' : 'text-yellow-400 bg-yellow-400/10'}`}>
                                                                 {m.estado === 'pagado' ? '✅ Pagado' : '⏳ Pendiente'}
                                                             </span>
+                                                            {m.estado !== 'pagado' && m.dias_atraso && m.dias_atraso > 0 ? (
+                                                                <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono text-red-400 bg-red-400/10">
+                                                                    <AlertTriangle className="h-2.5 w-2.5" /> {m.dias_atraso}d atraso
+                                                                </span>
+                                                            ) : null}
                                                         </div>
-                                                        <div className="font-mono text-xs text-gray-500 mt-0.5">
-                                                            {m.cliente_nombre || ''}
-                                                            {m.categoria_nombre && <span style={{ color: m.categoria_color }}> • {m.categoria_nombre}</span>}
-                                                            {m.fecha_ideal && ` • Ideal: ${new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`}
+                                                        <div className="font-mono text-xs text-gray-500 mt-0.5 flex flex-wrap gap-2">
+                                                            {m.cliente_nombre && <span>{m.cliente_nombre}</span>}
+                                                            {m.categoria_nombre && <span style={{ color: m.categoria_color as string }}>· {m.categoria_nombre}</span>}
+                                                            {m.fecha_ideal && <span>· Vence: {new Date(String(m.fecha_ideal).split('T')[0] + 'T12:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3">
