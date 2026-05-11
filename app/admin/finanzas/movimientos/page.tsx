@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
@@ -29,6 +29,8 @@ export default function MovimientosPage() {
     const [anio, setAnio] = useState(new Date().getFullYear())
     const [cobrandoId, setCobrandoId] = useState<string | null>(null)
     const [pagoForm, setPagoForm] = useState({ monto: '', fecha_pago: new Date().toISOString().split('T')[0], metodo_pago: 'transferencia', notas: '' })
+    const [submitting, setSubmitting] = useState(false)
+    const [pagoError, setPagoError] = useState<string | null>(null)
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -51,19 +53,33 @@ export default function MovimientosPage() {
     }
 
     const handleCobrar = async (mov: Movimiento) => {
-        const r = await fetch('/api/finanzas/movimientos', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tipo: mov.tipo_mov,
-                id: mov.id,
-                monto: Number(pagoForm.monto),
-                fecha_pago: pagoForm.fecha_pago,
-                metodo_pago: pagoForm.metodo_pago,
-                notas: pagoForm.notas,
+        setSubmitting(true)
+        setPagoError(null)
+        try {
+            const r = await fetch('/api/finanzas/movimientos', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipo: mov.tipo_mov,
+                    id: mov.id,
+                    monto: Number(pagoForm.monto),
+                    fecha_pago: pagoForm.fecha_pago,
+                    metodo_pago: pagoForm.metodo_pago,
+                    notas: pagoForm.notas,
+                })
             })
-        })
-        if (r.ok) { setCobrandoId(null); fetchData() }
-        else alert('Error al registrar')
+            if (r.ok) {
+                setCobrandoId(null)
+                setPagoError(null)
+                fetchData()
+            } else {
+                const err = await r.json().catch(() => ({}))
+                setPagoError(err.error || 'Error al registrar. Intenta de nuevo.')
+            }
+        } catch {
+            setPagoError('Error de conexión. Intenta de nuevo.')
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     const handleCancelar = async (mov: Movimiento) => {
@@ -188,41 +204,47 @@ export default function MovimientosPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                {/* Inline form */}
-                                                <AnimatePresence>
-                                                    {cobrandoId === m.id && (
-                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                                            className="mt-3 p-3 bg-zinc-800/50 border border-green-500/20 rounded-lg">
-                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Monto</label>
-                                                                    <input type="number" value={pagoForm.monto} onChange={e => setPagoForm(f => ({ ...f, monto: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Fecha de Pago</label>
-                                                                    <input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm(f => ({ ...f, fecha_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Método</label>
-                                                                    <select value={pagoForm.metodo_pago} onChange={e => setPagoForm(f => ({ ...f, metodo_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'}>
-                                                                        <option value="transferencia">Transferencia</option>
-                                                                        <option value="efectivo">Efectivo</option>
-                                                                        <option value="cheque">Cheque</option>
-                                                                        <option value="tarjeta">Tarjeta</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Notas</label>
-                                                                    <input type="text" value={pagoForm.notas} onChange={e => setPagoForm(f => ({ ...f, notas: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
-                                                                </div>
+                                                {/* Inline form — cobro */}
+                                                {cobrandoId === m.id && (
+                                                    <motion.div
+                                                        key={`form-i-${m.id}`}
+                                                        initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                                                        className="mt-3 p-4 bg-zinc-900 border border-green-500/30 rounded-lg">
+                                                        <p className="font-mono text-[11px] text-green-400 mb-3 flex items-center gap-1">
+                                                            <DollarSign className="h-3 w-3" /> Registrar cobro — {m.numero_factura || m.concepto}
+                                                        </p>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-gray-400">Monto cobrado</label>
+                                                                <input type="number" value={pagoForm.monto} onChange={e => setPagoForm(f => ({ ...f, monto: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
                                                             </div>
-                                                            <div className="flex gap-2 mt-2">
-                                                                <Button onClick={() => handleCobrar(m)} className="font-mono bg-green-600 hover:bg-green-700 text-xs" size="sm">Confirmar Cobro</Button>
-                                                                <Button onClick={() => setCobrandoId(null)} variant="ghost" className="font-mono text-xs" size="sm">Cancelar</Button>
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-green-400 font-bold">Fecha de cobro ✱</label>
+                                                                <input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm(f => ({ ...f, fecha_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs border-green-500/40'} />
                                                             </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-gray-400">Método</label>
+                                                                <select value={pagoForm.metodo_pago} onChange={e => setPagoForm(f => ({ ...f, metodo_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'}>
+                                                                    <option value="transferencia">Transferencia</option>
+                                                                    <option value="efectivo">Efectivo</option>
+                                                                    <option value="cheque">Cheque</option>
+                                                                    <option value="tarjeta">Tarjeta</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-gray-400">Notas</label>
+                                                                <input type="text" value={pagoForm.notas} onChange={e => setPagoForm(f => ({ ...f, notas: e.target.value }))} placeholder="Referencia, nota..." className={inputCls + ' mt-0.5 text-xs'} />
+                                                            </div>
+                                                        </div>
+                                                        {pagoError && <p className="font-mono text-xs text-red-400 mt-2">{pagoError}</p>}
+                                                        <div className="flex gap-2 mt-3">
+                                                            <Button onClick={() => handleCobrar(m)} disabled={submitting || !pagoForm.fecha_pago} className="font-mono bg-green-600 hover:bg-green-700 text-xs gap-1" size="sm">
+                                                                {submitting ? 'Registrando...' : <><CheckCircle className="h-3 w-3" /> Confirmar Cobro</>}
+                                                            </Button>
+                                                            <Button onClick={() => { setCobrandoId(null); setPagoError(null) }} variant="ghost" className="font-mono text-xs" size="sm">Cancelar</Button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -278,36 +300,42 @@ export default function MovimientosPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                {/* Inline form */}
-                                                <AnimatePresence>
-                                                    {cobrandoId === m.id && (
-                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                                            className="mt-3 p-3 bg-zinc-800/50 border border-red-500/20 rounded-lg">
-                                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Fecha de Pago</label>
-                                                                    <input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm(f => ({ ...f, fecha_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Método</label>
-                                                                    <select value={pagoForm.metodo_pago} onChange={e => setPagoForm(f => ({ ...f, metodo_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'}>
-                                                                        <option value="transferencia">Transferencia</option>
-                                                                        <option value="efectivo">Efectivo</option>
-                                                                        <option value="cheque">Cheque</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div>
-                                                                    <label className="font-mono text-[10px] text-gray-500">Notas</label>
-                                                                    <input type="text" value={pagoForm.notas} onChange={e => setPagoForm(f => ({ ...f, notas: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'} />
-                                                                </div>
+                                                {/* Inline form — pago */}
+                                                {cobrandoId === m.id && (
+                                                    <motion.div
+                                                        key={`form-e-${m.id}`}
+                                                        initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+                                                        className="mt-3 p-4 bg-zinc-900 border border-red-500/30 rounded-lg">
+                                                        <p className="font-mono text-[11px] text-red-400 mb-3 flex items-center gap-1">
+                                                            <CreditCard className="h-3 w-3" /> Registrar pago — {m.concepto}
+                                                        </p>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-red-400 font-bold">Fecha de pago ✱</label>
+                                                                <input type="date" value={pagoForm.fecha_pago} onChange={e => setPagoForm(f => ({ ...f, fecha_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs border-red-500/40'} />
                                                             </div>
-                                                            <div className="flex gap-2 mt-2">
-                                                                <Button onClick={() => handleCobrar(m)} className="font-mono bg-red-600 hover:bg-red-700 text-xs" size="sm">Confirmar Pago</Button>
-                                                                <Button onClick={() => setCobrandoId(null)} variant="ghost" className="font-mono text-xs" size="sm">Cancelar</Button>
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-gray-400">Método</label>
+                                                                <select value={pagoForm.metodo_pago} onChange={e => setPagoForm(f => ({ ...f, metodo_pago: e.target.value }))} className={inputCls + ' mt-0.5 text-xs'}>
+                                                                    <option value="transferencia">Transferencia</option>
+                                                                    <option value="efectivo">Efectivo</option>
+                                                                    <option value="cheque">Cheque</option>
+                                                                </select>
                                                             </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                                            <div>
+                                                                <label className="font-mono text-[10px] text-gray-400">Notas</label>
+                                                                <input type="text" value={pagoForm.notas} onChange={e => setPagoForm(f => ({ ...f, notas: e.target.value }))} placeholder="Referencia, nota..." className={inputCls + ' mt-0.5 text-xs'} />
+                                                            </div>
+                                                        </div>
+                                                        {pagoError && <p className="font-mono text-xs text-red-400 mt-2">{pagoError}</p>}
+                                                        <div className="flex gap-2 mt-3">
+                                                            <Button onClick={() => handleCobrar(m)} disabled={submitting || !pagoForm.fecha_pago} className="font-mono bg-red-600 hover:bg-red-700 text-xs gap-1" size="sm">
+                                                                {submitting ? 'Registrando...' : <><CheckCircle className="h-3 w-3" /> Confirmar Pago</>}
+                                                            </Button>
+                                                            <Button onClick={() => { setCobrandoId(null); setPagoError(null) }} variant="ghost" className="font-mono text-xs" size="sm">Cancelar</Button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
