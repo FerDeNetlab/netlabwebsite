@@ -65,15 +65,20 @@ function xmlText(xml: string, tagName: string): string {
   return m?.[1]?.trim() ?? ''
 }
 
-async function soapPost(url: string, body: string, soapAction: string): Promise<string> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/xml; charset=utf-8',
-      'SOAPAction': `"${soapAction}"`,
-    },
-    body,
-  })
+async function soapPost(
+  url: string,
+  body: string,
+  soapAction: string,
+  token?: string,
+): Promise<string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'text/xml; charset=utf-8',
+    'SOAPAction': soapAction,  // Sin comillas — igual que la librería PHP oficial
+  }
+  if (token) {
+    headers['Authorization'] = `WRAP access_token="${token}"`
+  }
+  const res = await fetch(url, { method: 'POST', headers, body })
   const text = await res.text()
   if (!res.ok) {
     throw new Error(`SAT respondió con HTTP ${res.status}: ${text.slice(0, 400)}`)
@@ -81,13 +86,9 @@ async function soapPost(url: string, body: string, soapAction: string): Promise<
   return text
 }
 
-// Convierte BearerToken header (usado por solicitar/verificar/descargar)
-function bearerHeader(token: string): string {
-  return `<o:Security xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" s:mustUnderstand="1"><o:BearerSecurityToken>${token}</o:BearerSecurityToken></o:Security>`
-}
-
-function soapEnvelope(header: string, body: string): string {
-  return `<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Header>${header}</s:Header><s:Body>${body}</s:Body></s:Envelope>`
+// Envelope con header vacío (solicitar/verificar/descargar usan HTTP Authorization)
+function soapEnvelope(body: string): string {
+  return `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Header/><s:Body>${body}</s:Body></s:Envelope>`
 }
 
 // ── 1. Autenticación ─────────────────────────────────────────────────────────
@@ -124,7 +125,6 @@ export async function autenticar(certDer: Buffer, llave: crypto.KeyObject): Prom
   const sigValue = signer.sign(llave, 'base64')
 
   const soap =
-    `<?xml version="1.0" encoding="utf-8"?>` +
     `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:u="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">` +
     `<s:Header>` +
     `<o:Security xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" s:mustUnderstand="1">` +
@@ -150,6 +150,7 @@ export async function autenticar(certDer: Buffer, llave: crypto.KeyObject): Prom
     'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/Autenticacion/Autenticacion.svc',
     soap,
     'http://DescargaMasivaTerceros.gob.mx/IAutenticacion/Autentica',
+    // sin token — la autenticación usa WS-Security en el SOAP body
   )
 
   const token = xmlText(resp, 'AutenticaResult')
@@ -168,13 +169,13 @@ export async function solicitar(
   const rfcEmisor   = tipo === 'E' ? rfc : ''
   const rfcReceptor = tipo === 'R' ? rfc : ''
 
+  const nodeName = tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'
   const soap = soapEnvelope(
-    bearerHeader(token),
-    `<des:${tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'} xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
+    `<des:${nodeName} xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
     `<des:solicitud FechaInicial="${fechaInicio}" FechaFinal="${fechaFin}" ` +
     `RfcEmisor="${rfcEmisor}" RfcReceptor="${rfcReceptor}" RfcSolicitante="${rfc}" ` +
     `TipoSolicitud="CFDI" TipoComprobante=""/>` +
-    `</des:${tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'}>`,
+    `</des:${nodeName}>`,
   )
 
   const soapAction = tipo === 'E'
@@ -184,6 +185,7 @@ export async function solicitar(
     'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/SolicitaDescargaService.svc',
     soap,
     soapAction,
+    token,
   )
 
   const idSolicitud = xmlAttr(resp, 'IdSolicitud')
@@ -200,7 +202,6 @@ export async function verificar(
   idSolicitud: string,
 ): Promise<VerificaResult> {
   const soap = soapEnvelope(
-    bearerHeader(token),
     `<des:VerificaSolicitudDescarga xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
     `<des:solicitud IdSolicitud="${idSolicitud}" RfcSolicitante="${rfc}"/>` +
     `</des:VerificaSolicitudDescarga>`,
@@ -210,6 +211,7 @@ export async function verificar(
     'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/VerificaSolicitudDescargaService.svc',
     soap,
     'http://DescargaMasivaTerceros.sat.gob.mx/IVerificaSolicitudDescargaService/VerificaSolicitudDescarga',
+    token,
   )
 
   // Extraer lista de paquetes (elementos <string> dentro de IdsPaquetes)
@@ -240,7 +242,6 @@ export async function descargarPaquete(
   idPaquete: string,
 ): Promise<Buffer> {
   const soap = soapEnvelope(
-    bearerHeader(token),
     `<des:PeticionDescargaMasivaTercerosEntrada xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
     `<des:peticionDescarga IdPaquete="${idPaquete}" RfcSolicitante="${rfc}"/>` +
     `</des:PeticionDescargaMasivaTercerosEntrada>`,
@@ -250,6 +251,7 @@ export async function descargarPaquete(
     'https://cfdidescargamasiva.clouda.sat.gob.mx/DescargaMasivaService.svc',
     soap,
     'http://DescargaMasivaTerceros.sat.gob.mx/IDescargaMasivaTercerosService/Descargar',
+    token,
   )
 
   // El atributo Paquete contiene el ZIP en base64 (puede tener saltos de línea)
