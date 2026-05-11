@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart, Wallet, Bell } from 'lucide-react'
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart, Wallet, Bell, FileCode2 } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { pendientes: number; por_cobrar: number }
@@ -60,6 +60,7 @@ export default function FinanzasPage() {
         { title: 'Reportes', desc: 'Panorama financiero completo', icon: FileBarChart, path: '/admin/finanzas/reportes', color: 'text-yellow-400', border: 'border-yellow-500/30' },
         { title: 'Aportes de Capital', desc: 'Inversiones, préstamos, financiamiento', icon: Landmark, path: '/admin/finanzas/aportes', color: 'text-amber-400', border: 'border-amber-500/30' },
         { title: 'Recordatorios', desc: 'Cron, email y Telegram', icon: Bell, path: '/admin/finanzas/recordatorios', color: 'text-cyan-400', border: 'border-cyan-500/30' },
+        { title: 'CFDIs / XML SAT', desc: 'Conciliación de facturas fiscales', icon: FileCode2, path: '/admin/finanzas/cfdi', color: 'text-blue-400', border: 'border-blue-500/30' },
     ]
 
     return (
