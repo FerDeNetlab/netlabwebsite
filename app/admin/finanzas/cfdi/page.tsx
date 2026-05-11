@@ -10,6 +10,7 @@ import { Navbar } from '@/components/navbar'
 import {
   ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, X,
   Link2, ExternalLink, Trash2, RefreshCw, ChevronDown, ChevronUp,
+  Satellite, KeyRound, Download, Clock, Ban,
 } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -61,6 +62,29 @@ interface UploadResult {
   status: 'uploading' | 'ok' | 'error' | 'duplicate'
   msg?: string
   uuid?: string
+}
+
+interface SatSolicitud {
+  id: string
+  id_solicitud_sat: string | null
+  tipo: 'E' | 'R'
+  fecha_inicio: string
+  fecha_fin: string
+  estado_sat: number
+  num_cfdis: number
+  paquetes_total: number
+  paquetes_importados: number
+  mensaje: string | null
+  created_at: string
+}
+
+const SAT_ESTADO: Record<number, { label: string; color: string }> = {
+  1: { label: 'Aceptada',              color: 'text-blue-400 bg-blue-400/10' },
+  2: { label: 'En proceso',            color: 'text-yellow-400 bg-yellow-400/10' },
+  3: { label: 'Lista para descargar',  color: 'text-emerald-400 bg-emerald-400/10' },
+  4: { label: 'Error SAT',             color: 'text-red-400 bg-red-400/10' },
+  5: { label: 'Rechazada (cuota)',     color: 'text-orange-400 bg-orange-400/10' },
+  6: { label: 'Vencida',               color: 'text-gray-400 bg-gray-400/10' },
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -115,6 +139,26 @@ export default function CfdiPage() {
   const [asignTargetId, setAsignTargetId] = useState('')
   const [asignando, setAsignando] = useState(false)
 
+  // SAT Descarga Masiva
+  const [satOpen, setSatOpen] = useState(false)
+  const [satSolicitudes, setSatSolicitudes] = useState<SatSolicitud[]>([])
+  const cerRef = useRef<HTMLInputElement>(null)
+  const keyRef = useRef<HTMLInputElement>(null)
+  const [satForm, setSatForm] = useState({
+    password: '',
+    fechaInicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    fechaFin: new Date().toISOString().split('T')[0],
+    tipo: 'A' as 'E' | 'R' | 'A',
+  })
+  const [satCerFile, setSatCerFile] = useState<File | null>(null)
+  const [satKeyFile, setSatKeyFile] = useState<File | null>(null)
+  const [satLoading, setSatLoading] = useState(false)
+  const [satMsg, setSatMsg] = useState<{ tipo: 'ok' | 'error' | 'info'; text: string } | null>(null)
+  // Per-solicitud import state
+  const [importandoId, setImportandoId] = useState<string | null>(null)
+  const [importMsg, setImportMsg] = useState<Record<string, { tipo: 'ok' | 'error' | 'info'; text: string }>>({})
+
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/admin/login')
   }, [status, router])
@@ -127,9 +171,15 @@ export default function CfdiPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  const fetchSolicitudes = useCallback(() => {
+    fetch('/api/finanzas/sat')
+      .then(r => r.json())
+      .then(d => setSatSolicitudes(d.solicitudes || []))
+      .catch(() => null)
+  }, [])
+
   useEffect(() => {
     if (status !== 'authenticated') return
-    // Fetch in parallel
     Promise.all([
       fetch('/api/facturas').then(r => r.json()),
       fetch('/api/gastos').then(r => r.json()),
@@ -138,7 +188,80 @@ export default function CfdiPage() {
       setGastos(gastData.gastos || [])
     }).catch(() => null)
     fetchCfdis()
-  }, [status, fetchCfdis])
+    fetchSolicitudes()
+  }, [status, fetchCfdis, fetchSolicitudes])
+
+  // ── SAT handlers ────────────────────────────────────────────────────────────
+
+  const fileToB64 = (f: File): Promise<string> =>
+    new Promise((res, rej) => {
+      const r = new FileReader()
+      r.onload = () => res((r.result as string).split(',')[1] ?? '')
+      r.onerror = rej
+      r.readAsDataURL(f)
+    })
+
+  const handleSatSolicitar = async () => {
+    if (!satCerFile || !satKeyFile || !satForm.password) {
+      setSatMsg({ tipo: 'error', text: 'Selecciona el .cer, el .key y escribe tu contraseña' })
+      return
+    }
+    setSatLoading(true)
+    setSatMsg({ tipo: 'info', text: 'Autenticando con el SAT...' })
+    try {
+      const [cerB64, keyB64] = await Promise.all([fileToB64(satCerFile), fileToB64(satKeyFile)])
+      const r = await fetch('/api/finanzas/sat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cerB64, keyB64, ...satForm }),
+      })
+      const data = await r.json()
+      if (!r.ok) {
+        setSatMsg({ tipo: 'error', text: data.error || 'Error al solicitar' })
+      } else {
+        const ok = data.resultados?.filter((x: { ok: boolean }) => x.ok).length ?? 0
+        setSatMsg({ tipo: 'ok', text: `Solicitud${ok > 1 ? 'es' : ''} enviada${ok > 1 ? 's' : ''} al SAT. El SAT puede tardar minutos u horas en preparar los paquetes.` })
+        fetchSolicitudes()
+      }
+    } catch {
+      setSatMsg({ tipo: 'error', text: 'Error de red al conectar con el SAT' })
+    } finally {
+      setSatLoading(false)
+    }
+  }
+
+  const handleSatImportar = async (sol: SatSolicitud) => {
+    if (!satCerFile || !satKeyFile || !satForm.password) {
+      setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: 'Sube tu .cer, .key y contraseña en la sección de arriba primero' } }))
+      return
+    }
+    setImportandoId(sol.id)
+    setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'info', text: 'Verificando con el SAT...' } }))
+    try {
+      const [cerB64, keyB64] = await Promise.all([fileToB64(satCerFile), fileToB64(satKeyFile)])
+      const r = await fetch('/api/finanzas/sat/importar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cerB64, keyB64, password: satForm.password, dbId: sol.id }),
+      })
+      const data = await r.json()
+      if (!r.ok) {
+        setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: data.error || 'Error al importar' } }))
+      } else if (data.ok) {
+        setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'ok', text: `✅ Importados: ${data.importados}  Duplicados: ${data.duplicados}  Errores: ${data.errores}` } }))
+        fetchSolicitudes()
+        fetchCfdis()
+      } else {
+        setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'info', text: `${data.estadoLabel ?? 'En proceso'} — ${data.mensaje ?? 'Intenta más tarde'}` } }))
+        fetchSolicitudes()
+      }
+    } catch {
+      setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: 'Error de red' } }))
+    } finally {
+      setImportandoId(null)
+    }
+  }
+
 
   // ── Upload ────────────────────────────────────────────────────────────────
 
@@ -270,6 +393,165 @@ export default function CfdiPage() {
                   <div className="font-mono text-xs text-yellow-400">{countSin} sin asignar</div>
                   <div className="font-mono text-xs text-emerald-400">{countAsig} asignados</div>
                 </div>
+              </div>
+
+              {/* ── SAT Descarga Masiva ─────────────────────────────────── */}
+              <div className="bg-zinc-900/50 border border-indigo-500/30 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setSatOpen(o => !o)}
+                  className="w-full flex items-center gap-3 p-4 hover:bg-zinc-800/30 transition-colors"
+                >
+                  <Satellite className="h-4 w-4 text-indigo-400" />
+                  <span className="font-mono text-indigo-400 text-sm font-bold">Descarga Masiva SAT</span>
+                  <span className="font-mono text-gray-500 text-xs ml-1">Emitidas + Recibidas automáticas</span>
+                  <span className="ml-auto font-mono text-xs text-gray-600">{satSolicitudes.length} solicitudes</span>
+                  {satOpen ? <ChevronUp className="h-4 w-4 text-gray-500" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
+                </button>
+
+                {satOpen && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                    className="border-t border-indigo-500/20 p-5 space-y-5">
+
+                    {/* FIEL form */}
+                    <div className="space-y-3">
+                      <p className="font-mono text-xs text-gray-500 flex items-center gap-1">
+                        <KeyRound className="h-3 w-3" /> Tus archivos e.firma (FIEL) — solo se usan en memoria, <span className="text-indigo-400">nunca se guardan</span>
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {/* .cer */}
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Certificado .cer</label>
+                          <label className={`mt-1 flex items-center gap-2 px-3 py-2 rounded border cursor-pointer transition-colors ${satCerFile ? 'border-indigo-500/50 bg-indigo-500/10' : 'border-gray-700 hover:border-indigo-500/40'}`}>
+                            <Upload className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                            <span className="font-mono text-xs truncate text-gray-300">{satCerFile?.name ?? 'Seleccionar .cer'}</span>
+                            <input ref={cerRef} type="file" accept=".cer" className="hidden"
+                              onChange={e => setSatCerFile(e.target.files?.[0] ?? null)} />
+                          </label>
+                        </div>
+                        {/* .key */}
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Llave privada .key</label>
+                          <label className={`mt-1 flex items-center gap-2 px-3 py-2 rounded border cursor-pointer transition-colors ${satKeyFile ? 'border-indigo-500/50 bg-indigo-500/10' : 'border-gray-700 hover:border-indigo-500/40'}`}>
+                            <Upload className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                            <span className="font-mono text-xs truncate text-gray-300">{satKeyFile?.name ?? 'Seleccionar .key'}</span>
+                            <input ref={keyRef} type="file" accept=".key" className="hidden"
+                              onChange={e => setSatKeyFile(e.target.files?.[0] ?? null)} />
+                          </label>
+                        </div>
+                        {/* Contraseña */}
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Contraseña e.firma</label>
+                          <input type="password" value={satForm.password}
+                            onChange={e => setSatForm(f => ({ ...f, password: e.target.value }))}
+                            placeholder="••••••••"
+                            className="mt-1 w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Fecha inicio</label>
+                          <input type="date" value={satForm.fechaInicio}
+                            onChange={e => setSatForm(f => ({ ...f, fechaInicio: e.target.value }))}
+                            className="mt-1 w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Fecha fin</label>
+                          <input type="date" value={satForm.fechaFin}
+                            onChange={e => setSatForm(f => ({ ...f, fechaFin: e.target.value }))}
+                            className="mt-1 w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-indigo-500 focus:outline-none" />
+                        </div>
+                        <div>
+                          <label className="font-mono text-[10px] text-gray-400">Tipo</label>
+                          <select value={satForm.tipo}
+                            onChange={e => setSatForm(f => ({ ...f, tipo: e.target.value as 'E' | 'R' | 'A' }))}
+                            className="mt-1 w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-indigo-500 focus:outline-none">
+                            <option value="A">📤📥 Emitidas y Recibidas</option>
+                            <option value="E">📤 Solo Emitidas</option>
+                            <option value="R">📥 Solo Recibidas</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {satMsg && (
+                        <div className={`px-3 py-2 rounded font-mono text-xs ${satMsg.tipo === 'ok' ? 'text-emerald-400 bg-emerald-400/10' : satMsg.tipo === 'error' ? 'text-red-400 bg-red-400/10' : 'text-blue-400 bg-blue-400/10'}`}>
+                          {satMsg.text}
+                        </div>
+                      )}
+
+                      <Button
+                        onClick={handleSatSolicitar}
+                        disabled={satLoading || !satCerFile || !satKeyFile || !satForm.password}
+                        className="font-mono bg-indigo-600 hover:bg-indigo-700 text-xs gap-1"
+                        size="sm"
+                      >
+                        {satLoading
+                          ? <><RefreshCw className="h-3 w-3 animate-spin" /> Conectando con el SAT...</>
+                          : <><Download className="h-3 w-3" /> Solicitar descarga al SAT</>
+                        }
+                      </Button>
+                    </div>
+
+                    {/* Solicitudes list */}
+                    {satSolicitudes.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="font-mono text-[11px] text-gray-500">Solicitudes anteriores</p>
+                        {satSolicitudes.map(sol => {
+                          const est = SAT_ESTADO[sol.estado_sat] ?? { label: `Estado ${sol.estado_sat}`, color: 'text-gray-400 bg-gray-400/10' }
+                          const msg = importMsg[sol.id]
+                          return (
+                            <div key={sol.id} className="bg-zinc-800/50 border border-gray-700/50 rounded-lg p-3 flex flex-wrap items-center gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono text-xs text-white">
+                                    {sol.tipo === 'E' ? '📤 Emitidas' : '📥 Recibidas'}
+                                  </span>
+                                  <span className="font-mono text-xs text-gray-400">
+                                    {sol.fecha_inicio?.split('T')[0]} → {sol.fecha_fin?.split('T')[0]}
+                                  </span>
+                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${est.color}`}>
+                                    {est.label}
+                                  </span>
+                                  {sol.num_cfdis > 0 && (
+                                    <span className="font-mono text-[10px] text-gray-500">{sol.num_cfdis} CFDIs</span>
+                                  )}
+                                </div>
+                                {msg && (
+                                  <p className={`font-mono text-[10px] mt-1 ${msg.tipo === 'ok' ? 'text-emerald-400' : msg.tipo === 'error' ? 'text-red-400' : 'text-blue-400'}`}>
+                                    {msg.text}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
+                                {(sol.estado_sat === 1 || sol.estado_sat === 2 || sol.estado_sat === 3) && (
+                                  <Button
+                                    onClick={() => handleSatImportar(sol)}
+                                    disabled={importandoId === sol.id}
+                                    size="sm"
+                                    className={`font-mono text-[10px] gap-1 ${sol.estado_sat === 3 ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-zinc-700 hover:bg-zinc-600'}`}
+                                  >
+                                    {importandoId === sol.id
+                                      ? <><RefreshCw className="h-3 w-3 animate-spin" /> Verificando...</>
+                                      : sol.estado_sat === 3
+                                        ? <><Download className="h-3 w-3" /> Importar</>
+                                        : <><Clock className="h-3 w-3" /> Verificar estado</>
+                                    }
+                                  </Button>
+                                )}
+                                {(sol.estado_sat === 4 || sol.estado_sat === 5 || sol.estado_sat === 6) && (
+                                  <span className="font-mono text-[10px] text-gray-600 flex items-center gap-1">
+                                    <Ban className="h-3 w-3" /> {est.label}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
 
               {/* Drop zone */}
