@@ -44,7 +44,7 @@ export async function DELETE(
     const { id } = await params
 
     // Get xml_url before deleting
-    const [row] = await sql`SELECT xml_url FROM cfdis WHERE id = ${id}::uuid`
+    const [row] = await sql`SELECT xml_url FROM cfdis WHERE id = ${id}::uuid` as Record<string, unknown>[]
     if (!row) return NextResponse.json({ error: 'CFDI no encontrado' }, { status: 404 })
 
     // Delete from DB
