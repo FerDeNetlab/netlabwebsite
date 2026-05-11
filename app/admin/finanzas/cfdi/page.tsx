@@ -174,8 +174,11 @@ export default function CfdiPage() {
   const fetchSolicitudes = useCallback(() => {
     fetch('/api/finanzas/sat')
       .then(r => r.json())
-      .then(d => setSatSolicitudes(d.solicitudes || []))
-      .catch(() => null)
+      .then(d => {
+        if (d.solicitudes) setSatSolicitudes(d.solicitudes)
+        else console.error('[SAT] fetchSolicitudes error:', d)
+      })
+      .catch(e => console.error('[SAT] fetchSolicitudes network error:', e))
   }, [])
 
   useEffect(() => {
@@ -219,8 +222,14 @@ export default function CfdiPage() {
       if (!r.ok) {
         setSatMsg({ tipo: 'error', text: data.error || 'Error al solicitar' })
       } else {
-        const ok = data.resultados?.filter((x: { ok: boolean }) => x.ok).length ?? 0
-        setSatMsg({ tipo: 'ok', text: `Solicitud${ok > 1 ? 'es' : ''} enviada${ok > 1 ? 's' : ''} al SAT. El SAT puede tardar minutos u horas en preparar los paquetes.` })
+        const exitosas = data.resultados?.filter((x: { ok: boolean }) => x.ok) ?? []
+        const fallidas = data.resultados?.filter((x: { ok: boolean; error?: string; mensaje?: string }) => !x.ok) ?? []
+        if (exitosas.length > 0) {
+          setSatMsg({ tipo: 'ok', text: `Solicitud${exitosas.length > 1 ? 'es' : ''} enviada${exitosas.length > 1 ? 's' : ''} al SAT. El SAT puede tardar minutos u horas en preparar los paquetes.` })
+        } else {
+          const err = fallidas[0]?.error || fallidas[0]?.mensaje || 'El SAT rechazó la solicitud'
+          setSatMsg({ tipo: 'error', text: err })
+        }
         fetchSolicitudes()
       }
     } catch {
