@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
 
 interface Gasto {
@@ -42,6 +44,11 @@ export default function GastosPage() {
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<Record<string, string | number | boolean | null>>({})
     const [uploadingId, setUploadingId] = useState<string | null>(null)
+    const [mes, setMes] = useState(new Date().getMonth() + 1)
+    const [anio, setAnio] = useState(new Date().getFullYear())
+
+    const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
+    const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -148,7 +155,18 @@ export default function GastosPage() {
         else alert('Error al guardar')
     }
 
-    const filtered = gastos.filter(g => (g.concepto + g.proveedor + g.categoria_nombre).toLowerCase().includes(search.toLowerCase()))
+    const filtered = gastos.filter(g => {
+        const matchSearch = (g.concepto + g.proveedor + g.categoria_nombre).toLowerCase().includes(search.toLowerCase())
+        let matchMes = g.recurrente
+        if (!g.recurrente && g.fecha_vencimiento) {
+            const d = new Date(String(g.fecha_vencimiento).split('T')[0] + 'T12:00:00')
+            const vencMes = d.getMonth() + 1; const vencAnio = d.getFullYear()
+            // show if vence this month OR unpaid from previous month (rolling)
+            const isPendiente = (g.estado_calculado || g.estado) !== 'pagado'
+            matchMes = (vencMes === mes && vencAnio === anio) || (isPendiente && (vencAnio < anio || (vencAnio === anio && vencMes < mes)))
+        }
+        return matchSearch && matchMes
+    })
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
     if (status === 'loading' || loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
@@ -174,6 +192,20 @@ export default function GastosPage() {
                                         <Zap className="h-4 w-4" /> Gasto Único
                                     </Button>
                                 </div>
+                            </div>
+
+                            {/* Month navigation */}
+                            <div className="flex items-center justify-between bg-zinc-900/50 border border-red-500/20 rounded-lg px-4 py-2">
+                                <button onClick={prevMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <div className="text-center">
+                                    <span className="font-mono text-red-400 text-sm font-bold">{MESES[mes - 1]} {anio}</span>
+                                    <span className="font-mono text-gray-500 text-xs block">{filtered.length} gasto{filtered.length !== 1 ? 's' : ''}</span>
+                                </div>
+                                <button onClick={nextMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
                             </div>
 
                             {/* Create Form */}

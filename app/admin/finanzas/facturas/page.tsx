@@ -7,7 +7,9 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, Receipt } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight } from 'lucide-react'
+
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 interface Factura {
     id: string; numero_factura: string; concepto: string; total: number; tipo: string;
@@ -22,6 +24,11 @@ export default function FacturasPage() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [filtroTipo, setFiltroTipo] = useState('todos')
+    const [mes, setMes] = useState(new Date().getMonth() + 1)
+    const [anio, setAnio] = useState(new Date().getFullYear())
+
+    const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
+    const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
@@ -30,10 +37,18 @@ export default function FacturasPage() {
         fetch('/api/facturas').then(r => r.json()).then(data => { setFacturas(data); setLoading(false) }).catch(() => setLoading(false))
     }, [status])
 
+    const lastDay = new Date(anio, mes, 0).getDate()
     const filtered = facturas.filter(f => {
         const matchSearch = (f.numero_factura + f.concepto + f.cliente_nombre).toLowerCase().includes(search.toLowerCase())
         const matchTipo = filtroTipo === 'todos' || f.tipo === filtroTipo
-        return matchSearch && matchTipo
+        let matchMes = f.recurrente
+        if (!f.recurrente && f.fecha_vencimiento) {
+            const d = new Date(String(f.fecha_vencimiento).split('T')[0] + 'T12:00:00')
+            // show if vence this month OR vence in a past month (rolling unpaid)
+            const vencMes = d.getMonth() + 1; const vencAnio = d.getFullYear()
+            matchMes = (vencAnio < anio) || (vencAnio === anio && vencMes <= mes)
+        }
+        return matchSearch && matchTipo && matchMes
     })
 
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
@@ -60,6 +75,20 @@ export default function FacturasPage() {
                                 <Button onClick={() => router.push('/admin/finanzas/facturas/nueva')} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
                                     <Plus className="h-4 w-4" /> Nueva Entrada
                                 </Button>
+                            </div>
+
+                            {/* Month navigation */}
+                            <div className="flex items-center justify-between bg-zinc-900/50 border border-green-500/20 rounded-lg px-4 py-2">
+                                <button onClick={prevMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <div className="text-center">
+                                    <span className="font-mono text-green-400 text-sm font-bold">{MESES[mes - 1]} {anio}</span>
+                                    <span className="font-mono text-gray-500 text-xs block">{filtered.length} entrada{filtered.length !== 1 ? 's' : ''}</span>
+                                </div>
+                                <button onClick={nextMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
                             </div>
 
                             {/* Filters */}
