@@ -147,7 +147,7 @@ export async function autenticar(certDer: Buffer, llave: crypto.KeyObject): Prom
     `</s:Envelope>`
 
   const resp = await soapPost(
-    'https://cfdidescargamasiva.clouda.sat.gob.mx/AuthenticateSvc.svc',
+    'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/Autenticacion/Autenticacion.svc',
     soap,
     'http://DescargaMasivaTerceros.gob.mx/IAutenticacion/Autentica',
   )
@@ -170,17 +170,20 @@ export async function solicitar(
 
   const soap = soapEnvelope(
     bearerHeader(token),
-    `<SolicitaDescarga xmlns="http://DescargaMasivaTerceros.gob.mx">` +
-    `<solicitud FechaInicial="${fechaInicio}" FechaFinal="${fechaFin}" ` +
+    `<des:${tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'} xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
+    `<des:solicitud FechaInicial="${fechaInicio}" FechaFinal="${fechaFin}" ` +
     `RfcEmisor="${rfcEmisor}" RfcReceptor="${rfcReceptor}" RfcSolicitante="${rfc}" ` +
     `TipoSolicitud="CFDI" TipoComprobante=""/>` +
-    `</SolicitaDescarga>`,
+    `</des:${tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'}>`,
   )
 
+  const soapAction = tipo === 'E'
+    ? 'http://DescargaMasivaTerceros.sat.gob.mx/ISolicitaDescargaService/SolicitaDescargaEmitidos'
+    : 'http://DescargaMasivaTerceros.sat.gob.mx/ISolicitaDescargaService/SolicitaDescargaRecibidos'
   const resp = await soapPost(
-    'https://cfdidescargamasiva.clouda.sat.gob.mx/SolicitudDescargaSvc.svc',
+    'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/SolicitaDescargaService.svc',
     soap,
-    'http://DescargaMasivaTerceros.gob.mx/ISolicitaDescargaService/SolicitaDescarga',
+    soapAction,
   )
 
   const idSolicitud = xmlAttr(resp, 'IdSolicitud')
@@ -198,15 +201,15 @@ export async function verificar(
 ): Promise<VerificaResult> {
   const soap = soapEnvelope(
     bearerHeader(token),
-    `<VerificaSolicitudDescarga xmlns="http://DescargaMasivaTerceros.gob.mx">` +
-    `<solicitud IdSolicitud="${idSolicitud}" RfcSolicitante="${rfc}"/>` +
-    `</VerificaSolicitudDescarga>`,
+    `<des:VerificaSolicitudDescarga xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
+    `<des:solicitud IdSolicitud="${idSolicitud}" RfcSolicitante="${rfc}"/>` +
+    `</des:VerificaSolicitudDescarga>`,
   )
 
   const resp = await soapPost(
-    'https://cfdidescargamasiva.clouda.sat.gob.mx/VerificaSolicitudDescargaSvc.svc',
+    'https://cfdidescargamasivasolicitud.clouda.sat.gob.mx/VerificaSolicitudDescargaService.svc',
     soap,
-    'http://DescargaMasivaTerceros.gob.mx/IVerificaSolicitudDescargaService/VerificaSolicitudDescarga',
+    'http://DescargaMasivaTerceros.sat.gob.mx/IVerificaSolicitudDescargaService/VerificaSolicitudDescarga',
   )
 
   // Extraer lista de paquetes (elementos <string> dentro de IdsPaquetes)
@@ -238,15 +241,15 @@ export async function descargarPaquete(
 ): Promise<Buffer> {
   const soap = soapEnvelope(
     bearerHeader(token),
-    `<DescargarPaquete xmlns="http://DescargaMasivaTerceros.gob.mx">` +
-    `<peticionDescarga IdPaquete="${idPaquete}" RfcSolicitante="${rfc}"/>` +
-    `</DescargarPaquete>`,
+    `<des:PeticionDescargaMasivaTercerosEntrada xmlns:des="http://DescargaMasivaTerceros.sat.gob.mx">` +
+    `<des:peticionDescarga IdPaquete="${idPaquete}" RfcSolicitante="${rfc}"/>` +
+    `</des:PeticionDescargaMasivaTercerosEntrada>`,
   )
 
   const resp = await soapPost(
-    'https://cfdidescargamasiva.clouda.sat.gob.mx/DescargarPaqueteSvc.svc',
+    'https://cfdidescargamasiva.clouda.sat.gob.mx/DescargaMasivaService.svc',
     soap,
-    'http://DescargaMasivaTerceros.gob.mx/IDescargarPaqueteService/DescargarPaquete',
+    'http://DescargaMasivaTerceros.sat.gob.mx/IDescargaMasivaTercerosService/Descargar',
   )
 
   // El atributo Paquete contiene el ZIP en base64 (puede tener saltos de línea)
