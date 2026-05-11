@@ -27,6 +27,7 @@ export default function BolsasPage() {
     const [ano, setAno] = useState(now.getFullYear())
     const [data, setData] = useState<{ bolsas: BolsaInfo[]; totales: { ingresos_totales: number; egresos_totales: number; saldo_total: number } } | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [detalle, setDetalle] = useState<{ bolsa: BolsaInfo; ingresos: DetalleIngreso[]; egresos: DetalleEgreso[] } | null>(null)
     const [loadingDetalle, setLoadingDetalle] = useState(false)
 
@@ -34,7 +35,15 @@ export default function BolsasPage() {
 
     const fetchData = () => {
         setLoading(true)
-        fetch(`/api/finanzas/bolsas?mes=${mes}&ano=${ano}`).then(r => r.json()).then(d => { setData(d); setLoading(false) }).catch(() => setLoading(false))
+        setError(null)
+        fetch(`/api/finanzas/bolsas?mes=${mes}&ano=${ano}`)
+            .then(r => r.json())
+            .then(d => {
+                if (d.error) { setError(d.error); setData(null) }
+                else { setData(d) }
+            })
+            .catch(() => setError('No se pudo conectar con el servidor'))
+            .finally(() => setLoading(false))
     }
 
     useEffect(() => { if (status === 'authenticated') fetchData() }, [status, mes, ano])
@@ -53,7 +62,28 @@ export default function BolsasPage() {
     const fmt = (n: number) => `$${Math.abs(n).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
     const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-    if (status === 'loading' || loading || !data) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
+    if (status === 'loading' || loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
+
+    if (error || !data) return (
+        <div className="min-h-screen bg-background">
+            <Navbar />
+            <div className="container mx-auto px-4 pt-24 pb-16 max-w-3xl">
+                <TerminalFrame title="root@netlab:~/finanzas/bolsas">
+                    <div className="p-6 space-y-4">
+                        <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm"><ArrowLeft className="h-4 w-4" /> Finanzas</Button>
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 font-mono text-sm text-red-400">
+                            <p className="font-bold mb-1">Error al cargar las bolsas</p>
+                            <p className="text-xs text-red-300/70">{error || 'Respuesta inesperada del servidor'}</p>
+                            <p className="text-xs text-gray-500 mt-3">
+                                Si acabas de activar el módulo SAF, asegúrate de haber ejecutado <span className="text-yellow-400">scripts/saf-migration.sql</span> en Neon.
+                            </p>
+                        </div>
+                        <Button onClick={fetchData} className="bg-green-600 hover:bg-green-700 font-mono">Reintentar</Button>
+                    </div>
+                </TerminalFrame>
+            </div>
+        </div>
+    )
 
     return (
         <div className="min-h-screen bg-background">
