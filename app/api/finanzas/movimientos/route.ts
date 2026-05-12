@@ -20,27 +20,42 @@ export async function GET(request: Request) {
       return Math.max(0, Math.floor((hoy.getTime() - venc.getTime()) / 86400000))
     }
 
-    // ── INGRESOS: facturas del mes (recurrentes siempre, únicas por fecha) ──
+    // ── INGRESOS: facturas del mes ──
     let facturas: Record<string, unknown>[] = []
     let facturas_error: string | null = null
     try {
       facturas = await sql`
         SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
-          f.dia_mes, f.recurrente, f.fecha_vencimiento, f.fecha_emision,
+          COALESCE(f.dia_mes, NULL) AS dia_mes,
+          COALESCE(f.recurrente, false) AS recurrente,
+          f.fecha_vencimiento, f.fecha_emision,
           f.estado,
           cl.nombre AS cliente_nombre
         FROM facturas f
         LEFT JOIN clientes cl ON f.cliente_id = cl.id
-        WHERE f.recurrente = true
-          OR (
-            EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
-            AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
-          )
-        ORDER BY f.recurrente DESC, COALESCE(f.fecha_vencimiento, f.created_at) ASC
+        WHERE EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
+          AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
+        ORDER BY COALESCE(f.fecha_vencimiento, f.created_at) ASC
       ` as Record<string, unknown>[]
-    } catch (e) {
-      facturas_error = e instanceof Error ? e.message : String(e)
-      console.error('[ERP] facturas query error:', facturas_error)
+    } catch {
+      // Si recurrente/dia_mes no existen, intentar query básica
+      try {
+        facturas = await sql`
+          SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
+            false AS recurrente, NULL AS dia_mes,
+            f.fecha_vencimiento, f.fecha_emision,
+            f.estado,
+            cl.nombre AS cliente_nombre
+          FROM facturas f
+          LEFT JOIN clientes cl ON f.cliente_id = cl.id
+          WHERE EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
+            AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
+          ORDER BY COALESCE(f.fecha_vencimiento, f.created_at) ASC
+        ` as Record<string, unknown>[]
+      } catch (e2) {
+        facturas_error = e2 instanceof Error ? e2.message : String(e2)
+        console.error('[ERP] facturas fallback error:', facturas_error)
+      }
     }
 
     // Pagos realizados este mes
@@ -59,13 +74,15 @@ export async function GET(request: Request) {
       pagosPorFactura[fid].metodo = (p.metodo_pago as string) || ''
     }
 
-    // ── EGRESOS: gastos del mes (recurrentes sin fecha_baja, únicos por fecha) ──
+    // ── EGRESOS: gastos del mes ──
     let gastos: Record<string, unknown>[] = []
     let gastos_error: string | null = null
     try {
       gastos = await sql`
         SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
-          g.recurrente, g.dia_mes, g.fecha_vencimiento, g.fecha_pago,
+          COALESCE(g.recurrente, false) AS recurrente,
+          COALESCE(g.dia_mes, NULL) AS dia_mes,
+          g.fecha_vencimiento, g.fecha_pago,
           g.subtipo,
           cg.nombre AS categoria_nombre, cg.color AS categoria_color
         FROM gastos g
@@ -73,15 +90,31 @@ export async function GET(request: Request) {
         WHERE (
           g.recurrente = true
         ) OR (
-          g.recurrente = false
+          COALESCE(g.recurrente, false) = false
           AND EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
           AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
         )
-        ORDER BY g.recurrente DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
+        ORDER BY COALESCE(g.recurrente, false) DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
       ` as Record<string, unknown>[]
-    } catch (e) {
-      gastos_error = e instanceof Error ? e.message : String(e)
-      console.error('[ERP] gastos query error:', gastos_error)
+    } catch {
+      // Fallback sin recurrente
+      try {
+        gastos = await sql`
+          SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
+            false AS recurrente, NULL AS dia_mes,
+            g.fecha_vencimiento, g.fecha_pago,
+            g.subtipo,
+            cg.nombre AS categoria_nombre, cg.color AS categoria_color
+          FROM gastos g
+          LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
+          WHERE EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
+            AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
+          ORDER BY COALESCE(g.fecha_vencimiento, g.created_at) ASC
+        ` as Record<string, unknown>[]
+      } catch (e2) {
+        gastos_error = e2 instanceof Error ? e2.message : String(e2)
+        console.error('[ERP] gastos fallback error:', gastos_error)
+      }
     }
 
     const movimientos: Record<string, unknown>[] = []
