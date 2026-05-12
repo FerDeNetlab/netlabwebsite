@@ -21,24 +21,27 @@ export async function GET(request: Request) {
     }
 
     // ── INGRESOS: facturas del mes (recurrentes siempre, únicas por fecha) ──
-    const facturas = await sql`
-      SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
-        f.dia_mes, f.recurrente, f.fecha_vencimiento, f.fecha_emision,
-        f.estado, f.movimiento_bancario_id,
-        cl.nombre AS cliente_nombre,
-        cfdi_f.id AS cfdi_id, cfdi_f.uuid_sat AS cfdi_uuid,
-        mb.fecha_operacion AS fecha_pago_banco
-      FROM facturas f
-      LEFT JOIN clientes cl ON f.cliente_id = cl.id
-      LEFT JOIN cfdis cfdi_f ON cfdi_f.factura_id = f.id
-      LEFT JOIN movimientos_bancarios mb ON mb.id = f.movimiento_bancario_id
-      WHERE f.recurrente = true
-        OR (
-          EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
-          AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
-        )
-      ORDER BY f.recurrente DESC, COALESCE(f.fecha_vencimiento, f.created_at) ASC
-    ` as Record<string, unknown>[]
+    let facturas: Record<string, unknown>[] = []
+    let facturas_error: string | null = null
+    try {
+      facturas = await sql`
+        SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
+          f.dia_mes, f.recurrente, f.fecha_vencimiento, f.fecha_emision,
+          f.estado,
+          cl.nombre AS cliente_nombre
+        FROM facturas f
+        LEFT JOIN clientes cl ON f.cliente_id = cl.id
+        WHERE f.recurrente = true
+          OR (
+            EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
+            AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
+          )
+        ORDER BY f.recurrente DESC, COALESCE(f.fecha_vencimiento, f.created_at) ASC
+      ` as Record<string, unknown>[]
+    } catch (e) {
+      facturas_error = e instanceof Error ? e.message : String(e)
+      console.error('[ERP] facturas query error:', facturas_error)
+    }
 
     // Pagos realizados este mes
     const pagosRealizados = await sql`
@@ -57,27 +60,29 @@ export async function GET(request: Request) {
     }
 
     // ── EGRESOS: gastos del mes (recurrentes sin fecha_baja, únicos por fecha) ──
-    const gastos = await sql`
-      SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
-        g.recurrente, g.dia_mes, g.fecha_vencimiento, g.fecha_pago,
-        g.subtipo, g.movimiento_bancario_id, g.fecha_baja,
-        cg.nombre AS categoria_nombre, cg.color AS categoria_color,
-        cfdi_g.id AS cfdi_id, cfdi_g.uuid_sat AS cfdi_uuid,
-        mb.fecha_operacion AS fecha_pago_banco
-      FROM gastos g
-      LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
-      LEFT JOIN cfdis cfdi_g ON cfdi_g.gasto_id = g.id
-      LEFT JOIN movimientos_bancarios mb ON mb.id = g.movimiento_bancario_id
-      WHERE (
-        g.recurrente = true
-        AND (g.fecha_baja IS NULL OR (EXTRACT(YEAR FROM g.fecha_baja) * 12 + EXTRACT(MONTH FROM g.fecha_baja)) >= (${anio} * 12 + ${mes}))
-      ) OR (
-        g.recurrente = false
-        AND EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
-        AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
-      )
-      ORDER BY g.recurrente DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
-    ` as Record<string, unknown>[]
+    let gastos: Record<string, unknown>[] = []
+    let gastos_error: string | null = null
+    try {
+      gastos = await sql`
+        SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
+          g.recurrente, g.dia_mes, g.fecha_vencimiento, g.fecha_pago,
+          g.subtipo,
+          cg.nombre AS categoria_nombre, cg.color AS categoria_color
+        FROM gastos g
+        LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
+        WHERE (
+          g.recurrente = true
+        ) OR (
+          g.recurrente = false
+          AND EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
+          AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
+        )
+        ORDER BY g.recurrente DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
+      ` as Record<string, unknown>[]
+    } catch (e) {
+      gastos_error = e instanceof Error ? e.message : String(e)
+      console.error('[ERP] gastos query error:', gastos_error)
+    }
 
     const movimientos: Record<string, unknown>[] = []
 
@@ -98,8 +103,8 @@ export async function GET(request: Request) {
         fecha_pago: pago?.fecha_pago || null,
         metodo_pago: pago?.metodo || null,
         monto_pagado: pago?.total || 0,
-        has_cfdi: !!(f.cfdi_id),
-        has_banco: !!(f.movimiento_bancario_id),
+        has_cfdi: false,
+        has_banco: false,
         dias_atraso: pago ? 0 : diasAtraso(fechaIdeal),
       })
     }
@@ -118,13 +123,13 @@ export async function GET(request: Request) {
         tipo_mov: 'egreso',
         subtipo: g.recurrente ? 'recurrente' : 'unico',
         estado: pagado ? 'pagado' : 'pendiente',
-        has_cfdi: !!(g.cfdi_id),
-        has_banco: !!(g.movimiento_bancario_id),
+        has_cfdi: false,
+        has_banco: false,
         dias_atraso: pagado ? 0 : diasAtraso(fechaIdeal),
       })
     }
 
-    return NextResponse.json({ movimientos, mes, anio, _debug: { facturas_count: facturas.length, gastos_count: gastos.length } })
+    return NextResponse.json({ movimientos, mes, anio, _debug: { facturas_count: facturas.length, gastos_count: gastos.length, facturas_error, gastos_error } })
   } catch (error) {
     console.error('[ERP] Error movimientos:', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Error', stack: error instanceof Error ? error.stack?.split('\n').slice(0,3).join(' | ') : '' }, { status: 500 })
