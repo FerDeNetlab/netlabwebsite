@@ -40,6 +40,7 @@ export interface VerificaResult {
   paquetes: string[]
   mensaje: string
   terminada: boolean
+  respRaw: string  // raw XML del SAT para diagnóstico
 }
 
 // ── Carga de llave privada FIEL ───────────────────────────────────────────────
@@ -386,6 +387,7 @@ export async function verificar(
     paquetes,
     mensaje:     xmlAttr(resp, 'Mensaje'),
     terminada:   estadoSolicitud === 3,
+    respRaw:     resp,
   }
 }
 
