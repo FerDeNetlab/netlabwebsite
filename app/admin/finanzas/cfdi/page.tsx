@@ -153,6 +153,7 @@ export default function CfdiPage() {
   const [satCerFile, setSatCerFile] = useState<File | null>(null)
   const [satKeyFile, setSatKeyFile] = useState<File | null>(null)
   const [satLoading, setSatLoading] = useState(false)
+  const fielRef = useRef<HTMLDivElement>(null)
   const [satMsg, setSatMsg] = useState<{ tipo: 'ok' | 'error' | 'info'; text: string } | null>(null)
   // Per-solicitud import state
   const [importandoId, setImportandoId] = useState<string | null>(null)
@@ -241,7 +242,11 @@ export default function CfdiPage() {
 
   const handleSatImportar = async (sol: SatSolicitud) => {
     if (!satCerFile || !satKeyFile || !satForm.password) {
-      setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: 'Sube tu .cer, .key y contraseña en la sección de arriba primero' } }))
+      // Scroll to FIEL form and flash it so the user notices
+      fielRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      fielRef.current?.classList.add('ring-2', 'ring-red-500')
+      setTimeout(() => fielRef.current?.classList.remove('ring-2', 'ring-red-500'), 2000)
+      setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: '⬆ Sube tu .cer, .key y contraseña arriba para poder importar' } }))
       return
     }
     setImportandoId(sol.id)
@@ -422,7 +427,7 @@ export default function CfdiPage() {
                     className="border-t border-indigo-500/20 p-5 space-y-5">
 
                     {/* FIEL form */}
-                    <div className="space-y-3">
+                    <div ref={fielRef} className="space-y-3 rounded-lg transition-all duration-300">
                       <p className="font-mono text-xs text-gray-500 flex items-center gap-1">
                         <KeyRound className="h-3 w-3" /> Tus archivos e.firma (FIEL) — solo se usan en memoria, <span className="text-indigo-400">nunca se guardan</span>
                       </p>
