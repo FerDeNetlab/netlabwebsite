@@ -15,7 +15,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             subtipo, recurrente, notas, estado, fecha_pago,
             tipo_gasto, bolsa_origen,
             archivo_url, archivo_nombre, archivo_tipo,
-            recordatorios_activos,
+            recordatorios_activos, fecha_baja,
         } = body
 
         // Si tipo_gasto cambia y no se manda bolsa_origen explícito, recalculamos
@@ -40,6 +40,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         archivo_nombre = COALESCE(${archivo_nombre !== undefined ? (archivo_nombre || null) : null}, archivo_nombre),
         archivo_tipo = COALESCE(${archivo_tipo !== undefined ? (archivo_tipo || null) : null}, archivo_tipo),
         recordatorios_activos = COALESCE(${recordatorios_activos !== undefined ? recordatorios_activos : null}, recordatorios_activos),
+        fecha_baja = ${fecha_baja !== undefined ? (fecha_baja || null) : null},
         updated_at = NOW()
       WHERE id = ${id} RETURNING *
     ` as Record<string, unknown>[]

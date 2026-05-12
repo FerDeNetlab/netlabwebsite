@@ -25,3 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_movbancario_factura  ON movimientos_bancarios(fac
 CREATE INDEX IF NOT EXISTS idx_movbancario_gasto    ON movimientos_bancarios(gasto_id);
 CREATE INDEX IF NOT EXISTS idx_facturas_movbancario ON facturas(movimiento_bancario_id);
 CREATE INDEX IF NOT EXISTS idx_gastos_movbancario   ON gastos(movimiento_bancario_id);
+
+-- 5. fecha_baja para gastos recurrentes
+ALTER TABLE gastos
+  ADD COLUMN IF NOT EXISTS fecha_baja DATE;

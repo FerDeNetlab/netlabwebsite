@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -22,6 +22,7 @@ interface Gasto {
     movimiento_bancario_id?: string | null;
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
+    fecha_baja?: string | null;
 }
 interface MovBanco {
     id: string; fecha_operacion: string; descripcion: string; referencia: string;
@@ -144,6 +145,20 @@ export default function GastosPage() {
         if (!confirm('¿Eliminar gasto?')) return
         await fetch(`/api/gastos/${id}`, { method: 'DELETE' })
         fetchData()
+    }
+
+    const handleDarDeBaja = async (g: Gasto) => {
+        const hoy = new Date()
+        const defaultFecha = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+        const fecha = prompt(`Dar de baja "${g.concepto}"\nFecha de baja (último mes activo):`, defaultFecha)
+        if (!fecha) return
+        const r = await fetch(`/api/gastos/${g.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fecha_baja: fecha }),
+        })
+        if (r.ok) fetchData()
+        else alert('Error al dar de baja')
     }
 
     const startEdit = (g: Gasto) => {
@@ -525,6 +540,9 @@ export default function GastosPage() {
                                                                 <button onClick={() => startEdit(g)} className="text-yellow-400 hover:text-yellow-300" title="Editar"><Pencil className="h-4 w-4 inline" /></button>
                                                                 {g.estado === 'pendiente' && (
                                                                     <button onClick={() => handlePagar(g.id)} className="text-green-400 hover:text-green-300" title="Marcar pagado"><CheckCircle className="h-4 w-4 inline" /></button>
+                                                                )}
+                                                                {g.recurrente && !g.fecha_baja && (
+                                                                    <button onClick={() => handleDarDeBaja(g)} className="text-orange-400 hover:text-orange-300" title="Dar de baja"><BanIcon className="h-4 w-4 inline" /></button>
                                                                 )}
                                                                 <button onClick={() => handleDelete(g.id)} className="text-red-400 hover:text-red-300" title="Eliminar"><X className="h-4 w-4 inline" /></button>
                                                             </>
