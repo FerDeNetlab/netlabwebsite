@@ -6,7 +6,8 @@ import { auth } from '@/auth'
 import { sql } from '@/lib/db'
 import { parseBBVAPDF } from '@/lib/bbva-parser'
 
-export const maxDuration = 60  // Vercel: Claude puede tardar hasta 30s
+export const runtime = 'nodejs'
+export const maxDuration = 60  // Vercel hobby: 60s máx. Pro: hasta 300s
 
 export async function POST(request: Request) {
   const session = await auth()

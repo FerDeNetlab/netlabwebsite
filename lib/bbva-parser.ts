@@ -65,8 +65,8 @@ export async function parseBBVAPDF(pdfBuffer: Buffer): Promise<EstadoCuentaBBVA>
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const message = await client.messages.create({
-    model: 'claude-opus-4-5',
-    max_tokens: 8192,
+    model: 'claude-haiku-4-5',
+    max_tokens: 16000,
     messages: [{
       role: 'user',
       content: [
