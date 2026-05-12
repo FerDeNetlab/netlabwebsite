@@ -2,96 +2,78 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Navbar } from '@/components/navbar'
+import { TerminalFrame } from '@/components/ui/terminal-frame'
+import { Button } from '@/components/ui/button'
+import {
+  ArrowLeft, RefreshCw, Upload, CheckCircle2, AlertCircle,
+  GitMerge, FileText, Landmark, Receipt, CreditCard, X,
+} from 'lucide-react'
 
-// ── Tipos ─────────────────────────────────────────────────────────────────────
 interface EstadoCuenta {
-  id: string
-  banco: string
-  numero_cuenta: string
-  periodo_inicio: string
-  periodo_fin: string
-  saldo_inicial: number
-  saldo_final: number
-  total_cargos: number
-  total_abonos: number
-  archivo_nombre: string
-  total_movimientos: number
-  conciliados: number
-  pendientes: number
+  id: string; banco: string; numero_cuenta: string
+  periodo_inicio: string; periodo_fin: string
+  saldo_inicial: number; saldo_final: number
+  total_cargos: number; total_abonos: number
+  archivo_nombre: string; total_movimientos: number
+  conciliados: number; pendientes: number
 }
-
 interface Movimiento {
-  id: string
-  fecha_operacion: string
-  fecha_liquidacion: string
-  codigo: string
-  descripcion: string
-  referencia: string
-  cargo: number | null
-  abono: number | null
-  saldo_operacion: number | null
-  conciliado: boolean
-  etiqueta: string | null
-  categoria: string | null
-  notas: string | null
-  cfdi_id: string | null
-  uuid_sat: string | null
-  emisor_rfc: string | null
-  receptor_rfc: string | null
-  cfdi_total: number | null
-  periodo_inicio: string
-  periodo_fin: string
-  numero_cuenta: string
+  id: string; fecha_operacion: string; fecha_liquidacion: string
+  codigo: string; descripcion: string; referencia: string
+  cargo: number | null; abono: number | null
+  saldo_operacion: number | null; conciliado: boolean
+  etiqueta: string | null; categoria: string | null
+  notas: string | null; cfdi_id: string | null
+  factura_id: string | null; gasto_id: string | null
+  uuid_sat: string | null; emisor_rfc: string | null
+  receptor_rfc: string | null; cfdi_total: number | null
+  numero_factura: string | null; factura_concepto: string | null
+  factura_total: number | null; factura_estado: string | null
+  factura_cliente: string | null
+  gasto_concepto: string | null; gasto_monto: number | null
+  gasto_proveedor: string | null
+  periodo_inicio: string; periodo_fin: string; numero_cuenta: string
 }
+interface Candidato { id: string; uuid_sat: string; fecha_emision: string; emisor_rfc: string; emisor_nombre: string; receptor_rfc: string; receptor_nombre: string; total: number; tipo_netlab: string }
+interface FacturaCandidato { id: string; numero_factura: string; concepto: string; total: number; fecha_referencia: string; estado: string; cliente_nombre: string; tipo_candidato: 'factura' }
+interface GastoCandidato { id: string; concepto: string; total: number; fecha_referencia: string; cliente_nombre: string; estado: string; tipo_candidato: 'gasto' }
 
-interface CfdCandidato {
-  id: string
-  uuid_sat: string
-  fecha_emision: string
-  emisor_rfc: string
-  emisor_nombre: string
-  receptor_rfc: string
-  receptor_nombre: string
-  total: number
-  tipo_netlab: string
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const fmt = (n: number | null) =>
-  n == null ? '—' : new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
-
-const fmtDate = (s: string) => {
-  const [y, m, d] = s.split('-')
-  return `${d}/${m}/${y}`
-}
+const fmt = (n: number | null) => n == null ? '—' : new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n)
+const fmtDate = (s: string) => { if (!s) return ''; const [, m, d] = s.split('-'); const y = s.split('-')[0]; return `${d}/${m}/${y}` }
+const inputCls = 'w-full px-3 py-2 bg-zinc-900 border border-green-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500/50'
+const labelCls = 'block text-xs font-mono text-gray-400 mb-1'
 
 const CATEGORIAS = [
-  { value: 'ingreso',          label: 'Ingreso' },
-  { value: 'gasto_operativo',  label: 'Gasto operativo' },
-  { value: 'transferencia',    label: 'Transferencia interna' },
-  { value: 'impuestos',        label: 'Impuestos / SAT' },
-  { value: 'nomina',           label: 'Nómina' },
-  { value: 'otro',             label: 'Otro' },
+  { value: 'ingreso', label: 'Ingreso' },
+  { value: 'gasto_operativo', label: 'Gasto operativo' },
+  { value: 'transferencia', label: 'Transferencia interna' },
+  { value: 'impuestos', label: 'Impuestos / SAT' },
+  { value: 'nomina', label: 'Nómina' },
+  { value: 'otro', label: 'Otro' },
 ]
 
-// ── Componente principal ──────────────────────────────────────────────────────
 export default function ConciliacionClient() {
-  const [tab, setTab]           = useState<'estados' | 'movimientos'>('estados')
-  const [estados, setEstados]   = useState<EstadoCuenta[]>([])
-  const [movimientos, setMov]   = useState<Movimiento[]>([])
-  const [selectedEstado, setSel] = useState<string | null>(null)
-  const [filtro, setFiltro]     = useState<'todos' | 'pendientes' | 'conciliados'>('todos')
-  const [loading, setLoading]   = useState(false)
-  const [uploading, setUpload]  = useState(false)
-  const [msg, setMsg]           = useState<{ text: string; ok: boolean } | null>(null)
-
-  // Panel de conciliación
-  const [editando, setEditando] = useState<Movimiento | null>(null)
-  const [candidatos, setCandidatos] = useState<CfdCandidato[]>([])
-  const [loadCand, setLoadCand] = useState(false)
-  const [etiqueta, setEtiqueta] = useState('')
+  const router = useRouter()
+  const [tab, setTab]             = useState<'estados' | 'movimientos'>('estados')
+  const [estados, setEstados]     = useState<EstadoCuenta[]>([])
+  const [movimientos, setMov]     = useState<Movimiento[]>([])
+  const [selectedEstado, setSel]  = useState<string | null>(null)
+  const [filtro, setFiltro]       = useState<'todos' | 'pendientes' | 'conciliados'>('todos')
+  const [loading, setLoading]     = useState(false)
+  const [uploading, setUpload]    = useState(false)
+  const [msg, setMsg]             = useState<{ text: string; ok: boolean } | null>(null)
+  const [editando, setEditando]   = useState<Movimiento | null>(null)
+  const [cfdiCands, setCfdiCands] = useState<Candidato[]>([])
+  const [facturaCands, setFacturaCands] = useState<FacturaCandidato[]>([])
+  const [gastoCands, setGastoCands]     = useState<GastoCandidato[]>([])
+  const [loadCand, setLoadCand]   = useState(false)
+  const [etiqueta, setEtiqueta]   = useState('')
   const [categoria, setCategoria] = useState('')
-  const [notas, setNotas]       = useState('')
+  const [notas, setNotas]         = useState('')
+  const didLoad = useRef({ estados: false, movimientos: false })
 
   const fetchEstados = useCallback(async () => {
     setLoading(true)
@@ -104,7 +86,7 @@ export default function ConciliacionClient() {
   const fetchMovimientos = useCallback(async (estadoId: string | null, f: typeof filtro) => {
     setLoading(true)
     const params = new URLSearchParams({ view: 'movimientos' })
-    if (estadoId)       params.set('estadoId',  estadoId)
+    if (estadoId) params.set('estadoId', estadoId)
     if (f === 'pendientes')  params.set('conciliado', 'false')
     if (f === 'conciliados') params.set('conciliado', 'true')
     const r = await fetch(`/api/finanzas/conciliacion?${params}`)
@@ -113,36 +95,31 @@ export default function ConciliacionClient() {
     setLoading(false)
   }, [])
 
-  // Auto-load on tab switch
-  const didLoad = useRef({ estados: false, movimientos: false })
   const onTab = (t: typeof tab) => {
     setTab(t)
-    if (t === 'estados' && !didLoad.current.estados) {
-      didLoad.current.estados = true
-      fetchEstados()
-    }
-    if (t === 'movimientos' && !didLoad.current.movimientos) {
-      didLoad.current.movimientos = true
-      fetchMovimientos(selectedEstado, filtro)
-    }
+    if (t === 'estados' && !didLoad.current.estados) { didLoad.current.estados = true; fetchEstados() }
+    if (t === 'movimientos' && !didLoad.current.movimientos) { didLoad.current.movimientos = true; fetchMovimientos(selectedEstado, filtro) }
   }
 
-  // ── Upload ──────────────────────────────────────────────────────────────────
   const onDrop = useCallback(async (accepted: File[]) => {
     if (!accepted[0]) return
-    setUpload(true)
-    setMsg(null)
+    setUpload(true); setMsg(null)
     const form = new FormData()
     form.append('pdf', accepted[0])
-    const r = await fetch('/api/finanzas/conciliacion/upload', { method: 'POST', body: form })
-    const d = await r.json()
-    setUpload(false)
-    if (r.ok) {
-      setMsg({ text: `✓ ${d.movimientosCargados} movimientos cargados (${d.periodoInicio} → ${d.periodoFin})`, ok: true })
-      didLoad.current.estados = false  // force reload
-      if (tab === 'estados') fetchEstados()
-    } else {
-      setMsg({ text: d.error ?? 'Error al subir', ok: false })
+    try {
+      const r = await fetch('/api/finanzas/conciliacion/upload', { method: 'POST', body: form })
+      const d = await r.json()
+      if (r.ok) {
+        setMsg({ text: `✓ ${d.movimientosCargados} movimientos importados (${d.periodoInicio} → ${d.periodoFin})`, ok: true })
+        didLoad.current.estados = false
+        if (tab === 'estados') fetchEstados()
+      } else {
+        setMsg({ text: d.error ?? 'Error al subir', ok: false })
+      }
+    } catch {
+      setMsg({ text: 'Error de red al subir el PDF', ok: false })
+    } finally {
+      setUpload(false)
     }
   }, [tab, fetchEstados])
 
@@ -150,275 +127,238 @@ export default function ConciliacionClient() {
     onDrop, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1, disabled: uploading,
   })
 
-  // ── Panel de conciliación ───────────────────────────────────────────────────
   const abrirPanel = async (m: Movimiento) => {
-    setEditando(m)
-    setEtiqueta(m.etiqueta ?? '')
-    setCategoria(m.categoria ?? '')
-    setNotas(m.notas ?? '')
-    setCandidatos([])
-
-    // Buscar CFDIs candidatos
+    setEditando(m); setEtiqueta(m.etiqueta ?? ''); setCategoria(m.categoria ?? ''); setNotas(m.notas ?? '')
+    setCfdiCands([]); setFacturaCands([]); setGastoCands([])
     setLoadCand(true)
     const tipo = m.cargo ? 'cargo' : 'abono'
     const monto = m.cargo ?? m.abono ?? 0
     const r = await fetch(`/api/finanzas/conciliacion/candidatos?monto=${monto}&fecha=${m.fecha_operacion}&tipo=${tipo}`)
     const d = await r.json()
-    setCandidatos(d.candidatos ?? [])
+    setCfdiCands(d.candidatos ?? [])
+    setFacturaCands(d.facturas ?? [])
+    setGastoCands(d.gastos ?? [])
     setLoadCand(false)
   }
 
-  const guardarConciliacion = async (cfdiId?: string | null) => {
+  const guardar = async (opts: { cfdi_id?: string | null; factura_id?: string | null; gasto_id?: string | null }) => {
     if (!editando) return
     const r = await fetch('/api/finanzas/conciliacion', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id:         editando.id,
-        cfdi_id:    cfdiId !== undefined ? cfdiId : editando.cfdi_id,
-        etiqueta:   etiqueta  || null,
-        categoria:  categoria || null,
-        notas:      notas     || null,
-        conciliado: true,
-      }),
+      body: JSON.stringify({ id: editando.id, ...opts, etiqueta: etiqueta || null, categoria: categoria || null, notas: notas || null, conciliado: true }),
     })
     if (r.ok) {
-      setMov(prev => prev.map(m => m.id === editando.id
-        ? { ...m, conciliado: true, etiqueta: etiqueta || null, categoria: categoria || null, notas: notas || null, cfdi_id: cfdiId ?? m.cfdi_id }
-        : m
-      ))
+      setMov(prev => prev.map(m => m.id === editando.id ? { ...m, conciliado: true, ...opts, etiqueta: etiqueta || null } : m))
       setEditando(null)
     }
   }
 
-  const desmarcarConciliado = async (id: string) => {
-    await fetch('/api/finanzas/conciliacion', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, conciliado: false }),
-    })
+  const desmarcar = async (id: string) => {
+    await fetch('/api/finanzas/conciliacion', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, conciliado: false }) })
     setMov(prev => prev.map(m => m.id === id ? { ...m, conciliado: false } : m))
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const badgeMovimiento = (m: Movimiento) => {
+    const tiene = [m.cfdi_id, m.factura_id, m.gasto_id].filter(Boolean).length
+    if (!m.conciliado) return <span className="font-mono text-[10px] bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded">pendiente</span>
+    if (tiene === 0)  return <span className="font-mono text-[10px] bg-green-500/10 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded">✓ manual</span>
+    return <span className="font-mono text-[10px] bg-green-500/20 text-green-300 border border-green-500/40 px-1.5 py-0.5 rounded">✓ ligado</span>
+  }
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <TerminalFrame title="root@netlab:~/finanzas/conciliacion" borderColor="green">
+            <div className="space-y-5">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Conciliación Bancaria</h1>
-            <p className="text-gray-400 text-sm mt-1">BBVA Maestra Pyme · Cuenta 0125537991</p>
-          </div>
-        </div>
+              <div className="flex items-center justify-between border-b border-green-500/20 pb-4">
+                <div>
+                  <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-1 -ml-2">
+                    <ArrowLeft className="h-4 w-4" /> Finanzas
+                  </Button>
+                  <h1 className="text-2xl font-mono text-green-400 flex items-center gap-2">
+                    <GitMerge className="h-5 w-5" /> Conciliación Bancaria
+                  </h1>
+                  <p className="text-xs font-mono text-gray-500 mt-0.5">BBVA Maestra Pyme · Ligado de movimientos con CFDIs, facturas y gastos</p>
+                </div>
+              </div>
 
-        {/* Upload zone */}
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-6 mb-6 text-center cursor-pointer transition-colors ${
-            isDragActive ? 'border-blue-400 bg-blue-900/20' : 'border-gray-700 hover:border-gray-500'
-          } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <input {...getInputProps()} />
-          <p className="text-gray-400">
-            {uploading ? 'Procesando PDF...' : isDragActive
-              ? 'Suelta el PDF aquí'
-              : '📄 Arrastra aquí un estado de cuenta BBVA (.pdf) o haz clic para seleccionar'}
-          </p>
-        </div>
-        {msg && (
-          <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.ok ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'}`}>
-            {msg.text}
-          </div>
-        )}
+              <div
+                {...getRootProps()}
+                className={`border border-dashed rounded-lg p-5 text-center cursor-pointer transition-all font-mono text-sm ${
+                  isDragActive ? 'border-green-400 bg-green-500/10 text-green-300' : 'border-green-500/30 hover:border-green-500/50 text-gray-400 hover:text-gray-300'
+                } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <input {...getInputProps()} />
+                <Upload className="h-5 w-5 mx-auto mb-2 opacity-60" />
+                {uploading
+                  ? <><span className="text-green-400 animate-pulse">$ procesando con Claude AI</span><span className="text-gray-600 block text-xs mt-1">esto puede tardar 15-30 segundos...</span></>
+                  : isDragActive ? '$ soltar PDF aquí'
+                  : '$ arrastra o selecciona un PDF de estado de cuenta BBVA'}
+              </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-4 border-b border-gray-800 pb-2">
-          {(['estados', 'movimientos'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => onTab(t)}
-              className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-                tab === t ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              {t === 'estados' ? '📋 Estados de Cuenta' : '💳 Movimientos'}
-            </button>
-          ))}
-        </div>
+              {msg && (
+                <div className={`px-4 py-2 rounded border font-mono text-xs flex items-center gap-2 ${
+                  msg.ok ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-red-500/10 border-red-500/30 text-red-300'
+                }`}>
+                  {msg.ok ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
+                  {msg.text}
+                </div>
+              )}
 
-        {/* ── Tab: Estados ──────────────────────────────────────────────── */}
-        {tab === 'estados' && (
-          <div>
-            <button
-              onClick={fetchEstados}
-              className="mb-4 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-sm"
-            >
-              ↺ Actualizar
-            </button>
-            {loading ? (
-              <p className="text-gray-400">Cargando...</p>
-            ) : estados.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Sube un estado de cuenta para comenzar</p>
-            ) : (
-              <div className="space-y-3">
-                {estados.map(e => (
-                  <div key={e.id} className="bg-gray-900 rounded-xl p-4 flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold">{fmtDate(e.periodo_inicio)} → {fmtDate(e.periodo_fin)}</span>
-                        <span className="text-xs text-gray-500">{e.archivo_nombre}</span>
-                      </div>
-                      <div className="flex gap-6 mt-2 text-sm text-gray-400">
-                        <span>Cargos: <span className="text-red-400">{fmt(e.total_cargos)}</span></span>
-                        <span>Abonos: <span className="text-green-400">{fmt(e.total_abonos)}</span></span>
-                        <span>Movimientos: {e.total_movimientos}</span>
-                        <span className="text-yellow-400">{e.pendientes} pendientes</span>
-                        <span className="text-green-400">{e.conciliados} conciliados</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSel(e.id)
-                        setTab('movimientos')
-                        didLoad.current.movimientos = true
-                        fetchMovimientos(e.id, filtro)
-                      }}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm whitespace-nowrap"
-                    >
-                      Ver movimientos →
-                    </button>
-                  </div>
+              <div className="flex gap-1 border-b border-green-500/20">
+                {(['estados', 'movimientos'] as const).map(t => (
+                  <button key={t} onClick={() => onTab(t)}
+                    className={`px-4 py-2 font-mono text-xs transition-colors border-b-2 -mb-px ${
+                      tab === t ? 'border-green-400 text-green-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    {t === 'estados' ? '$ estados_cuenta' : '$ movimientos'}
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* ── Tab: Movimientos ──────────────────────────────────────────── */}
-        {tab === 'movimientos' && (
-          <div>
-            {/* Filtros */}
-            <div className="flex gap-2 mb-4 flex-wrap">
-              {(['todos', 'pendientes', 'conciliados'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => { setFiltro(f); fetchMovimientos(selectedEstado, f) }}
-                  className={`px-3 py-1.5 rounded text-sm transition-colors ${
-                    filtro === f ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {f === 'todos' ? 'Todos' : f === 'pendientes' ? '⚠ Pendientes' : '✓ Conciliados'}
-                </button>
-              ))}
-              <button
-                onClick={() => fetchMovimientos(selectedEstado, filtro)}
-                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded text-sm ml-auto"
-              >
-                ↺ Actualizar
-              </button>
-            </div>
+              {tab === 'estados' && (
+                <div className="space-y-3">
+                  <Button onClick={fetchEstados} variant="ghost" size="sm" className="font-mono text-xs gap-1 text-gray-400 hover:text-green-400">
+                    <RefreshCw className="h-3 w-3" /> actualizar
+                  </Button>
+                  {loading ? <p className="text-gray-500 font-mono text-xs">cargando...</p>
+                  : estados.length === 0 ? (
+                    <div className="text-center py-12 font-mono text-gray-600 text-sm">
+                      <Landmark className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                      sube un estado de cuenta BBVA para comenzar
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {estados.map(e => (
+                        <div key={e.id} className="bg-zinc-900/60 border border-green-500/10 hover:border-green-500/30 rounded-lg p-4 flex items-center justify-between gap-4 transition-colors">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 font-mono text-sm">
+                              <span className="text-white">{fmtDate(e.periodo_inicio)} <span className="text-gray-600">→</span> {fmtDate(e.periodo_fin)}</span>
+                              <span className="text-[10px] text-gray-600 truncate">{e.archivo_nombre}</span>
+                            </div>
+                            <div className="flex gap-5 mt-2 font-mono text-xs text-gray-500">
+                              <span>cargos: <span className="text-red-400">{fmt(e.total_cargos)}</span></span>
+                              <span>abonos: <span className="text-green-400">{fmt(e.total_abonos)}</span></span>
+                              <span>movs: <span className="text-gray-300">{e.total_movimientos}</span></span>
+                              <span className="text-yellow-400">{e.pendientes} pendientes</span>
+                              <span className="text-green-400">{e.conciliados} conciliados</span>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" className="font-mono text-xs shrink-0"
+                            onClick={() => { setSel(e.id); setTab('movimientos'); didLoad.current.movimientos = true; fetchMovimientos(e.id, filtro) }}
+                          >
+                            ver movimientos →
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {loading ? (
-              <p className="text-gray-400">Cargando...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-gray-500 border-b border-gray-800 text-left">
-                      <th className="pb-2 pr-4">Fecha</th>
-                      <th className="pb-2 pr-4">Descripción</th>
-                      <th className="pb-2 pr-4 text-right">Cargo</th>
-                      <th className="pb-2 pr-4 text-right">Abono</th>
-                      <th className="pb-2 pr-4">Etiqueta / CFDI</th>
-                      <th className="pb-2">Estado</th>
-                      <th className="pb-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-900">
-                    {movimientos.map(m => (
-                      <tr key={m.id} className={`hover:bg-gray-900/50 ${m.conciliado ? 'opacity-60' : ''}`}>
-                        <td className="py-2 pr-4 text-gray-400 whitespace-nowrap">{fmtDate(m.fecha_operacion)}</td>
-                        <td className="py-2 pr-4 max-w-xs">
-                          <div className="font-medium truncate">{m.descripcion}</div>
-                          {m.referencia && (
-                            <div className="text-xs text-gray-500 truncate">{m.referencia.split(' | ')[0]}</div>
-                          )}
-                        </td>
-                        <td className="py-2 pr-4 text-right text-red-400 whitespace-nowrap">
-                          {m.cargo != null ? fmt(m.cargo) : ''}
-                        </td>
-                        <td className="py-2 pr-4 text-right text-green-400 whitespace-nowrap">
-                          {m.abono != null ? fmt(m.abono) : ''}
-                        </td>
-                        <td className="py-2 pr-4 text-xs max-w-[160px]">
-                          {m.cfdi_id ? (
-                            <span className="text-blue-400 font-mono truncate block">
-                              CFDI {m.uuid_sat?.substring(0, 8)}…
-                            </span>
-                          ) : m.etiqueta ? (
-                            <span className="text-yellow-300">{m.etiqueta}</span>
-                          ) : (
-                            <span className="text-gray-600">—</span>
-                          )}
-                        </td>
-                        <td className="py-2 pr-4">
-                          {m.conciliado ? (
-                            <span className="text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full">✓</span>
-                          ) : (
-                            <span className="text-xs bg-yellow-900/50 text-yellow-300 px-2 py-0.5 rounded-full">pendiente</span>
-                          )}
-                        </td>
-                        <td className="py-2 text-right whitespace-nowrap">
-                          {m.conciliado ? (
-                            <button
-                              onClick={() => desmarcarConciliado(m.id)}
-                              className="text-xs text-gray-500 hover:text-gray-300"
-                            >
-                              desmarcar
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => abrirPanel(m)}
-                              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
-                            >
-                              Conciliar
-                            </button>
-                          )}
-                        </td>
-                      </tr>
+              {tab === 'movimientos' && (
+                <div className="space-y-3">
+                  <div className="flex gap-2 flex-wrap items-center">
+                    {(['todos', 'pendientes', 'conciliados'] as const).map(f => (
+                      <button key={f} onClick={() => { setFiltro(f); fetchMovimientos(selectedEstado, f) }}
+                        className={`px-3 py-1 font-mono text-xs rounded border transition-colors ${
+                          filtro === f ? 'bg-green-500/20 border-green-500/50 text-green-300' : 'border-green-500/10 text-gray-500 hover:text-gray-300'
+                        }`}
+                      >
+                        {f === 'todos' ? 'todos' : f === 'pendientes' ? '⚠ pendientes' : '✓ conciliados'}
+                      </button>
                     ))}
-                  </tbody>
-                </table>
-                {movimientos.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">No hay movimientos para mostrar</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                    <Button onClick={() => fetchMovimientos(selectedEstado, filtro)} variant="ghost" size="sm" className="font-mono text-xs gap-1 text-gray-400 hover:text-green-400 ml-auto">
+                      <RefreshCw className="h-3 w-3" /> actualizar
+                    </Button>
+                  </div>
 
-        {/* ── Panel lateral: Conciliación ────────────────────────────────── */}
-        {editando && (
-          <div className="fixed inset-0 bg-black/70 flex justify-end z-50" onClick={() => setEditando(null)}>
-            <div
-              className="w-full max-w-lg bg-gray-950 border-l border-gray-800 h-full overflow-y-auto p-6"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Conciliar movimiento</h2>
-                <button onClick={() => setEditando(null)} className="text-gray-500 hover:text-white text-xl">✕</button>
+                  {loading ? <p className="text-gray-500 font-mono text-xs">cargando...</p> : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full font-mono text-xs">
+                        <thead>
+                          <tr className="text-gray-600 border-b border-green-500/10 text-left">
+                            <th className="pb-2 pr-4 font-normal">fecha</th>
+                            <th className="pb-2 pr-4 font-normal">descripción</th>
+                            <th className="pb-2 pr-4 text-right font-normal">cargo</th>
+                            <th className="pb-2 pr-4 text-right font-normal">abono</th>
+                            <th className="pb-2 pr-4 font-normal">ligado a</th>
+                            <th className="pb-2 font-normal">estado</th>
+                            <th className="pb-2"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-green-500/5">
+                          {movimientos.map(m => (
+                            <tr key={m.id} className={`hover:bg-green-500/5 transition-colors ${m.conciliado ? 'opacity-50' : ''}`}>
+                              <td className="py-2 pr-4 text-gray-400 whitespace-nowrap">{fmtDate(m.fecha_operacion)}</td>
+                              <td className="py-2 pr-4 max-w-[220px]">
+                                <div className="text-gray-200 truncate">{m.descripcion}</div>
+                                {m.referencia && <div className="text-gray-600 truncate">{m.referencia.split(' | ')[0]}</div>}
+                              </td>
+                              <td className="py-2 pr-4 text-right text-red-400 whitespace-nowrap">{m.cargo != null ? fmt(m.cargo) : ''}</td>
+                              <td className="py-2 pr-4 text-right text-green-400 whitespace-nowrap">{m.abono != null ? fmt(m.abono) : ''}</td>
+                              <td className="py-2 pr-4 max-w-[160px]">
+                                {m.factura_id ? (
+                                  <span className="text-blue-400 flex items-center gap-1"><Receipt className="h-3 w-3" />{m.numero_factura ?? 'Factura'}</span>
+                                ) : m.gasto_id ? (
+                                  <span className="text-orange-400 flex items-center gap-1"><CreditCard className="h-3 w-3" />{m.gasto_concepto?.slice(0, 16) ?? 'Gasto'}</span>
+                                ) : m.cfdi_id ? (
+                                  <span className="text-purple-400 flex items-center gap-1"><FileText className="h-3 w-3" />CFDI {m.uuid_sat?.substring(0, 8)}…</span>
+                                ) : m.etiqueta ? (
+                                  <span className="text-yellow-300">{m.etiqueta}</span>
+                                ) : <span className="text-gray-700">—</span>}
+                              </td>
+                              <td className="py-2 pr-4">{badgeMovimiento(m)}</td>
+                              <td className="py-2 text-right whitespace-nowrap">
+                                {m.conciliado ? (
+                                  <button onClick={() => desmarcar(m.id)} className="text-gray-600 hover:text-gray-400 transition-colors">desmarcar</button>
+                                ) : (
+                                  <button onClick={() => abrirPanel(m)} className="text-green-500 hover:text-green-300 transition-colors">conciliar →</button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {movimientos.length === 0 && (
+                        <div className="text-center py-12 font-mono text-gray-600 text-sm">no hay movimientos</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </TerminalFrame>
+        </motion.div>
+      </div>
+
+      {editando && (
+        <div className="fixed inset-0 bg-black/80 flex justify-end z-50" onClick={() => setEditando(null)}>
+          <motion.div
+            initial={{ x: 400 }} animate={{ x: 0 }} transition={{ type: 'spring', damping: 25 }}
+            className="w-full max-w-md bg-[#0a0a0a] border-l border-green-500/20 h-full overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-green-500/20 pb-3">
+                <h2 className="font-mono text-sm text-green-400 flex items-center gap-2">
+                  <GitMerge className="h-4 w-4" /> conciliar movimiento
+                </h2>
+                <button onClick={() => setEditando(null)} className="text-gray-600 hover:text-gray-300"><X className="h-4 w-4" /></button>
               </div>
 
-              {/* Resumen del movimiento */}
-              <div className="bg-gray-900 rounded-xl p-4 mb-4">
-                <div className="font-medium">{editando.descripcion}</div>
-                <div className="text-sm text-gray-400 mt-1">{fmtDate(editando.fecha_operacion)}</div>
+              <div className="bg-zinc-900/60 border border-green-500/10 rounded-lg p-4 font-mono">
+                <div className="text-white text-sm">{editando.descripcion}</div>
+                <div className="text-gray-500 text-xs mt-1">{fmtDate(editando.fecha_operacion)}</div>
                 {editando.referencia && (
-                  <div className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{editando.referencia.replace(/ \| /g, '\n')}</div>
+                  <div className="text-gray-600 text-[10px] mt-1 whitespace-pre-wrap">{editando.referencia.replace(/ \| /g, '\n')}</div>
                 )}
-                <div className="mt-3 text-xl font-bold">
+                <div className="mt-3 text-lg font-bold">
                   {editando.cargo != null
                     ? <span className="text-red-400">− {fmt(editando.cargo)}</span>
                     : <span className="text-green-400">+ {fmt(editando.abono)}</span>
@@ -426,82 +366,113 @@ export default function ConciliacionClient() {
                 </div>
               </div>
 
-              {/* CFDIs candidatos */}
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-300 mb-2">CFDIs con monto similar</h3>
-                {loadCand ? (
-                  <p className="text-gray-500 text-sm">Buscando...</p>
-                ) : candidatos.length === 0 ? (
-                  <p className="text-gray-500 text-sm">No se encontraron CFDIs con monto similar (±5%, ±30 días)</p>
-                ) : (
-                  <div className="space-y-2">
-                    {candidatos.map(c => (
-                      <div key={c.id} className="bg-gray-800 rounded-lg p-3 flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-mono text-gray-400 truncate">{c.uuid_sat.substring(0, 16)}…</div>
-                          <div className="text-sm truncate">{c.emisor_nombre ?? c.emisor_rfc}</div>
-                          <div className="text-xs text-gray-500">{fmtDate(c.fecha_emision)} · {c.tipo_netlab}</div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <div className="font-semibold">{fmt(c.total)}</div>
-                          <button
-                            onClick={() => guardarConciliacion(c.id)}
-                            className="mt-1 px-2 py-0.5 bg-green-700 hover:bg-green-600 rounded text-xs"
-                          >
-                            Ligar
-                          </button>
-                        </div>
+              {loadCand ? (
+                <p className="text-gray-600 font-mono text-xs">buscando candidatos...</p>
+              ) : (
+                <div className="space-y-4">
+                  {facturaCands.length > 0 && (
+                    <div>
+                      <p className="font-mono text-xs text-gray-500 mb-2 flex items-center gap-1"><Receipt className="h-3 w-3" /> facturas pendientes similares</p>
+                      <div className="space-y-1.5">
+                        {facturaCands.map(f => (
+                          <div key={f.id} className="bg-zinc-900/60 border border-blue-500/20 rounded p-3 flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-mono text-xs text-blue-300">{f.numero_factura}</div>
+                              <div className="text-gray-300 text-xs truncate">{f.cliente_nombre}</div>
+                              <div className="text-gray-600 text-[10px]">{fmtDate(f.fecha_referencia)}</div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="font-mono text-sm text-white">{fmt(f.total)}</div>
+                              <button onClick={() => guardar({ factura_id: f.id })}
+                                className="mt-1 font-mono text-[10px] bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/40 text-blue-300 px-2 py-0.5 rounded transition-colors">
+                                ligar factura
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
 
-              {/* Etiqueta manual */}
-              <div className="space-y-3 mb-4">
+                  {gastoCands.length > 0 && (
+                    <div>
+                      <p className="font-mono text-xs text-gray-500 mb-2 flex items-center gap-1"><CreditCard className="h-3 w-3" /> gastos pendientes similares</p>
+                      <div className="space-y-1.5">
+                        {gastoCands.map(g => (
+                          <div key={g.id} className="bg-zinc-900/60 border border-orange-500/20 rounded p-3 flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="text-gray-300 text-xs truncate">{g.concepto}</div>
+                              <div className="text-gray-600 text-[10px]">{g.cliente_nombre} · {fmtDate(g.fecha_referencia)}</div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="font-mono text-sm text-white">{fmt(g.total)}</div>
+                              <button onClick={() => guardar({ gasto_id: g.id })}
+                                className="mt-1 font-mono text-[10px] bg-orange-500/20 hover:bg-orange-500/40 border border-orange-500/40 text-orange-300 px-2 py-0.5 rounded transition-colors">
+                                ligar gasto
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {cfdiCands.length > 0 && (
+                    <div>
+                      <p className="font-mono text-xs text-gray-500 mb-2 flex items-center gap-1"><FileText className="h-3 w-3" /> CFDIs con monto similar</p>
+                      <div className="space-y-1.5">
+                        {cfdiCands.map(c => (
+                          <div key={c.id} className="bg-zinc-900/60 border border-purple-500/20 rounded p-3 flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-mono text-[10px] text-gray-500 truncate">{c.uuid_sat.substring(0, 18)}…</div>
+                              <div className="text-gray-300 text-xs truncate">{c.emisor_nombre ?? c.emisor_rfc}</div>
+                              <div className="text-gray-600 text-[10px]">{fmtDate(c.fecha_emision)} · {c.tipo_netlab}</div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className="font-mono text-sm text-white">{fmt(c.total)}</div>
+                              <button onClick={() => guardar({ cfdi_id: c.id })}
+                                className="mt-1 font-mono text-[10px] bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 text-purple-300 px-2 py-0.5 rounded transition-colors">
+                                ligar CFDI
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {facturaCands.length === 0 && gastoCands.length === 0 && cfdiCands.length === 0 && (
+                    <p className="font-mono text-xs text-gray-600">no se encontraron candidatos (±10%, ±45 días)</p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-3 pt-2 border-t border-green-500/10">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Etiqueta</label>
-                  <input
-                    value={etiqueta}
-                    onChange={e => setEtiqueta(e.target.value)}
-                    placeholder="ej. Nómina Edgar, Renta oficina..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                  <label className={labelCls}>etiqueta manual</label>
+                  <input value={etiqueta} onChange={e => setEtiqueta(e.target.value)} placeholder="ej. Nómina Edgar, Renta oficina..." className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Categoría</label>
-                  <select
-                    value={categoria}
-                    onChange={e => setCategoria(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">— Sin categoría —</option>
-                    {CATEGORIAS.map(c => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
+                  <label className={labelCls}>categoría</label>
+                  <select value={categoria} onChange={e => setCategoria(e.target.value)} className={inputCls}>
+                    <option value="">— sin categoría —</option>
+                    {CATEGORIAS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Notas</label>
-                  <textarea
-                    value={notas}
-                    onChange={e => setNotas(e.target.value)}
-                    rows={2}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  />
+                  <label className={labelCls}>notas</label>
+                  <textarea value={notas} onChange={e => setNotas(e.target.value)} rows={2} className={inputCls} />
                 </div>
               </div>
 
-              <button
-                onClick={() => guardarConciliacion(undefined)}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium"
-              >
-                Marcar como conciliado
+              <button onClick={() => guardar({})}
+                className="w-full py-2.5 font-mono text-sm bg-green-500/20 hover:bg-green-500/30 border border-green-500/40 text-green-300 rounded-lg transition-colors">
+                $ marcar como conciliado (manual)
               </button>
             </div>
-          </div>
-        )}
-      </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

@@ -6,6 +6,8 @@ import { auth } from '@/auth'
 import { sql } from '@/lib/db'
 import { parseBBVAPDF } from '@/lib/bbva-parser'
 
+export const maxDuration = 60  // Vercel: Claude puede tardar hasta 30s
+
 export async function POST(request: Request) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -90,7 +92,8 @@ export async function POST(request: Request) {
       movimientosCargados: estado.movimientos.length,
     })
   } catch (error) {
-    console.error('[conciliacion/upload] error:', error)
-    return NextResponse.json({ error: 'Error al procesar el archivo' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : 'Error desconocido'
+    console.error('[conciliacion/upload] error:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
