@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
 import {
-  cargarLlave, autenticar, verificar, descargarPaquete, unzipXmls,
+  cargarLlave, validarCertLlave, autenticar, verificar, descargarPaquete, unzipXmls,
 } from '@/lib/sat-descarga-masiva'
 import { parseCfdi } from '@/lib/cfdi-parser'
 import { put } from '@vercel/blob'
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     let llave
     try {
       llave = cargarLlave(keyDer, password)
+      validarCertLlave(certDer, llave)
     } catch (e) {
       return NextResponse.json({
         error: e instanceof Error ? e.message : 'Error al leer la llave'
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     // Verify status
-    const verif = await verificar(token, RFC, idSolicitudSat)
+    const verif = await verificar(token, certDer, llave, RFC, idSolicitudSat)
 
     // Update DB state
     await sql`
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
 
     for (const idPaquete of verif.paquetes) {
       try {
-        const zipBuf = await descargarPaquete(token, RFC, idPaquete)
+        const zipBuf = await descargarPaquete(token, certDer, llave, RFC, idPaquete)
         const xmls   = unzipXmls(zipBuf)
 
         for (const [nombre, contenido] of Object.entries(xmls)) {

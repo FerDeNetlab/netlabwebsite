@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
-import { cargarLlave, autenticar, solicitar, TipoDescarga } from '@/lib/sat-descarga-masiva'
+import { cargarLlave, validarCertLlave, autenticar, solicitar, TipoDescarga } from '@/lib/sat-descarga-masiva'
 
 const RFC = 'HAR250221IT3'
 
@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     let llave
     try {
       llave = cargarLlave(keyDer, password)
+      validarCertLlave(certDer, llave)
     } catch (e) {
       return NextResponse.json({
         error: e instanceof Error ? e.message : 'Error al leer la llave'
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
 
     for (const t of tiposASolicitar) {
       try {
-        const res = await solicitar(token, RFC, inicio, fin, t)
+        const res = await solicitar(token, certDer, llave, RFC, inicio, fin, t)
 
         // Store in DB
         const [row] = await sql`
