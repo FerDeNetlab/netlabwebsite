@@ -262,7 +262,10 @@ export default function CfdiPage() {
       if (!r.ok) {
         setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'error', text: data.error || 'Error al importar' } }))
       } else if (data.ok) {
-        setImportMsg(m => ({ ...m, [sol.id]: { tipo: 'ok', text: `✅ Importados: ${data.importados}  Duplicados: ${data.duplicados}  Errores: ${data.errores}  |  Paquetes SAT: ${data.paquetes ?? '?'}  CFDIs SAT: ${data.numeroCFDIs ?? '?'}` } }))
+        const errorDetail = data.errores > 0 && data.errorLog?.length
+          ? `\n\nDetalles de errores:\n${data.errorLog.join('\n')}`
+          : ''
+        setImportMsg(m => ({ ...m, [sol.id]: { tipo: data.errores > 0 ? 'warn' : 'ok', text: `✅ Importados: ${data.importados}  Duplicados: ${data.duplicados}  Errores: ${data.errores}  |  Paquetes SAT: ${data.paquetes ?? '?'}  CFDIs SAT: ${data.numeroCFDIs ?? '?'}${errorDetail}` } }))
         fetchSolicitudes()
         fetchCfdis()
       } else {

@@ -592,7 +592,7 @@ export default function GastosPage() {
                                                 <div className="text-gray-500 text-[10px] mt-0.5">{new Date(m.fecha_operacion).toLocaleDateString('es-MX')} · {m.banco} {m.numero_cuenta}</div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <div className="font-mono text-sm text-red-400">{fmt(m.cargo)}</div>
+                                                <div className="font-mono text-sm text-red-400">{fmt(m.cargo ?? 0)}</div>
                                                 <button onClick={() => ligarMovimiento(m.id)}
                                                     className="mt-1.5 font-mono text-[10px] bg-green-500/20 hover:bg-green-500/40 border border-green-500/40 text-green-300 px-2 py-0.5 rounded transition-colors">
                                                     ✓ ligar este
