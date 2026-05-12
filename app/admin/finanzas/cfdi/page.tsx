@@ -759,13 +759,9 @@ export default function CfdiPage() {
                                 </a>
                               )}
                               {cfdi.estado === 'sin_asignar' ? (
-                                <button
-                                  onClick={() => isOpen ? setAsignandoId(null) : openAsignar(cfdi)}
-                                  className="flex items-center gap-1 px-2 py-1 rounded font-mono text-[10px] bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors"
-                                >
-                                  <Link2 className="h-3 w-3" />
-                                  {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                                </button>
+                                <span className="px-2 py-1 rounded font-mono text-[10px] text-gray-600 bg-zinc-800/60 border border-gray-700/30">
+                                  sin ligar
+                                </span>
                               ) : (
                                 <button
                                   onClick={() => handleDesasignar(cfdi.id)}
@@ -786,80 +782,7 @@ export default function CfdiPage() {
                           </div>
                         </div>
 
-                        {/* Inline assignment form */}
-                        {isOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                            className="mx-4 mb-4 p-4 bg-zinc-900 border border-blue-500/20 rounded-lg"
-                          >
-                            <p className="font-mono text-[11px] text-blue-400 mb-3 flex items-center gap-1">
-                              <Link2 className="h-3 w-3" /> Conciliar CFDI con registro interno
-                            </p>
-
-                            {/* Type selector */}
-                            <div className="flex gap-2 mb-3">
-                              <button
-                                onClick={() => { setAsignTipo('factura'); setAsignTargetId('') }}
-                                className={`flex-1 py-1.5 rounded font-mono text-xs border transition-all ${
-                                  asignTipo === 'factura'
-                                    ? 'bg-green-500/20 border-green-500/50 text-green-400'
-                                    : 'border-gray-700 text-gray-500 hover:border-gray-500'
-                                }`}
-                              >
-                                📄 Factura (ingreso)
-                              </button>
-                              <button
-                                onClick={() => { setAsignTipo('gasto'); setAsignTargetId('') }}
-                                className={`flex-1 py-1.5 rounded font-mono text-xs border transition-all ${
-                                  asignTipo === 'gasto'
-                                    ? 'bg-red-500/20 border-red-500/50 text-red-400'
-                                    : 'border-gray-700 text-gray-500 hover:border-gray-500'
-                                }`}
-                              >
-                                💸 Gasto (egreso)
-                              </button>
-                            </div>
-
-                            {/* Target selector */}
-                            <select
-                              value={asignTargetId}
-                              onChange={e => setAsignTargetId(e.target.value)}
-                              className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-blue-500 focus:outline-none mb-3"
-                            >
-                              <option value="">— Selecciona {asignTipo === 'factura' ? 'una factura' : 'un gasto'} —</option>
-                              {asignTipo === 'factura'
-                                ? facturas.map(f => (
-                                    <option key={f.id} value={f.id}>
-                                      {f.numero_factura} — {f.concepto} — {fmt(Number(f.total))} ({f.cliente_nombre})
-                                    </option>
-                                  ))
-                                : gastos.map(g => (
-                                    <option key={g.id} value={g.id}>
-                                      {g.concepto} — {fmt(Number(g.monto))}{g.proveedor ? ` (${g.proveedor})` : ''}
-                                    </option>
-                                  ))}
-                            </select>
-
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => handleAsignar(cfdi.id)}
-                                disabled={!asignTargetId || asignando}
-                                className="font-mono bg-blue-600 hover:bg-blue-700 text-xs gap-1"
-                                size="sm"
-                              >
-                                {asignando ? 'Guardando...' : <><CheckCircle className="h-3 w-3" /> Confirmar conciliación</>}
-                              </Button>
-                              <Button
-                                onClick={() => setAsignandoId(null)}
-                                variant="ghost"
-                                className="font-mono text-xs"
-                                size="sm"
-                              >
-                                Cancelar
-                              </Button>
-                            </div>
-                          </motion.div>
-                        )}
+                        {/* Inline assignment form REMOVIDO — ligar desde gastos/facturas */}
                       </div>
                     )
                   })}

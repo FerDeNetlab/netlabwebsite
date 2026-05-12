@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown, Undo2, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, DollarSign, CreditCard, CheckCircle, X, TrendingUp, TrendingDown, Undo2, AlertTriangle, FileText, Landmark } from 'lucide-react'
 
 interface Movimiento {
     id: string; concepto: string; monto: number; numero_factura?: string;
@@ -16,6 +16,7 @@ interface Movimiento {
     fecha_pago?: string; metodo_pago?: string; monto_pagado?: number;
     categoria_nombre?: string; categoria_color?: string;
     fecha_emision?: string; fecha_vencimiento?: string; dias_atraso?: number;
+    has_cfdi?: boolean; has_banco?: boolean;
 }
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -177,6 +178,12 @@ export default function MovimientosPage() {
                                                                     <AlertTriangle className="h-2.5 w-2.5" /> {m.dias_atraso}d atraso
                                                                 </span>
                                                             ) : null}
+                                                            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono ${m.has_cfdi ? 'text-blue-400 bg-blue-400/10' : 'text-gray-600 bg-gray-700/20'}`} title={m.has_cfdi ? 'CFDI ligado' : 'Sin CFDI'}>
+                                                                <FileText className="h-2.5 w-2.5" /> {m.has_cfdi ? 'XML' : 'sin XML'}
+                                                            </span>
+                                                            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono ${m.has_banco ? 'text-green-400 bg-green-400/10' : 'text-gray-600 bg-gray-700/20'}`} title={m.has_banco ? 'Confirmado en banco' : 'Sin mov. bancario'}>
+                                                                <Landmark className="h-2.5 w-2.5" /> {m.has_banco ? 'banco' : 'sin banco'}
+                                                            </span>
                                                         </div>
                                                         <div className="font-mono text-xs text-gray-500 mt-0.5 flex flex-wrap gap-2">
                                                             <span>{m.cliente_nombre || 'Sin cliente'}</span>
@@ -279,6 +286,12 @@ export default function MovimientosPage() {
                                                                     <AlertTriangle className="h-2.5 w-2.5" /> {m.dias_atraso}d atraso
                                                                 </span>
                                                             ) : null}
+                                                            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono ${m.has_cfdi ? 'text-blue-400 bg-blue-400/10' : 'text-gray-600 bg-gray-700/20'}`} title={m.has_cfdi ? 'CFDI ligado' : 'Sin CFDI'}>
+                                                                <FileText className="h-2.5 w-2.5" /> {m.has_cfdi ? 'XML' : 'sin XML'}
+                                                            </span>
+                                                            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono ${m.has_banco ? 'text-green-400 bg-green-400/10' : 'text-gray-600 bg-gray-700/20'}`} title={m.has_banco ? 'Confirmado en banco' : 'Sin mov. bancario'}>
+                                                                <Landmark className="h-2.5 w-2.5" /> {m.has_banco ? 'banco' : 'sin banco'}
+                                                            </span>
                                                         </div>
                                                         <div className="font-mono text-xs text-gray-500 mt-0.5 flex flex-wrap gap-2">
                                                             {m.cliente_nombre && <span>{m.cliente_nombre}</span>}

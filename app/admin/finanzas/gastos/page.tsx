@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon, FileText } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -27,6 +27,10 @@ interface Gasto {
 interface MovBanco {
     id: string; fecha_operacion: string; descripcion: string; referencia: string;
     cargo: number | null; abono: number | null; numero_cuenta: string; banco: string;
+}
+interface CfdiCandidato {
+    id: string; uuid_sat: string; emisor_rfc: string; emisor_nombre: string | null;
+    receptor_rfc: string; total: number; fecha: string; xml_nombre: string;
 }
 interface Categoria { id: string; nombre: string; color: string }
 
@@ -59,6 +63,10 @@ export default function GastosPage() {
     const [ligandoGasto, setLigandoGasto] = useState<Gasto | null>(null)
     const [movCandidatos, setMovCandidatos] = useState<MovBanco[]>([])
     const [loadMovCands, setLoadMovCands] = useState(false)
+    // Panel ligar CFDI
+    const [ligandoCfdiGasto, setLigandoCfdiGasto] = useState<Gasto | null>(null)
+    const [cfdiCandidatos, setCfdiCandidatos] = useState<CfdiCandidato[]>([])
+    const [loadCfdiCands, setLoadCfdiCands] = useState(false)
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
@@ -201,6 +209,26 @@ export default function GastosPage() {
         })
         if (r.ok) { setLigandoGasto(null); fetchData() }
         else alert('Error al ligar')
+    }
+
+    const abrirPanelCfdi = async (g: Gasto) => {
+        setLigandoCfdiGasto(g)
+        setCfdiCandidatos([])
+        setLoadCfdiCands(true)
+        const r = await fetch(`/api/finanzas/conciliacion/cfdi-candidatos?monto=${g.monto}&tipo=recibida`)
+        const d = await r.json()
+        setCfdiCandidatos(d.cfdis ?? [])
+        setLoadCfdiCands(false)
+    }
+
+    const ligarCfdi = async (cfdiId: string) => {
+        if (!ligandoCfdiGasto) return
+        const r = await fetch(`/api/finanzas/cfdi/${cfdiId}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gasto_id: ligandoCfdiGasto.id }),
+        })
+        if (r.ok) { setLigandoCfdiGasto(null); fetchData() }
+        else alert('Error al ligar CFDI')
     }
 
     const filtered = gastos.filter(g => {
@@ -436,6 +464,7 @@ export default function GastosPage() {
                                                 <th className="text-left p-3">Categoría</th><th className="text-left p-3">Proveedor</th>
                                                 <th className="text-right p-3">Monto</th><th className="text-center p-3">Estado</th>
                                                 <th className="text-center p-3">Banco</th>
+                                                <th className="text-center p-3">XML</th>
                                                 <th className="text-right p-3">Día/Vence</th>
                                                 <th className="text-center p-3">📎</th>
                                                 <th className="p-3"></th>
@@ -507,6 +536,13 @@ export default function GastosPage() {
                                                                 <GitMerge className="h-3 w-3" /> ligar
                                                             </button>
                                                         )}
+                                                    </td>
+                                                    {/* Columna XML/CFDI */}
+                                                    <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
+                                                        {/* Check if CFDI is linked via cfdis.gasto_id — shown as cfdi_id from API */}
+                                                        <button onClick={() => abrirPanelCfdi(g)} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${(g as Record<string, unknown>).cfdi_id ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' : 'bg-gray-700/20 text-gray-600 border border-gray-700/20 hover:border-blue-500/30 hover:text-blue-400'}`}>
+                                                            <FileText className="h-3 w-3" /> {(g as Record<string, unknown>).cfdi_id ? 'XML ✓' : 'XML'}
+                                                        </button>
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">
                                                         {editingId === g.id && g.recurrente ? (
@@ -613,6 +649,62 @@ export default function GastosPage() {
                                                 <div className="font-mono text-sm text-red-400">{fmt(m.cargo ?? 0)}</div>
                                                 <button onClick={() => ligarMovimiento(m.id)}
                                                     className="mt-1.5 font-mono text-[10px] bg-green-500/20 hover:bg-green-500/40 border border-green-500/40 text-green-300 px-2 py-0.5 rounded transition-colors">
+                                                    ✓ ligar este
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </div>
+        )}
+
+        {/* Panel lateral ligar CFDI */}
+        {ligandoCfdiGasto && (
+            <div className="fixed inset-0 bg-black/80 flex justify-end z-50" onClick={() => setLigandoCfdiGasto(null)}>
+                <motion.div
+                    initial={{ x: 420 }} animate={{ x: 0 }} transition={{ type: 'spring', damping: 28 }}
+                    className="w-full max-w-md bg-[#0a0a0a] border-l border-blue-500/20 h-full overflow-y-auto"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-blue-500/20 pb-3">
+                            <h2 className="font-mono text-sm text-blue-400 flex items-center gap-2">
+                                <FileText className="h-4 w-4" /> ligar XML / CFDI
+                            </h2>
+                            <button onClick={() => setLigandoCfdiGasto(null)} className="text-gray-600 hover:text-gray-300"><X className="h-4 w-4" /></button>
+                        </div>
+                        <div className="bg-zinc-900/60 border border-blue-500/10 rounded-lg p-4 font-mono">
+                            <div className="text-white text-sm">{ligandoCfdiGasto.concepto}</div>
+                            {ligandoCfdiGasto.proveedor && <div className="text-gray-500 text-xs mt-0.5">{ligandoCfdiGasto.proveedor}</div>}
+                            <div className="mt-2 text-lg font-bold text-red-400">{fmt(ligandoCfdiGasto.monto)}</div>
+                        </div>
+                        <p className="font-mono text-xs text-gray-500">CFDIs recibidos con monto similar (±15%):</p>
+                        {loadCfdiCands ? (
+                            <p className="text-gray-600 font-mono text-xs">buscando...</p>
+                        ) : cfdiCandidatos.length === 0 ? (
+                            <div className="font-mono text-xs text-gray-600 bg-zinc-900/40 border border-gray-800 rounded p-4 text-center">
+                                No se encontraron CFDIs similares.<br />
+                                <span className="text-gray-700">Importa XMLs del SAT en</span>{' '}
+                                <a href="/admin/finanzas/cfdi" className="text-blue-500 hover:underline">CFDIs</a>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {cfdiCandidatos.map(c => (
+                                    <div key={c.id} className="bg-zinc-900/60 border border-blue-500/20 hover:border-blue-500/40 rounded-lg p-3 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="font-mono text-xs text-white truncate">{c.emisor_nombre || c.emisor_rfc}</div>
+                                                <div className="text-gray-600 text-[10px] truncate">{c.uuid_sat}</div>
+                                                <div className="text-gray-500 text-[10px] mt-0.5">{c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX') : '—'}</div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="font-mono text-sm text-blue-400">{fmt(c.total)}</div>
+                                                <button onClick={() => ligarCfdi(c.id)}
+                                                    className="mt-1.5 font-mono text-[10px] bg-blue-500/20 hover:bg-blue-500/40 border border-blue-500/40 text-blue-300 px-2 py-0.5 rounded transition-colors">
                                                     ✓ ligar este
                                                 </button>
                                             </div>
