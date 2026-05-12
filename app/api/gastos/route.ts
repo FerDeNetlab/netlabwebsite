@@ -10,9 +10,11 @@ export async function GET() {
 
     try {
         const gastos = await sql`
-      SELECT g.*, cg.nombre as categoria_nombre, cg.color as categoria_color, cg.icono as categoria_icono
+      SELECT g.*, cg.nombre as categoria_nombre, cg.color as categoria_color, cg.icono as categoria_icono,
+        mb.id AS movimiento_bancario_id, mb.fecha_operacion AS fecha_pago_banco, mb.descripcion AS banco_descripcion
       FROM gastos g
       LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
+      LEFT JOIN movimientos_bancarios mb ON mb.gasto_id = g.id
       ORDER BY g.created_at DESC
     ` as Record<string, unknown>[]
 

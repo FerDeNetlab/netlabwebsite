@@ -11,9 +11,11 @@ export async function GET() {
     try {
         const facturas = await sql`
       SELECT f.*, cl.nombre as cliente_nombre, cl.empresa as cliente_empresa,
-        (SELECT COALESCE(SUM(p.monto), 0) FROM pagos p WHERE p.factura_id = f.id) as total_pagado
+        (SELECT COALESCE(SUM(p.monto), 0) FROM pagos p WHERE p.factura_id = f.id) as total_pagado,
+        mb.id AS movimiento_bancario_id, mb.fecha_operacion AS fecha_pago_banco, mb.descripcion AS banco_descripcion
       FROM facturas f
       LEFT JOIN clientes cl ON f.cliente_id = cl.id
+      LEFT JOIN movimientos_bancarios mb ON mb.factura_id = f.id
       ORDER BY f.created_at DESC
     ` as Record<string, unknown>[]
 

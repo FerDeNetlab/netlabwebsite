@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -19,6 +19,9 @@ interface Gasto {
     tipo_gasto?: string; bolsa_origen?: string;
     archivo_url?: string | null; archivo_nombre?: string | null;
     estado_calculado?: string; dias_atraso?: number | null;
+    movimiento_bancario_id?: string | null;
+    fecha_pago_banco?: string | null;
+    banco_descripcion?: string | null;
 }
 interface Categoria { id: string; nombre: string; color: string }
 
@@ -46,6 +49,7 @@ export default function GastosPage() {
     const [uploadingId, setUploadingId] = useState<string | null>(null)
     const [mes, setMes] = useState(new Date().getMonth() + 1)
     const [anio, setAnio] = useState(new Date().getFullYear())
+    const [filtroEstado, setFiltroEstado] = useState<'todos' | 'con_banco' | 'sin_banco'>('todos')
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
@@ -165,8 +169,12 @@ export default function GastosPage() {
             const isPendiente = (g.estado_calculado || g.estado) !== 'pagado'
             matchMes = (vencMes === mes && vencAnio === anio) || (isPendiente && (vencAnio < anio || (vencAnio === anio && vencMes < mes)))
         }
-        return matchSearch && matchMes
+        const matchBanco = filtroEstado === 'todos' ? true : filtroEstado === 'con_banco' ? !!g.movimiento_bancario_id : !g.movimiento_bancario_id
+        return matchSearch && matchMes && matchBanco
     })
+    const totalMes = filtered.reduce((s, g) => s + g.monto, 0)
+    const confirmadoBanco = filtered.filter(g => g.movimiento_bancario_id).reduce((s, g) => s + g.monto, 0)
+    const sinConfirmar = totalMes - confirmadoBanco
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
     if (status === 'loading' || loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
@@ -341,11 +349,36 @@ export default function GastosPage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* Search */}
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                <input type="text" placeholder="Buscar gastos..." value={search} onChange={e => setSearch(e.target.value)}
-                                    className="w-full bg-zinc-900 border border-gray-700 rounded pl-10 pr-4 py-2 text-sm font-mono text-gray-300 focus:border-red-500 focus:outline-none" />
+                            {/* Search + filtro banco */}
+                            <div className="space-y-2">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                    <input type="text" placeholder="Buscar gastos..." value={search} onChange={e => setSearch(e.target.value)}
+                                        className="w-full bg-zinc-900 border border-gray-700 rounded pl-10 pr-4 py-2 text-sm font-mono text-gray-300 focus:border-red-500 focus:outline-none" />
+                                </div>
+                                <div className="flex gap-2 items-center flex-wrap">
+                                    {(['todos', 'con_banco', 'sin_banco'] as const).map(f => (
+                                        <button key={f} onClick={() => setFiltroEstado(f)}
+                                            className={`px-3 py-1 font-mono text-xs rounded border transition-colors ${filtroEstado === f ? 'bg-red-500/20 border-red-500/50 text-red-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'}`}>
+                                            {f === 'todos' ? 'Todos' : f === 'con_banco' ? '🏦 Confirmados banco' : '⚠ Sin confirmar'}
+                                        </button>
+                                    ))}
+                                </div>
+                                {/* Resumen banco del mes */}
+                                <div className="grid grid-cols-3 gap-3 pt-1">
+                                    <div className="bg-zinc-900/60 border border-gray-700 rounded-lg px-3 py-2 font-mono">
+                                        <div className="text-[10px] text-gray-500">total del mes</div>
+                                        <div className="text-red-400 text-sm font-bold">{fmt(totalMes)}</div>
+                                    </div>
+                                    <div className="bg-zinc-900/60 border border-green-500/20 rounded-lg px-3 py-2 font-mono">
+                                        <div className="text-[10px] text-gray-500">🏦 confirmado banco</div>
+                                        <div className="text-green-400 text-sm font-bold">{fmt(confirmadoBanco)}</div>
+                                    </div>
+                                    <div className="bg-zinc-900/60 border border-yellow-500/20 rounded-lg px-3 py-2 font-mono">
+                                        <div className="text-[10px] text-gray-500">⚠ sin confirmar</div>
+                                        <div className="text-yellow-400 text-sm font-bold">{fmt(sinConfirmar)}</div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Table */}
@@ -357,6 +390,7 @@ export default function GastosPage() {
                                                 <th className="text-left p-3">Concepto</th><th className="text-left p-3">Tipo</th>
                                                 <th className="text-left p-3">Categoría</th><th className="text-left p-3">Proveedor</th>
                                                 <th className="text-right p-3">Monto</th><th className="text-center p-3">Estado</th>
+                                                <th className="text-center p-3">Banco</th>
                                                 <th className="text-right p-3">Día/Vence</th>
                                                 <th className="text-center p-3">📎</th>
                                                 <th className="p-3"></th>
@@ -414,6 +448,20 @@ export default function GastosPage() {
                                                                 </div>
                                                             )
                                                         })()}
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                        {g.movimiento_bancario_id ? (
+                                                            <div className="flex flex-col items-center gap-0.5">
+                                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-green-500/10 text-green-400 border border-green-500/30">
+                                                                    <Landmark className="h-3 w-3" /> banco
+                                                                </span>
+                                                                {g.fecha_pago_banco && <span className="text-[10px] text-gray-500">{new Date(g.fecha_pago_banco).toLocaleDateString('es-MX')}</span>}
+                                                            </div>
+                                                        ) : (
+                                                            <a href="/admin/finanzas/conciliacion" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:border-yellow-500/50 transition-colors">
+                                                                ⚠ ligar
+                                                            </a>
+                                                        )}
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">
                                                         {editingId === g.id && g.recurrente ? (
