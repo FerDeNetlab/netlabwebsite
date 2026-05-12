@@ -124,10 +124,10 @@ export async function GET(request: Request) {
       })
     }
 
-    return NextResponse.json({ movimientos, mes, anio })
+    return NextResponse.json({ movimientos, mes, anio, _debug: { facturas_count: facturas.length, gastos_count: gastos.length } })
   } catch (error) {
     console.error('[ERP] Error movimientos:', error)
-    return NextResponse.json({ error: 'Error al obtener movimientos' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Error', stack: error instanceof Error ? error.stack?.split('\n').slice(0,3).join(' | ') : '' }, { status: 500 })
   }
 }
 
