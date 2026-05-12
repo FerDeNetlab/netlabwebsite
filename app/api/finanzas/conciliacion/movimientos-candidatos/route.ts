@@ -24,35 +24,33 @@ export async function GET(request: Request) {
   if (isNaN(monto)) return NextResponse.json({ error: 'Monto inválido' }, { status: 400 })
 
   try {
-    // Para un GASTO  → buscamos cargos  (salidas de banco)
-    // Para una CXC   → buscamos abonos  (entradas de banco)
-    const columna = tipo === 'abono' ? 'abono' : 'cargo'
-
-    const movimientos = await sql`
-      SELECT
-        mb.id,
-        mb.fecha_operacion,
-        mb.descripcion,
-        mb.referencia,
-        mb.cargo,
-        mb.abono,
-        mb.gasto_id,
-        mb.factura_id,
-        mb.conciliado,
-        ec.numero_cuenta,
-        ec.banco
-      FROM movimientos_bancarios mb
-      JOIN estados_cuenta ec ON ec.id = mb.estado_cuenta_id
-      WHERE
-        mb.${columna} IS NOT NULL
-        AND mb.${columna} > 0
-        AND ABS(mb.${columna} - ${monto}) / NULLIF(${monto}, 0) <= 0.15
-        AND mb.fecha_operacion BETWEEN (${fecha}::date - INTERVAL '60 days') AND (${fecha}::date + INTERVAL '60 days')
-        AND mb.gasto_id IS NULL
-        AND mb.factura_id IS NULL
-      ORDER BY ABS(mb.${columna} - ${monto}) ASC, mb.fecha_operacion DESC
-      LIMIT 20
-    `
+    // No se puede usar columna dinámica en tagged template SQL
+    // Se separan las dos queries explícitamente
+    const movimientos = tipo === 'abono'
+      ? await sql`
+          SELECT mb.id, mb.fecha_operacion, mb.descripcion, mb.referencia,
+                 mb.cargo, mb.abono, ec.numero_cuenta, ec.banco
+          FROM movimientos_bancarios mb
+          JOIN estados_cuenta ec ON ec.id = mb.estado_cuenta_id
+          WHERE mb.abono IS NOT NULL AND mb.abono > 0
+            AND ABS(mb.abono - ${monto}) / NULLIF(${monto}, 0) <= 0.15
+            AND mb.fecha_operacion BETWEEN (${fecha}::date - INTERVAL '60 days') AND (${fecha}::date + INTERVAL '60 days')
+            AND mb.gasto_id IS NULL AND mb.factura_id IS NULL
+          ORDER BY ABS(mb.abono - ${monto}) ASC, mb.fecha_operacion DESC
+          LIMIT 20
+        `
+      : await sql`
+          SELECT mb.id, mb.fecha_operacion, mb.descripcion, mb.referencia,
+                 mb.cargo, mb.abono, ec.numero_cuenta, ec.banco
+          FROM movimientos_bancarios mb
+          JOIN estados_cuenta ec ON ec.id = mb.estado_cuenta_id
+          WHERE mb.cargo IS NOT NULL AND mb.cargo > 0
+            AND ABS(mb.cargo - ${monto}) / NULLIF(${monto}, 0) <= 0.15
+            AND mb.fecha_operacion BETWEEN (${fecha}::date - INTERVAL '60 days') AND (${fecha}::date + INTERVAL '60 days')
+            AND mb.gasto_id IS NULL AND mb.factura_id IS NULL
+          ORDER BY ABS(mb.cargo - ${monto}) ASC, mb.fecha_operacion DESC
+          LIMIT 20
+        `
 
     return NextResponse.json({ movimientos })
   } catch (err) {
