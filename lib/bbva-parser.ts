@@ -3,10 +3,9 @@
 // Flujo: pdf-parse (texto crudo) → Claude claude-haiku-4-5 → JSON estructurado
 
 import Anthropic from '@anthropic-ai/sdk'
-// Usar la ruta interna evita que pdf-parse intente cargar archivos de test
-// que no existen en el bundle de Vercel y crashean la función serverless
+// pdf-parse está en serverExternalPackages en next.config.mjs — Vercel no lo bundlea
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse/lib/pdf-parse')
+const pdfParse = require('pdf-parse')
 
 export interface MovimientoBBVA {
   fechaOperacion:   string
