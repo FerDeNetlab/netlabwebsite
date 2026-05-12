@@ -292,11 +292,14 @@ export async function solicitar(
   const nodeName = tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'
 
   // Atributos exactos — omitir RFC vacío igual que Python (None → no se incluye en el XML)
+  // EstadoComprobante="Vigente" es necesario para TipoSolicitud=CFDI; si se omite
+  // el SAT incluye canceladas y devuelve error "No se permite la descarga de xml cancelados"
   const solicitudAttrs: Record<string, string> = {
-    FechaFinal:     fechaFin,
-    FechaInicial:   fechaInicio,
-    RfcSolicitante: rfc,
-    TipoSolicitud:  'CFDI',
+    EstadoComprobante: 'Vigente',
+    FechaFinal:        fechaFin,
+    FechaInicial:      fechaInicio,
+    RfcSolicitante:    rfc,
+    TipoSolicitud:     'CFDI',
   }
   if (tipo === 'E') solicitudAttrs['RfcEmisor']   = rfc
   if (tipo === 'R') solicitudAttrs['RfcReceptor'] = rfc
