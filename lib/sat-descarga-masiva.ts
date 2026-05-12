@@ -369,13 +369,27 @@ export async function verificar(
     token,
   )
 
-  // Extraer lista de paquetes (elementos <string> dentro de IdsPaquetes)
+  // Extraer lista de paquetes — el SAT puede mandar los IDs de dos formas:
+  // 1. <IdsPaquetes>ID_01</IdsPaquetes>  (un elemento por paquete)
+  // 2. <IdsPaquetes><a:string>ID_01</a:string>...</IdsPaquetes>  (elementos string anidados)
   const paquetes: string[] = []
-  const rePkg = /<(?:[\w]+:)?string[^>]*>([\s\S]*?)<\/(?:[\w]+:)?string>/g
-  let m: RegExpExecArray | null
-  while ((m = rePkg.exec(resp)) !== null) {
-    const v = m[1].trim()
-    if (v) paquetes.push(v)
+  const reIds = /<(?:[\w]+:)?IdsPaquetes[^>]*>([\s\S]*?)<\/(?:[\w]+:)?IdsPaquetes>/g
+  let mIds: RegExpExecArray | null
+  while ((mIds = reIds.exec(resp)) !== null) {
+    const inner = mIds[1].trim()
+    if (!inner) continue
+    // Si tiene etiquetas hijas (<string>), extrae cada una
+    if (inner.includes('<')) {
+      const reSub = /<(?:[\w]+:)?string[^>]*>([\s\S]*?)<\/(?:[\w]+:)?string>/g
+      let mSub: RegExpExecArray | null
+      while ((mSub = reSub.exec(inner)) !== null) {
+        const v = mSub[1].trim()
+        if (v) paquetes.push(v)
+      }
+    } else {
+      // El ID está directo en <IdsPaquetes>
+      paquetes.push(inner)
+    }
   }
 
   const estadoSolicitud = Number(xmlAttr(resp, 'EstadoSolicitud'))
