@@ -55,7 +55,7 @@ export default function FacturasPage() {
         const matchBanco = filtroEstado === 'todos' ? true : filtroEstado === 'con_banco' ? !!f.movimiento_bancario_id : !f.movimiento_bancario_id
         return matchSearch && matchTipo && matchMes && matchBanco
     })
-    const totalMes = filtered.reduce((s, f) => s + f.total, 0)
+    const totalMes = filtered.reduce((s, f) => s + Number(f.total), 0)
     const cobradoBanco = filtered.filter(f => f.movimiento_bancario_id).reduce((s, f) => s + f.total, 0)
     const sinConfirmar = totalMes - cobradoBanco
 

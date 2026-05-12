@@ -172,8 +172,8 @@ export default function GastosPage() {
         const matchBanco = filtroEstado === 'todos' ? true : filtroEstado === 'con_banco' ? !!g.movimiento_bancario_id : !g.movimiento_bancario_id
         return matchSearch && matchMes && matchBanco
     })
-    const totalMes = filtered.reduce((s, g) => s + g.monto, 0)
-    const confirmadoBanco = filtered.filter(g => g.movimiento_bancario_id).reduce((s, g) => s + g.monto, 0)
+    const totalMes = filtered.reduce((s, g) => s + Number(g.monto), 0)
+    const confirmadoBanco = filtered.filter(g => g.movimiento_bancario_id).reduce((s, g) => s + Number(g.monto), 0)
     const sinConfirmar = totalMes - confirmadoBanco
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
