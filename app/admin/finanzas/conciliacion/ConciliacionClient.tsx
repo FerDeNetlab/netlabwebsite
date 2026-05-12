@@ -108,16 +108,17 @@ export default function ConciliacionClient() {
     form.append('pdf', accepted[0])
     try {
       const r = await fetch('/api/finanzas/conciliacion/upload', { method: 'POST', body: form })
-      const d = await r.json()
+      let d: Record<string, unknown> = {}
+      try { d = await r.json() } catch { /* respuesta no-JSON, dejar d vacío */ }
       if (r.ok) {
         setMsg({ text: `✓ ${d.movimientosCargados} movimientos importados (${d.periodoInicio} → ${d.periodoFin})`, ok: true })
         didLoad.current.estados = false
         if (tab === 'estados') fetchEstados()
       } else {
-        setMsg({ text: d.error ?? 'Error al subir', ok: false })
+        setMsg({ text: (d.error as string) ?? `Error del servidor (${r.status})`, ok: false })
       }
-    } catch {
-      setMsg({ text: 'Error de red al subir el PDF', ok: false })
+    } catch (err) {
+      setMsg({ text: `Error de red: ${err instanceof Error ? err.message : 'desconocido'}`, ok: false })
     } finally {
       setUpload(false)
     }

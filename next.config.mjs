@@ -3,6 +3,9 @@ const nextConfig = {
   // Don't expose the framework in response headers
   poweredByHeader: false,
 
+  // pdf-parse y @anthropic-ai/sdk requieren acceso a módulos nativos en serverless
+  serverExternalPackages: ['pdf-parse'],
+
   // Enable Next.js image optimization with modern formats
   images: {
     formats: ["image/avif", "image/webp"],
