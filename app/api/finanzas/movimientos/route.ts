@@ -21,6 +21,7 @@ export async function GET(request: Request) {
     const facturasRecurrentes = await sql`
       SELECT f.id, f.numero_factura, f.concepto, f.total as monto, f.dia_mes,
         f.fecha_emision, f.fecha_vencimiento,
+        f.movimiento_bancario_id, f.cfdi_id AS cfdi_id_factura,
         cl.nombre as cliente_nombre,
         'ingreso' as categoria, 'recurrente' as subtipo
       FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
     const facturasUnicas = await sql`
       SELECT f.id, f.numero_factura, f.concepto, f.total as monto,
         f.fecha_vencimiento, f.fecha_emision,
+        f.movimiento_bancario_id, f.cfdi_id AS cfdi_id_factura,
         cl.nombre as cliente_nombre,
         'ingreso' as categoria, 'unico' as subtipo
       FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
@@ -54,6 +56,7 @@ export async function GET(request: Request) {
     const gastosFijos = await sql`
       SELECT g.id, g.concepto, g.monto, g.dia_mes, g.subtipo,
         g.fecha_vencimiento, g.proveedor as cliente_nombre,
+        g.movimiento_bancario_id,
         cg.nombre as categoria_nombre, cg.color as categoria_color,
         'egreso' as categoria
       FROM gastos g LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
@@ -66,6 +69,7 @@ export async function GET(request: Request) {
       SELECT g.id, g.concepto, g.monto, g.fecha_vencimiento, g.subtipo,
         g.fecha_pago as fecha_pago_real,
         g.proveedor as cliente_nombre,
+        g.movimiento_bancario_id,
         cg.nombre as categoria_nombre, cg.color as categoria_color,
         'egreso' as categoria, g.estado as estado_db
       FROM gastos g LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
