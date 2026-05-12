@@ -96,6 +96,7 @@ export async function POST(request: Request) {
     let importados = 0
     let duplicados = 0
     let errores = 0
+    const errorLog: string[] = []
 
     for (const idPaquete of verif.paquetes) {
       try {
@@ -149,12 +150,16 @@ export async function POST(request: Request) {
             `
             importados++
           } catch (e) {
+            const msg = `XML ${nombre}: ${e instanceof Error ? e.message : String(e)}`
             console.error(`[SAT] Error al importar ${nombre}:`, e)
+            errorLog.push(msg)
             errores++
           }
         }
       } catch (e) {
+        const msg = `Paquete ${idPaquete}: ${e instanceof Error ? e.message : String(e)}`
         console.error(`[SAT] Error al descargar paquete ${idPaquete}:`, e)
+        errorLog.push(msg)
         errores++
       }
     }
@@ -172,6 +177,7 @@ export async function POST(request: Request) {
       importados,
       duplicados,
       errores,
+      errorLog,
       paquetes: verif.paquetes.length,
       paqueteIds: verif.paquetes,
       numeroCFDIs: verif.numeroCFDIs,
