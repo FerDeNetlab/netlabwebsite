@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -22,6 +22,10 @@ interface Gasto {
     movimiento_bancario_id?: string | null;
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
+}
+interface MovBanco {
+    id: string; fecha_operacion: string; descripcion: string; referencia: string;
+    cargo: number | null; abono: number | null; numero_cuenta: string; banco: string;
 }
 interface Categoria { id: string; nombre: string; color: string }
 
@@ -50,6 +54,10 @@ export default function GastosPage() {
     const [mes, setMes] = useState(new Date().getMonth() + 1)
     const [anio, setAnio] = useState(new Date().getFullYear())
     const [filtroEstado, setFiltroEstado] = useState<'todos' | 'con_banco' | 'sin_banco'>('todos')
+    // Panel ligar banco
+    const [ligandoGasto, setLigandoGasto] = useState<Gasto | null>(null)
+    const [movCandidatos, setMovCandidatos] = useState<MovBanco[]>([])
+    const [loadMovCands, setLoadMovCands] = useState(false)
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
@@ -159,6 +167,27 @@ export default function GastosPage() {
         else alert('Error al guardar')
     }
 
+    const abrirPanelLigar = async (g: Gasto) => {
+        setLigandoGasto(g)
+        setMovCandidatos([])
+        setLoadMovCands(true)
+        const fecha = g.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?monto=${g.monto}&fecha=${fecha}&tipo=cargo`)
+        const d = await r.json()
+        setMovCandidatos(d.movimientos ?? [])
+        setLoadMovCands(false)
+    }
+
+    const ligarMovimiento = async (movId: string) => {
+        if (!ligandoGasto) return
+        const r = await fetch('/api/finanzas/conciliacion', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: movId, gasto_id: ligandoGasto.id, conciliado: true }),
+        })
+        if (r.ok) { setLigandoGasto(null); fetchData() }
+        else alert('Error al ligar')
+    }
+
     const filtered = gastos.filter(g => {
         const matchSearch = (g.concepto + g.proveedor + g.categoria_nombre).toLowerCase().includes(search.toLowerCase())
         let matchMes = g.recurrente
@@ -180,6 +209,7 @@ export default function GastosPage() {
     if (status === 'loading' || loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
 
     return (
+    <>
         <div className="min-h-screen bg-background">
             <Navbar />
             <div className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
@@ -458,9 +488,9 @@ export default function GastosPage() {
                                                                 {g.fecha_pago_banco && <span className="text-[10px] text-gray-500">{new Date(g.fecha_pago_banco).toLocaleDateString('es-MX')}</span>}
                                                             </div>
                                                         ) : (
-                                                            <a href="/admin/finanzas/conciliacion" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:border-yellow-500/50 transition-colors">
-                                                                ⚠ ligar
-                                                            </a>
+                                                            <button onClick={() => abrirPanelLigar(g)} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:border-yellow-400 hover:text-yellow-400 transition-colors">
+                                                                <GitMerge className="h-3 w-3" /> ligar
+                                                            </button>
                                                         )}
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">
@@ -516,5 +546,67 @@ export default function GastosPage() {
                 </motion.div>
             </div>
         </div>
+
+        {/* Panel lateral ligar banco */}
+        {ligandoGasto && (
+            <div className="fixed inset-0 bg-black/80 flex justify-end z-50" onClick={() => setLigandoGasto(null)}>
+                <motion.div
+                    initial={{ x: 420 }} animate={{ x: 0 }} transition={{ type: 'spring', damping: 28 }}
+                    className="w-full max-w-md bg-[#0a0a0a] border-l border-red-500/20 h-full overflow-y-auto"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-red-500/20 pb-3">
+                            <h2 className="font-mono text-sm text-red-400 flex items-center gap-2">
+                                <GitMerge className="h-4 w-4" /> ligar movimiento bancario
+                            </h2>
+                            <button onClick={() => setLigandoGasto(null)} className="text-gray-600 hover:text-gray-300"><X className="h-4 w-4" /></button>
+                        </div>
+
+                        {/* Resumen gasto */}
+                        <div className="bg-zinc-900/60 border border-red-500/10 rounded-lg p-4 font-mono">
+                            <div className="text-white text-sm">{ligandoGasto.concepto}</div>
+                            {ligandoGasto.proveedor && <div className="text-gray-500 text-xs mt-0.5">{ligandoGasto.proveedor}</div>}
+                            {ligandoGasto.fecha_vencimiento && <div className="text-gray-600 text-[10px] mt-0.5">{new Date(ligandoGasto.fecha_vencimiento).toLocaleDateString('es-MX')}</div>}
+                            <div className="mt-3 text-lg font-bold text-red-400">{fmt(ligandoGasto.monto)}</div>
+                        </div>
+
+                        <p className="font-mono text-xs text-gray-500">movimientos bancarios similares (±15%, ±60 días):</p>
+
+                        {loadMovCands ? (
+                            <p className="text-gray-600 font-mono text-xs">buscando...</p>
+                        ) : movCandidatos.length === 0 ? (
+                            <div className="font-mono text-xs text-gray-600 bg-zinc-900/40 border border-gray-800 rounded p-4 text-center">
+                                No se encontraron movimientos similares.<br />
+                                <span className="text-gray-700">Sube el estado de cuenta BBVA en</span>{' '}
+                                <a href="/admin/finanzas/conciliacion" className="text-yellow-500 hover:underline">Conciliación</a>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {movCandidatos.map(m => (
+                                    <div key={m.id} className="bg-zinc-900/60 border border-orange-500/20 hover:border-orange-500/40 rounded-lg p-3 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="font-mono text-xs text-white truncate">{m.descripcion}</div>
+                                                {m.referencia && <div className="text-gray-600 text-[10px] truncate">{m.referencia.split(' | ')[0]}</div>}
+                                                <div className="text-gray-500 text-[10px] mt-0.5">{new Date(m.fecha_operacion).toLocaleDateString('es-MX')} · {m.banco} {m.numero_cuenta}</div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="font-mono text-sm text-red-400">{fmt(m.cargo)}</div>
+                                                <button onClick={() => ligarMovimiento(m.id)}
+                                                    className="mt-1.5 font-mono text-[10px] bg-green-500/20 hover:bg-green-500/40 border border-green-500/40 text-green-300 px-2 py-0.5 rounded transition-colors">
+                                                    ✓ ligar este
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </div>
+        )}
+    </>
     )
 }

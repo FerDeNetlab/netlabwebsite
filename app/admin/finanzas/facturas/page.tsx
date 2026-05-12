@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark, GitMerge, X } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -19,6 +19,10 @@ interface Factura {
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
 }
+interface MovBanco {
+    id: string; fecha_operacion: string; descripcion: string; referencia: string;
+    cargo: number | null; abono: number | null; numero_cuenta: string; banco: string;
+}
 
 export default function FacturasPage() {
     const { status } = useSession()
@@ -28,6 +32,9 @@ export default function FacturasPage() {
     const [search, setSearch] = useState('')
     const [filtroTipo, setFiltroTipo] = useState('todos')
     const [filtroEstado, setFiltroEstado] = useState<'todos' | 'con_banco' | 'sin_banco'>('todos')
+    const [ligandoFactura, setLigandoFactura] = useState<Factura | null>(null)
+    const [movCandidatos, setMovCandidatos] = useState<MovBanco[]>([])
+    const [loadMovCands, setLoadMovCands] = useState(false)
     const [mes, setMes] = useState(new Date().getMonth() + 1)
     const [anio, setAnio] = useState(new Date().getFullYear())
 
@@ -61,11 +68,36 @@ export default function FacturasPage() {
 
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
+    const abrirPanelLigar = async (f: Factura) => {
+        setLigandoFactura(f)
+        setMovCandidatos([])
+        setLoadMovCands(true)
+        const fecha = f.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?monto=${f.total}&fecha=${fecha}&tipo=abono`)
+        const d = await r.json()
+        setMovCandidatos(d.movimientos ?? [])
+        setLoadMovCands(false)
+    }
+
+    const ligarMovimiento = async (movId: string) => {
+        if (!ligandoFactura) return
+        const r = await fetch('/api/finanzas/conciliacion', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: movId, factura_id: ligandoFactura.id, conciliado: true }),
+        })
+        if (r.ok) {
+            setLigandoFactura(null)
+            // refresh facturas
+            fetch('/api/facturas').then(r => r.json()).then(data => setFacturas(data)).catch(() => {})
+        } else alert('Error al ligar')
+    }
+
     if (status === 'loading' || loading) {
         return <div className="min-h-screen bg-background flex items-center justify-center"><div className="text-primary font-mono">Cargando...</div></div>
     }
 
     return (
+    <>
         <div className="min-h-screen bg-background">
             <Navbar />
             <div className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
@@ -177,9 +209,9 @@ export default function FacturasPage() {
                                                                 {f.fecha_pago_banco && <span className="text-[10px] text-gray-500">{new Date(f.fecha_pago_banco).toLocaleDateString('es-MX')}</span>}
                                                             </div>
                                                         ) : (
-                                                            <a href="/admin/finanzas/conciliacion" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:border-yellow-500/50 transition-colors">
-                                                                ⚠ ligar
-                                                            </a>
+                                                            <button onClick={() => abrirPanelLigar(f)} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 hover:border-yellow-400 hover:text-yellow-400 transition-colors">
+                                                                <GitMerge className="h-3 w-3" /> ligar
+                                                            </button>
                                                         )}
                                                     </td>
                                                     <td className="p-3 text-right">
@@ -208,5 +240,66 @@ export default function FacturasPage() {
                 </motion.div>
             </div>
         </div>
+
+        {/* Panel lateral ligar banco */}
+        {ligandoFactura && (
+            <div className="fixed inset-0 bg-black/80 flex justify-end z-50" onClick={() => setLigandoFactura(null)}>
+                <motion.div
+                    initial={{ x: 420 }} animate={{ x: 0 }} transition={{ type: 'spring', damping: 28 }}
+                    className="w-full max-w-md bg-[#0a0a0a] border-l border-green-500/20 h-full overflow-y-auto"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="p-5 space-y-4">
+                        <div className="flex items-center justify-between border-b border-green-500/20 pb-3">
+                            <h2 className="font-mono text-sm text-green-400 flex items-center gap-2">
+                                <GitMerge className="h-4 w-4" /> ligar cobro del banco
+                            </h2>
+                            <button onClick={() => setLigandoFactura(null)} className="text-gray-600 hover:text-gray-300"><X className="h-4 w-4" /></button>
+                        </div>
+
+                        <div className="bg-zinc-900/60 border border-green-500/10 rounded-lg p-4 font-mono">
+                            <div className="text-white text-sm">{ligandoFactura.numero_factura} — {ligandoFactura.cliente_nombre}</div>
+                            <div className="text-gray-500 text-xs mt-0.5">{ligandoFactura.concepto}</div>
+                            {ligandoFactura.fecha_vencimiento && <div className="text-gray-600 text-[10px] mt-0.5">vence: {new Date(ligandoFactura.fecha_vencimiento).toLocaleDateString('es-MX')}</div>}
+                            <div className="mt-3 text-lg font-bold text-green-400">{fmt(ligandoFactura.total)}</div>
+                        </div>
+
+                        <p className="font-mono text-xs text-gray-500">abonos bancarios similares (±15%, ±60 días):</p>
+
+                        {loadMovCands ? (
+                            <p className="text-gray-600 font-mono text-xs">buscando...</p>
+                        ) : movCandidatos.length === 0 ? (
+                            <div className="font-mono text-xs text-gray-600 bg-zinc-900/40 border border-gray-800 rounded p-4 text-center">
+                                No se encontraron abonos similares.<br />
+                                <span className="text-gray-700">Sube el estado de cuenta BBVA en</span>{' '}
+                                <a href="/admin/finanzas/conciliacion" className="text-yellow-500 hover:underline">Conciliación</a>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {movCandidatos.map(m => (
+                                    <div key={m.id} className="bg-zinc-900/60 border border-green-500/20 hover:border-green-500/40 rounded-lg p-3 transition-colors">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="font-mono text-xs text-white truncate">{m.descripcion}</div>
+                                                {m.referencia && <div className="text-gray-600 text-[10px] truncate">{m.referencia.split(' | ')[0]}</div>}
+                                                <div className="text-gray-500 text-[10px] mt-0.5">{new Date(m.fecha_operacion).toLocaleDateString('es-MX')} · {m.banco} {m.numero_cuenta}</div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="font-mono text-sm text-green-400">{fmt(m.abono ?? 0)}</div>
+                                                <button onClick={() => ligarMovimiento(m.id)}
+                                                    className="mt-1.5 font-mono text-[10px] bg-green-500/20 hover:bg-green-500/40 border border-green-500/40 text-green-300 px-2 py-0.5 rounded transition-colors">
+                                                    ✓ ligar este
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </div>
+        )}
+    </>
     )
 }
