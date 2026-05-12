@@ -23,6 +23,7 @@ interface Gasto {
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
     fecha_baja?: string | null;
+    cfdi_id?: string | null;
 }
 interface MovBanco {
     id: string; fecha_operacion: string; descripcion: string; referencia: string;
@@ -540,8 +541,8 @@ export default function GastosPage() {
                                                     {/* Columna XML/CFDI */}
                                                     <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
                                                         {/* Check if CFDI is linked via cfdis.gasto_id — shown as cfdi_id from API */}
-                                                        <button onClick={() => abrirPanelCfdi(g)} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${(g as Record<string, unknown>).cfdi_id ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' : 'bg-gray-700/20 text-gray-600 border border-gray-700/20 hover:border-blue-500/30 hover:text-blue-400'}`}>
-                                                            <FileText className="h-3 w-3" /> {(g as Record<string, unknown>).cfdi_id ? 'XML ✓' : 'XML'}
+                                                        <button onClick={() => abrirPanelCfdi(g)} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${g.cfdi_id ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' : 'bg-gray-700/20 text-gray-600 border border-gray-700/20 hover:border-blue-500/30 hover:text-blue-400'}`}>
+                                                            <FileText className="h-3 w-3" /> {g.cfdi_id ? 'XML ✓' : 'XML'}
                                                         </button>
                                                     </td>
                                                     <td className="p-3 text-right text-gray-400">

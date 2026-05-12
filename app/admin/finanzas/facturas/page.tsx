@@ -18,6 +18,7 @@ interface Factura {
     movimiento_bancario_id?: string | null;
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
+    cfdi_id?: string | null;
 }
 interface MovBanco {
     id: string; fecha_operacion: string; descripcion: string; referencia: string;
@@ -247,8 +248,8 @@ export default function FacturasPage() {
                                                     </td>
                                                     {/* Columna XML/CFDI */}
                                                     <td className="p-3 text-center" onClick={e => e.stopPropagation()}>
-                                                        <button onClick={() => abrirPanelCfdi(f)} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${(f as Record<string, unknown>).cfdi_id ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' : 'bg-gray-700/20 text-gray-600 border border-gray-700/20 hover:border-blue-500/30 hover:text-blue-400'}`}>
-                                                            <FileText className="h-3 w-3" /> {(f as Record<string, unknown>).cfdi_id ? 'XML ✓' : 'XML'}
+                                                        <button onClick={() => abrirPanelCfdi(f)} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono transition-colors ${f.cfdi_id ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' : 'bg-gray-700/20 text-gray-600 border border-gray-700/20 hover:border-blue-500/30 hover:text-blue-400'}`}>
+                                                            <FileText className="h-3 w-3" /> {f.cfdi_id ? 'XML ✓' : 'XML'}
                                                         </button>
                                                     </td>
                                                     <td className="p-3 text-right">

@@ -15,10 +15,12 @@ export async function GET(request: Request) {
     try {
         const gastos = await sql`
       SELECT g.*, cg.nombre as categoria_nombre, cg.color as categoria_color, cg.icono as categoria_icono,
-        mb.id AS movimiento_bancario_id, mb.fecha_operacion AS fecha_pago_banco, mb.descripcion AS banco_descripcion
+        mb.id AS movimiento_bancario_id, mb.fecha_operacion AS fecha_pago_banco, mb.descripcion AS banco_descripcion,
+        cfdi.id AS cfdi_id
       FROM gastos g
       LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
       LEFT JOIN movimientos_bancarios mb ON mb.gasto_id = g.id
+      LEFT JOIN cfdis cfdi ON cfdi.gasto_id = g.id
       WHERE (
         g.recurrente = true
         AND (g.fecha_baja IS NULL OR (EXTRACT(YEAR FROM g.fecha_baja) * 12 + EXTRACT(MONTH FROM g.fecha_baja)) >= (${anio} * 12 + ${mes}))
