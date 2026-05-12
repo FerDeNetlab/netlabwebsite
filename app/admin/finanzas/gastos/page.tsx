@@ -65,12 +65,12 @@ export default function GastosPage() {
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
     const fetchData = () => {
-        fetch('/api/gastos').then(r => r.json()).then(data => {
+        fetch(`/api/gastos?mes=${mes}&anio=${anio}`).then(r => r.json()).then(data => {
             setGastos(data.gastos || []); setCategorias(data.categorias || []); setLoading(false)
         }).catch(() => setLoading(false))
     }
 
-    useEffect(() => { if (status === 'authenticated') fetchData() }, [status])
+    useEffect(() => { if (status === 'authenticated') fetchData() }, [status, mes, anio])
 
     const openForm = (tipo: 'fijo' | 'unico') => {
         setForm({

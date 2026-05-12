@@ -4,9 +4,13 @@ import { auth } from '@/auth'
 import { enriquecerGasto } from '@/lib/finanzas-status'
 import { bolsaDeGasto } from '@/lib/finanzas-bolsas'
 
-export async function GET() {
+export async function GET(request: Request) {
     const session = await auth()
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+    const { searchParams } = new URL(request.url)
+    const mes  = parseInt(searchParams.get('mes')  || String(new Date().getMonth() + 1))
+    const anio = parseInt(searchParams.get('anio') || String(new Date().getFullYear()))
 
     try {
         const gastos = await sql`
@@ -15,7 +19,9 @@ export async function GET() {
       FROM gastos g
       LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
       LEFT JOIN movimientos_bancarios mb ON mb.gasto_id = g.id
-      ORDER BY g.created_at DESC
+      WHERE EXTRACT(MONTH FROM g.fecha_vencimiento) = ${mes}
+        AND EXTRACT(YEAR  FROM g.fecha_vencimiento) = ${anio}
+      ORDER BY g.fecha_vencimiento ASC
     ` as Record<string, unknown>[]
 
         const categorias = await sql`
