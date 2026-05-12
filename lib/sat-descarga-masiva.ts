@@ -186,13 +186,27 @@ async function soapPost(
 ): Promise<string> {
   const headers: Record<string, string> = {
     'Content-Type': 'text/xml; charset=utf-8',
-    'SOAPAction': soapAction,  // Sin comillas — igual que la librería PHP oficial
+    'SOAPAction': soapAction,
   }
   if (token) {
     headers['Authorization'] = `WRAP access_token="${token}"`
   }
+
+  // Debug: log completo del request y response para diagnóstico
+  const endpoint = url.replace('https://', '').split('/')[0]
+  console.log(`[SAT-DEBUG] ──────────────────────────────────────`)
+  console.log(`[SAT-DEBUG] → ${soapAction}`)
+  console.log(`[SAT-DEBUG] URL: ${url}`)
+  if (token) console.log(`[SAT-DEBUG] Token (primeros 40): ${token.substring(0, 40)}`)
+  console.log(`[SAT-DEBUG] SOAP enviado:\n${body}`)
+
   const res = await fetch(url, { method: 'POST', headers, body })
   const text = await res.text()
+
+  console.log(`[SAT-DEBUG] ← HTTP ${res.status} de ${endpoint}`)
+  console.log(`[SAT-DEBUG] Respuesta SAT:\n${text}`)
+  console.log(`[SAT-DEBUG] ──────────────────────────────────────`)
+
   if (!res.ok) {
     throw new Error(`SAT respondió con HTTP ${res.status}: ${text.slice(0, 400)}`)
   }
@@ -268,7 +282,14 @@ export async function autenticar(certDer: Buffer, llave: crypto.KeyObject): Prom
   )
 
   const token = xmlText(resp, 'AutenticaResult')
-  if (!token) throw new Error(`El SAT no devolvió token. Verifica tu e.firma. Respuesta: ${resp.slice(0, 300)}`)
+  // Un token válido del SAT es una cadena larga alfanumérica (>50 chars)
+  // Si el SAT rechazó, AutenticaResult contiene texto como "Sello Mal Formado"
+  if (!token || token.length < 50) {
+    throw new Error(
+      `El SAT rechazó la autenticación: "${token || 'sin respuesta'}". ` +
+      `Verifica que tu e.firma (FIEL) sea válida y vigente.`
+    )
+  }
   return token
 }
 
