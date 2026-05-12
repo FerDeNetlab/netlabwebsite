@@ -191,22 +191,8 @@ async function soapPost(
   if (token) {
     headers['Authorization'] = `WRAP access_token="${token}"`
   }
-
-  // Debug: log completo del request y response para diagnóstico
-  const endpoint = url.replace('https://', '').split('/')[0]
-  console.log(`[SAT-DEBUG] ──────────────────────────────────────`)
-  console.log(`[SAT-DEBUG] → ${soapAction}`)
-  console.log(`[SAT-DEBUG] URL: ${url}`)
-  if (token) console.log(`[SAT-DEBUG] Token (primeros 40): ${token.substring(0, 40)}`)
-  console.log(`[SAT-DEBUG] SOAP enviado:\n${body}`)
-
   const res = await fetch(url, { method: 'POST', headers, body })
   const text = await res.text()
-
-  console.log(`[SAT-DEBUG] ← HTTP ${res.status} de ${endpoint}`)
-  console.log(`[SAT-DEBUG] Respuesta SAT:\n${text}`)
-  console.log(`[SAT-DEBUG] ──────────────────────────────────────`)
-
   if (!res.ok) {
     throw new Error(`SAT respondió con HTTP ${res.status}: ${text.slice(0, 400)}`)
   }
@@ -303,27 +289,31 @@ export async function solicitar(
   fechaFin: string,
   tipo: TipoDescarga,
 ): Promise<SolicitudResult> {
-  const rfcEmisor   = tipo === 'E' ? rfc : ''
-  const rfcReceptor = tipo === 'R' ? rfc : ''
-  const nodeName    = tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'
+  const nodeName = tipo === 'E' ? 'SolicitaDescargaEmitidos' : 'SolicitaDescargaRecibidos'
 
-  // C14N canónico del elemento solicitud (sin firma) — para calcular DigestValue
-  const canonSolicitud = canonBodyElement('solicitud', {
-    FechaFinal:      fechaFin,
-    FechaInicial:    fechaInicio,
-    RfcEmisor:       rfcEmisor,
-    RfcReceptor:     rfcReceptor,
-    RfcSolicitante:  rfc,
-    TipoComprobante: '',
-    TipoSolicitud:   'CFDI',
-  })
+  // Atributos exactos — omitir RFC vacío igual que Python (None → no se incluye en el XML)
+  const solicitudAttrs: Record<string, string> = {
+    FechaFinal:     fechaFin,
+    FechaInicial:   fechaInicio,
+    RfcSolicitante: rfc,
+    TipoSolicitud:  'CFDI',
+  }
+  if (tipo === 'E') solicitudAttrs['RfcEmisor']   = rfc
+  if (tipo === 'R') solicitudAttrs['RfcReceptor'] = rfc
+
+  // C14N del solicitud (sin firma) — mismo conjunto de atributos que irá en el SOAP
+  const canonSolicitud = canonBodyElement('solicitud', solicitudAttrs)
   const firma = firmarSolicitud(certDer, llave, canonSolicitud)
+
+  // Construir atributos en el SOAP en el mismo orden canónico (alfabético)
+  const attrStr = Object.entries(solicitudAttrs)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}="${escXml(v)}"`)
+    .join(' ')
 
   const soap = soapEnvelope(
     `<des:${nodeName} xmlns:des="${NS_DES}">` +
-    `<des:solicitud FechaFinal="${escXml(fechaFin)}" FechaInicial="${escXml(fechaInicio)}" ` +
-    `RfcEmisor="${rfcEmisor}" RfcReceptor="${rfcReceptor}" RfcSolicitante="${rfc}" ` +
-    `TipoSolicitud="CFDI" TipoComprobante="">` +
+    `<des:solicitud ${attrStr}>` +
     firma +
     `</des:solicitud>` +
     `</des:${nodeName}>`,
