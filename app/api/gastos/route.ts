@@ -19,9 +19,12 @@ export async function GET(request: Request) {
       FROM gastos g
       LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
       LEFT JOIN movimientos_bancarios mb ON mb.gasto_id = g.id
-      WHERE EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
-        AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
-      ORDER BY COALESCE(g.fecha_vencimiento, g.created_at) ASC
+      WHERE g.recurrente = true
+         OR (
+           EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
+           AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
+         )
+      ORDER BY g.recurrente DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
     ` as Record<string, unknown>[]
 
         const categorias = await sql`
