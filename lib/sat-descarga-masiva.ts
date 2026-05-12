@@ -370,7 +370,7 @@ export async function verificar(
 
   // Extraer lista de paquetes (elementos <string> dentro de IdsPaquetes)
   const paquetes: string[] = []
-  const rePkg = /<(?:[\w]+:)?string[^>]*>([^<\s][^<]*)<\/(?:[\w]+:)?string>/g
+  const rePkg = /<(?:[\w]+:)?string[^>]*>([\s\S]*?)<\/(?:[\w]+:)?string>/g
   let m: RegExpExecArray | null
   while ((m = rePkg.exec(resp)) !== null) {
     const v = m[1].trim()

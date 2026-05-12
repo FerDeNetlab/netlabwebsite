@@ -173,7 +173,9 @@ export async function POST(request: Request) {
       duplicados,
       errores,
       paquetes: verif.paquetes.length,
+      paqueteIds: verif.paquetes,
       numeroCFDIs: verif.numeroCFDIs,
+      _debug: process.env.NODE_ENV !== 'production' ? verif : undefined,
     })
   } catch (error) {
     console.error('[SAT] POST /importar error:', error)
