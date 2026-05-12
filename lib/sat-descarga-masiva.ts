@@ -434,10 +434,10 @@ export async function descargarPaquete(
     token,
   )
 
-  // El atributo Paquete contiene el ZIP en base64 (puede tener saltos de línea)
-  const pkgMatch = resp.match(/\bPaquete\s*=\s*"([A-Za-z0-9+/=\s\r\n]+)"/)
+  // El SAT manda el ZIP como elemento <Paquete>BASE64</Paquete>
+  const pkgMatch = resp.match(/<(?:[\w]+:)?Paquete[^>]*>([\s\S]+?)<\/(?:[\w]+:)?Paquete>/)
   if (!pkgMatch) {
-    throw new Error(`No se encontró el paquete en la respuesta. CodEstatus: ${xmlAttr(resp, 'CodEstatus')}`)
+    throw new Error(`No se encontró el paquete en la respuesta. CodEstatus: ${xmlAttr(resp, 'CodEstatus')} | Resp: ${resp.slice(0, 500)}`)
   }
   return Buffer.from(pkgMatch[1].replace(/\s/g, ''), 'base64')
 }
