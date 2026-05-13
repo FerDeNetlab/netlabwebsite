@@ -4,8 +4,8 @@ import { auth } from '@/auth'
 
 // GET /api/rh/bbva/alta
 // Genera archivo .txt con el layout de alta de empleados para BBVA
-// Formato por registro (110 chars):
-//   [02 (2)] [CURP (18)] [EMAIL (50, space-padded)] [TELEFONO (10)] [TARJETA (16)] [SUCURSAL (4)] [spaces (10)]
+// Formato por registro (110 chars) — extraído del macro "ALTA DE EMPLEADOS BBVA.xlsm":
+//   [02 (2)] [CURP (18)] [EMAIL (50, space-padded)] [TELEFONO (10)] [SUCURSAL (4, zero-padded)] [TARJETA (16)] [spaces (10)]
 export async function GET() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -36,10 +36,10 @@ export async function GET() {
       const curp = pad((e.curp as string).toUpperCase(), 18)
       const email = pad((e.email as string).toUpperCase(), 50)
       const telefono = ((e.telefono as string).replace(/\D/g, '')).substring(0, 10).padStart(10, '0')
+      const sucursal = (e.sucursal_bbva as string).replace(/\D/g, '').padStart(4, '0').substring(0, 4)
       const tarjeta = pad((e.numero_tarjeta as string).replace(/\s/g, ''), 16)
-      const sucursal = pad((e.sucursal_bbva as string), 4)
       const trailing = '          ' // 10 spaces
-      return `${tipo}${curp}${email}${telefono}${tarjeta}${sucursal}${trailing}`
+      return `${tipo}${curp}${email}${telefono}${sucursal}${tarjeta}${trailing}`
     })
 
     const content = lines.join('\r\n')
