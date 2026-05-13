@@ -594,7 +594,80 @@ export default function DABSClient() {
         </div>
       </section>
 
-      {/* ═══ EXCLUSIONES ═══ */}
+      {/* ═══ MÓDULO ADICIONAL: NÓMINA ═══ */}
+      <section className="py-20 border-t border-amber-500/20 bg-amber-500/[0.02]">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <TerminalFrame className="border-amber-500/30">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                <span className="text-lg">$</span>
+                <span className="text-lg">cat modulo-adicional.txt</span>
+              </div>
+
+              <div className="flex items-start gap-4 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 rounded text-[10px] text-amber-400 font-mono uppercase tracking-widest">
+                  Módulo Adicional Opcional
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-7 h-7 text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Nómina</h2>
+                  <p className="text-slate-400 text-sm mt-1">Gestión completa de nómina dentro de Odoo — sin herramientas externas</p>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="text-amber-400 font-semibold">Incluye:</h3>
+                  <ul className="space-y-2 text-sm text-slate-400">
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Configuración de empleados, puestos y departamentos</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Estructura salarial y tipos de contrato</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Cálculo de nómina ordinaria y extraordinaria</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Timbrado de CFDI de nómina integrado con PAC</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Migración de datos de empleados actuales</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Reportes de nómina por período y empleado</li>
+                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Capacitación en piso al responsable de nómina</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="p-5 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                    <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-3">Inversión adicional</div>
+                    <div className="text-4xl font-bold text-amber-400">{fmt(10000)}</div>
+                    <div className="text-slate-500 text-sm mt-0.5">MXN · sin IVA</div>
+                    <div className="text-xl font-bold text-slate-300 mt-1">{fmt(11600)} <span className="text-sm text-slate-500">con IVA</span></div>
+                    <div className="mt-4 space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        Configuración + migración + capacitación incluidas
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        Reportes de nómina incluidos
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        Costo de timbres CFDI de nómina a cargo de Grupo DABS (tarifa normal del PAC)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-900/50 border border-slate-800 rounded text-xs text-slate-500">
+                    <span className="text-slate-400 font-semibold">Nota: </span>
+                    Este módulo puede contratarse junto con el paquete Starter o en cualquier momento posterior una vez el sistema base esté operando.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TerminalFrame>
+        </div>
+      </section>
+
+      {/* ═══ EXCLUSIONES ═══ */
       <section className="py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
@@ -641,12 +714,13 @@ export default function DABSClient() {
         <div className="container px-4 mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Inversión</h2>
-            <p className="text-slate-400 text-lg">Un solo pago estructurado en 2 hitos. Sin licencias mensuales, sin sorpresas.</p>
+            <p className="text-slate-400 text-lg">Pago estructurado en 2 hitos. Sin licencias mensuales, sin sorpresas.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          <div className="space-y-6 max-w-3xl mx-auto">
             {/* Card principal */}
-            <div className="md:col-span-2 p-8 bg-gradient-to-br from-amber-500/10 to-slate-900 border-2 border-amber-500/40 rounded-xl">
+            <div className="p-8 bg-gradient-to-br from-amber-500/10 to-slate-900 border-2 border-amber-500/40 rounded-xl">
+              <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-4">Paquete Base — Netlab OS Starter</div>
               <div className="text-center mb-8">
                 <div className="text-sm text-slate-500 font-mono mb-2">Inversión total del proyecto</div>
                 <div className="text-5xl font-bold text-amber-400">{fmt(60000)}</div>
@@ -685,6 +759,46 @@ export default function DABSClient() {
 
               <div className="mt-6 p-3 bg-slate-800/50 rounded text-xs text-slate-500 font-mono text-center">
                 Precios sin IVA. Se agrega según régimen fiscal de Grupo DABS. · Vigencia: 15 días naturales
+              </div>
+            </div>
+
+            {/* Card nómina opcional */}
+            <div className="p-6 bg-slate-900/60 border border-amber-500/20 rounded-xl">
+              <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                <div>
+                  <div className="text-[10px] text-amber-400/60 font-mono uppercase tracking-widest mb-1">Módulo Adicional Opcional</div>
+                  <h3 className="text-lg font-bold text-white">+ Nómina</h3>
+                  <p className="text-xs text-slate-500">Se puede contratar ahora o en cualquier momento posterior</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-amber-400">+{fmt(10000)}</div>
+                  <div className="text-xs text-slate-500">MXN sin IVA · {fmt(11600)} con IVA</div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 text-[10px] text-slate-400 font-mono">
+                {["Configuración empleados", "Migración", "Timbrado CFDI nómina", "Reportes", "Capacitación"].map(t => (
+                  <span key={t} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded">{t}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Resumen con nómina */}
+            <div className="p-5 bg-slate-900/40 border border-slate-700 rounded-xl">
+              <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-4">Resumen si contratan ambos</div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-xs text-slate-500 mb-1">Starter</div>
+                  <div className="text-lg font-bold text-white">{fmt(60000)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 mb-1">+ Nómina</div>
+                  <div className="text-lg font-bold text-amber-400">+{fmt(10000)}</div>
+                </div>
+                <div className="border-l border-slate-700">
+                  <div className="text-xs text-slate-500 mb-1">Total sin IVA</div>
+                  <div className="text-lg font-bold text-green-400">{fmt(70000)}</div>
+                  <div className="text-[10px] text-slate-600">{fmt(81200)} con IVA</div>
+                </div>
               </div>
             </div>
           </div>
