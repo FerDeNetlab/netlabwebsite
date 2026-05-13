@@ -42,7 +42,7 @@ interface Empleado {
     contacto_emergencia_telefono: string | null
     contacto_emergencia_relacion: string | null
     banco: string | null
-    clabe: string | null
+    numero_tarjeta: string | null
     notas: string | null
     activo: boolean
     fecha_baja: string | null
@@ -280,7 +280,7 @@ export default function EmpleadoDetallePage() {
 
                         <Section title="Datos bancarios">
                             <Field label="Banco" value={empleado.banco || ''} onChange={handleField('banco')} />
-                            <Field label="CLABE" value={empleado.clabe || ''} onChange={handleField('clabe')} maxLength={18} />
+                            <Field label="Número de Tarjeta" value={empleado.numero_tarjeta || ''} onChange={handleField('numero_tarjeta')} maxLength={16} />
                         </Section>
 
                         <Section title="Contacto de emergencia">

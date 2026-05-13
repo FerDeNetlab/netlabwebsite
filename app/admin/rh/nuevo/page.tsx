@@ -35,7 +35,7 @@ export default function NuevoEmpleadoPage() {
         contacto_emergencia_telefono: '',
         contacto_emergencia_relacion: '',
         banco: '',
-        clabe: '',
+        numero_tarjeta: '',
         notas: '',
     })
 
@@ -126,7 +126,7 @@ export default function NuevoEmpleadoPage() {
 
                             <Section title="Datos bancarios">
                                 <Field label="Banco" name="banco" value={form.banco} onChange={handleChange} />
-                                <Field label="CLABE" name="clabe" value={form.clabe} onChange={handleChange} maxLength={18} />
+                                <Field label="Número de Tarjeta" name="numero_tarjeta" value={form.numero_tarjeta} onChange={handleChange} maxLength={16} />
                             </Section>
 
                             <Section title="Contacto de emergencia">

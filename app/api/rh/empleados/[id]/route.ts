@@ -39,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             fecha_ingreso, fecha_nacimiento, salario_mensual, tipo_contrato,
             estado_civil, direccion, contacto_emergencia_nombre,
             contacto_emergencia_telefono, contacto_emergencia_relacion,
-            banco, clabe, notas, activo, fecha_baja, motivo_baja,
+            banco, numero_tarjeta, notas, activo, fecha_baja, motivo_baja,
         } = body
 
         const result = await sql`
@@ -62,7 +62,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         contacto_emergencia_telefono = ${contacto_emergencia_telefono ?? null},
         contacto_emergencia_relacion = ${contacto_emergencia_relacion ?? null},
         banco = ${banco ?? null},
-        clabe = ${clabe ?? null},
+        numero_tarjeta = ${numero_tarjeta ?? null},
         notas = ${notas ?? null},
         activo = COALESCE(${activo}, activo),
         fecha_baja = ${fecha_baja ?? null},
