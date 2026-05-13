@@ -118,7 +118,7 @@ export default function BBVAPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `PAGO_NOMINA_BBVA_${new Date().toISOString().split('T')[0]}.xls`
+      a.download = `PAGO_NOMINA_BBVA_${new Date().toISOString().split('T')[0]}.txt`
       a.click()
       URL.revokeObjectURL(url)
       setPagoMsg({ tipo: 'ok', texto: `Archivo de pago generado con ${lista.length} empleado(s) — ${fmt(totalPago)} total. Súbelo al portal BBVA.` })
@@ -248,7 +248,7 @@ export default function BBVAPage() {
               <div>
                 <div className="text-[10px] text-slate-500 uppercase tracking-widest">Módulo 2</div>
                 <h2 className="text-lg font-bold text-white">Dispersión de Nómina</h2>
-                <p className="text-xs text-slate-400">Genera el archivo .xls para programar el pago de nómina en el portal BBVA</p>
+                <p className="text-xs text-slate-400">Genera el archivo .txt para programar el pago de nómina en el portal BBVA</p>
               </div>
             </div>
 
@@ -321,7 +321,7 @@ export default function BBVAPage() {
             )}
 
             <div className="p-4 bg-slate-900/50 border border-slate-800 rounded text-xs text-slate-500 space-y-1">
-              <p><span className="text-slate-400">Formato:</span> Archivo .xls con estructura BBVA (CUENTA / IMPORTE / NOMBRE)</p>
+              <p><span className="text-slate-400">Formato:</span> Archivo .txt con layout fijo BBVA (tipo / cuenta / importe / nombre)</p>
               <p><span className="text-slate-400">Siguiente paso:</span> Sube el archivo al portal BBVA → Nómina → Dispersión de nómina y programa la fecha de pago</p>
             </div>
 
