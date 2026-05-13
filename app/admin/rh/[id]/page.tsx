@@ -412,7 +412,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Field({
-    label, value, onChange, type = 'text', maxLength, step,
+    label, value, onChange, type = 'text', maxLength, step, placeholder,
 }: {
     label: string
     value: string
@@ -420,11 +420,12 @@ function Field({
     type?: string
     maxLength?: number
     step?: string
+    placeholder?: string
 }) {
     return (
         <div>
             <label className={labelCls}>{label}</label>
-            <input value={value} onChange={onChange} type={type} maxLength={maxLength} step={step} className={inputCls} />
+            <input value={value} onChange={onChange} type={type} maxLength={maxLength} step={step} placeholder={placeholder} className={inputCls} />
         </div>
     )
 }
