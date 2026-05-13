@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { Plus, Mail, Phone, Briefcase, Search, ArrowLeft, UserCog } from 'lucide-react'
+import { Plus, Mail, Phone, Briefcase, Search, ArrowLeft, UserCog, CreditCard } from 'lucide-react'
 
 interface Empleado {
     id: string
@@ -91,6 +91,12 @@ export default function RHPage() {
                                 className="bg-green-600 hover:bg-green-700 text-white font-mono gap-2"
                             >
                                 <Plus className="h-4 w-4" /> Nuevo Empleado
+                            </Button>
+                            <Button
+                                onClick={() => router.push('/admin/rh/bbva')}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-mono gap-2"
+                            >
+                                <CreditCard className="h-4 w-4" /> Nómina BBVA
                             </Button>
                         </div>
 

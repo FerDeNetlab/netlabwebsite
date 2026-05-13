@@ -13,7 +13,7 @@ export async function GET() {
         fecha_ingreso, fecha_nacimiento, salario_mensual, tipo_contrato,
         estado_civil, direccion, contacto_emergencia_nombre,
         contacto_emergencia_telefono, contacto_emergencia_relacion,
-        banco, numero_tarjeta, foto_url, notas, activo, fecha_baja, motivo_baja,
+        banco, numero_tarjeta, sucursal_bbva, foto_url, notas, activo, fecha_baja, motivo_baja,
         created_at, updated_at
       FROM rh_empleados
       ORDER BY activo DESC, nombre ASC
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
             fecha_ingreso, fecha_nacimiento, salario_mensual, tipo_contrato,
             estado_civil, direccion, contacto_emergencia_nombre,
             contacto_emergencia_telefono, contacto_emergencia_relacion,
-            banco, numero_tarjeta, notas,
+            banco, numero_tarjeta, sucursal_bbva, notas,
         } = body
 
         if (!nombre || typeof nombre !== 'string') {
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         fecha_ingreso, fecha_nacimiento, salario_mensual, tipo_contrato,
         estado_civil, direccion, contacto_emergencia_nombre,
         contacto_emergencia_telefono, contacto_emergencia_relacion,
-        banco, numero_tarjeta, notas
+        banco, numero_tarjeta, sucursal_bbva, notas
       ) VALUES (
         ${nombre}, ${curp || null}, ${rfc || null}, ${nss || null},
         ${telefono || null}, ${email || null}, ${puesto || null}, ${departamento || null},
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         ${estado_civil || null}, ${direccion || null},
         ${contacto_emergencia_nombre || null}, ${contacto_emergencia_telefono || null},
         ${contacto_emergencia_relacion || null},
-        ${banco || null}, ${numero_tarjeta || null}, ${notas || null}
+        ${banco || null}, ${numero_tarjeta || null}, ${sucursal_bbva || null}, ${notas || null}
       )
       RETURNING *
     ` as Record<string, unknown>[]

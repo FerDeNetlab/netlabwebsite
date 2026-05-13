@@ -43,6 +43,7 @@ interface Empleado {
     contacto_emergencia_relacion: string | null
     banco: string | null
     numero_tarjeta: string | null
+    sucursal_bbva: string | null
     notas: string | null
     activo: boolean
     fecha_baja: string | null
@@ -281,6 +282,7 @@ export default function EmpleadoDetallePage() {
                         <Section title="Datos bancarios">
                             <Field label="Banco" value={empleado.banco || ''} onChange={handleField('banco')} />
                             <Field label="Número de Tarjeta" value={empleado.numero_tarjeta || ''} onChange={handleField('numero_tarjeta')} maxLength={16} />
+                            <Field label="Sucursal BBVA" value={empleado.sucursal_bbva || ''} onChange={handleField('sucursal_bbva')} maxLength={10} placeholder="Ej: 7116" />
                         </Section>
 
                         <Section title="Contacto de emergencia">

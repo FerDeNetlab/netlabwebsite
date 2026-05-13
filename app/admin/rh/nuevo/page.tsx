@@ -36,6 +36,7 @@ export default function NuevoEmpleadoPage() {
         contacto_emergencia_relacion: '',
         banco: '',
         numero_tarjeta: '',
+        sucursal_bbva: '',
         notas: '',
     })
 
@@ -127,6 +128,7 @@ export default function NuevoEmpleadoPage() {
                             <Section title="Datos bancarios">
                                 <Field label="Banco" name="banco" value={form.banco} onChange={handleChange} />
                                 <Field label="Número de Tarjeta" name="numero_tarjeta" value={form.numero_tarjeta} onChange={handleChange} maxLength={16} />
+                                <Field label="Sucursal BBVA" name="sucursal_bbva" value={form.sucursal_bbva} onChange={handleChange} maxLength={10} placeholder="Ej: 7116" />
                             </Section>
 
                             <Section title="Contacto de emergencia">
