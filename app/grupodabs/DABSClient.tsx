@@ -732,46 +732,42 @@ export default function DABSClient() {
 
       {/* ═══ CTA ═══ */}
       <section className="py-20 border-t border-slate-800">
-        <div className="container px-4 mx-auto max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <TerminalFrame>
-              <div className="font-mono space-y-4 text-center py-4">
-                <div className="text-amber-400 text-lg font-bold">
-                  Esta vez el sistema sí va a funcionar
-                </div>
-                <p className="text-slate-400 text-sm max-w-xl mx-auto leading-relaxed">
-                  Porque no empezamos configurando — empezamos entendiendo cómo opera Grupo DABS.
-                  El sistema refleja tu realidad. Tu equipo lo adopta porque lo construyó contigo.
-                </p>
-                <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="https://netlab.mx/agendar"
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-3 bg-amber-400 hover:bg-amber-300 text-black font-bold font-mono text-sm rounded transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Agendar Reunión con Fer
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </a>
-                  <a
-                    href="https://wa.me/521XXXXXXXXXX"
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/40 text-slate-300 font-mono text-sm rounded transition-colors"
-                  >
-                    <PhoneCall className="w-4 h-4" />
-                    WhatsApp directo
-                  </a>
-                </div>
-                <div className="text-xs text-slate-600 font-mono">
-                  Vigencia de propuesta: 15 días naturales desde el 11 de mayo de 2026
+        <div className="container px-4 mx-auto max-w-6xl">
+          <TerminalFrame className="border-amber-500/30">
+            <div className="text-center space-y-8 py-8">
+              <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
+                <span className="text-lg">root@netlab:~/grupo-dabs#</span>
+                <span className="text-lg">siguiente-paso</span>
+                <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
+              </div>
+
+              <h2 className="text-3xl md:text-4xl font-bold text-white">¿Empezamos?</h2>
+
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                Esta vez el sistema sí va a funcionar — porque primero diseñamos el proceso, después configuramos Odoo.
+                El siguiente paso es confirmar la propuesta y agendar el Kick Off.
+              </p>
+
+              <div className="pt-6 space-y-4">
+                <a
+                  href="https://wa.me/523333521742?text=Hola%20Fer%2C%20soy%20Silvia%20de%20Grupo%20DABS.%20Revisé%20la%20propuesta%20y%20quiero%20avanzar.%20¿Podemos%20agendar%20una%20reunión%3F"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 font-mono font-bold text-black transition-all duration-200 bg-green-500 hover:bg-green-400 rounded-sm text-lg w-full md:w-auto"
+                >
+                  <PhoneCall className="w-5 h-5 mr-2" />
+                  <span>Agendar reunión por WhatsApp</span>
+                  <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                </a>
+
+                <p className="text-sm text-slate-500 font-mono">O escríbenos directamente: <span className="text-slate-400 font-semibold">contacto@netlab.mx</span></p>
+
+                <div className="pt-4 text-[10px] text-slate-600 uppercase tracking-widest">
+                  Propuesta válida hasta: 26 de mayo de 2026
                 </div>
               </div>
-            </TerminalFrame>
-          </motion.div>
+            </div>
+          </TerminalFrame>
         </div>
       </section>
 
