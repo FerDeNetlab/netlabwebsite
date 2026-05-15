@@ -512,14 +512,14 @@ export default function BBVAPage() {
               </Button>
               <Button
                 onClick={descargarPago}
-                disabled={pagoLoading || !nominaGuardada}
+                disabled={pagoLoading || Object.keys(pagoSeleccionados).length === 0}
                 className="bg-green-600 hover:bg-green-500 text-black gap-2 disabled:opacity-50"
               >
                 {pagoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                 Descargar .txt
               </Button>
               {!nominaGuardada && Object.keys(pagoSeleccionados).length > 0 && (
-                <span className="text-[10px] text-amber-400">Guarda primero para habilitar la descarga</span>
+                <span className="text-[10px] text-amber-400">Guarda la nómina para mantener el registro</span>
               )}
             </div>
 
