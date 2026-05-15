@@ -116,7 +116,7 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ CONTEXTO ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
@@ -205,10 +205,10 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ POR QUÉ ODOO CE ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">¿Por qué Odoo Community Edition?</h2>
+          <div className="text-center mb-8 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">¿Por qué Odoo Community Edition?</h2>
             <p className="text-slate-400 text-lg">Software libre, profesional y de por vida</p>
           </div>
 
@@ -250,11 +250,11 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ MÓDULOS INCLUIDOS ═══ */}
-      <section id="propuesta" className="py-20 border-t border-slate-800">
+      <section id="propuesta" className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Netlab OS Starter — Lo que incluye</h2>
-            <p className="text-slate-400 text-lg">8 módulos operativos + diseño de procesos + capacitación + soporte</p>
+          <div className="text-center mb-8 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">Netlab OS Starter — Lo que incluye</h2>
+            <p className="text-slate-400 text-base md:text-lg">8 módulos operativos + diseño de procesos + capacitación + soporte</p>
           </div>
 
           <div className="space-y-6">
@@ -490,7 +490,7 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ CÓMO TRABAJAMOS ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
@@ -500,7 +500,7 @@ export default function DABSClient() {
               </div>
 
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Cómo Trabajamos</h2>
+                <h2 className="text-xl md:text-3xl font-bold text-white mb-2">Cómo Trabajamos</h2>
                 <p className="text-slate-400 mb-10">El proceso que rompe el ciclo de implementaciones fallidas</p>
 
                 <div className="space-y-4">
@@ -581,10 +581,10 @@ export default function DABSClient() {
                   ))}
                 </div>
 
-                <div className="mt-8 p-5 bg-amber-500/5 border border-amber-500/20 rounded-lg flex items-center gap-4">
-                  <Clock className="w-8 h-8 text-amber-400 flex-shrink-0" />
+                <div className="mt-6 md:mt-8 p-4 md:p-5 bg-amber-500/5 border border-amber-500/20 rounded-lg flex items-start md:items-center gap-3 md:gap-4">
+                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-amber-400 font-semibold">Duración total estimada: ~10 semanas hasta Go Live</h4>
+                    <h4 className="text-amber-400 font-semibold text-sm md:text-base">Duración total estimada: ~10 semanas hasta Go Live</h4>
                     <p className="text-sm text-slate-400 mt-0.5">Las fechas exactas se definen en el Kick Off. Comunicación por WhatsApp + videollamadas de seguimiento por sprint.</p>
                   </div>
                 </div>
@@ -595,7 +595,7 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ MÓDULO ADICIONAL: NÓMINA ═══ */}
-      <section className="py-20 border-t border-amber-500/20 bg-amber-500/[0.02]">
+      <section className="py-12 md:py-20 border-t border-amber-500/20 bg-amber-500/[0.02]">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame className="border-amber-500/30">
             <div className="space-y-8">
@@ -615,7 +615,7 @@ export default function DABSClient() {
                   <Users className="w-7 h-7 text-amber-400" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-white">Nómina</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white">Nómina</h2>
                   <p className="text-slate-400 text-sm mt-1">Gestión completa de nómina dentro de Odoo — sin herramientas externas</p>
                 </div>
               </div>
@@ -668,7 +668,7 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ EXCLUSIONES ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
@@ -678,7 +678,7 @@ export default function DABSClient() {
               </div>
 
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Lo que NO está incluido</h2>
+                <h2 className="text-xl md:text-3xl font-bold text-white mb-2">Lo que NO está incluido</h2>
                 <p className="text-slate-400 mb-8">Scope cerrado desde el inicio. Cualquier cambio genera un Acta de Control de Cambios firmada antes de ejecutarse.</p>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -710,11 +710,11 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ INVERSIÓN ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Inversión</h2>
-            <p className="text-slate-400 text-lg">Pago estructurado en 2 hitos. Sin licencias mensuales, sin sorpresas.</p>
+          <div className="text-center mb-8 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">Inversión</h2>
+            <p className="text-slate-400 text-base md:text-lg">Pago estructurado en 2 hitos. Sin licencias mensuales, sin sorpresas.</p>
           </div>
 
           <div className="space-y-6 max-w-3xl mx-auto">
@@ -723,7 +723,7 @@ export default function DABSClient() {
               <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-4">Paquete Base — Netlab OS Starter</div>
               <div className="text-center mb-8">
                 <div className="text-sm text-slate-500 font-mono mb-2">Inversión total del proyecto</div>
-                <div className="text-5xl font-bold text-amber-400">{fmt(60000)}</div>
+                <div className="text-4xl md:text-5xl font-bold text-amber-400">{fmt(60000)}</div>
                 <div className="text-slate-500 text-sm mt-1">MXN · sin IVA</div>
                 <div className="text-2xl font-bold text-slate-300 mt-2">{fmt(69600)} <span className="text-base text-slate-500">MXN con IVA</span></div>
               </div>
@@ -743,7 +743,7 @@ export default function DABSClient() {
                 </div>
               </div>
 
-              <div className="mt-6 space-y-2">
+              <div className="mt-4 md:mt-6 space-y-2">
                 {[
                   "Diseño de procesos incluido",
                   "Capacitación en piso por rol incluida",
@@ -785,18 +785,18 @@ export default function DABSClient() {
             {/* Resumen con nómina */}
             <div className="p-5 bg-slate-900/40 border border-slate-700 rounded-xl">
               <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-4">Resumen si contratan ambos</div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
                 <div>
                   <div className="text-xs text-slate-500 mb-1">Starter</div>
-                  <div className="text-lg font-bold text-white">{fmt(60000)}</div>
+                  <div className="text-sm md:text-lg font-bold text-white">{fmt(60000)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 mb-1">+ Nómina</div>
-                  <div className="text-lg font-bold text-amber-400">+{fmt(10000)}</div>
+                  <div className="text-sm md:text-lg font-bold text-amber-400">+{fmt(10000)}</div>
                 </div>
                 <div className="border-l border-slate-700">
                   <div className="text-xs text-slate-500 mb-1">Total sin IVA</div>
-                  <div className="text-lg font-bold text-green-400">{fmt(70000)}</div>
+                  <div className="text-sm md:text-lg font-bold text-green-400">{fmt(70000)}</div>
                   <div className="text-[10px] text-slate-600">{fmt(81200)} con IVA</div>
                 </div>
               </div>
@@ -806,7 +806,7 @@ export default function DABSClient() {
       </section>
 
       {/* ═══ SIGUIENTES PASOS ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
             <div className="space-y-8">
@@ -816,7 +816,7 @@ export default function DABSClient() {
               </div>
 
               <div>
-                <h2 className="text-3xl font-bold text-white mb-2">Siguientes Pasos</h2>
+                <h2 className="text-xl md:text-3xl font-bold text-white mb-2">Siguientes Pasos</h2>
                 <p className="text-slate-400 mb-8">Del "sí" al arranque de operaciones en Odoo</p>
 
                 <div className="space-y-3">
@@ -844,12 +844,142 @@ export default function DABSClient() {
         </div>
       </section>
 
+      {/* ═══ EL PRIMER PASO ═══ */}
+      <section className="py-12 md:py-20 border-t border-amber-500/10 bg-gradient-to-b from-amber-500/[0.03] to-transparent">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <TerminalFrame className="border-amber-500/20">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
+                <span className="text-lg">$</span>
+                <span className="text-lg">cat roadmap-tecnologico.txt</span>
+              </div>
+
+              <div className="flex items-start gap-4 flex-wrap mb-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/40 rounded text-[10px] text-green-400 font-mono uppercase tracking-widest">
+                  Visión a futuro
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl md:text-4xl font-bold text-white mb-3">
+                  Esto no es solo un ERP.{" "}
+                  <span className="text-amber-400">Es la base de su empresa digital.</span>
+                </h2>
+                <p className="text-slate-400 text-base md:text-lg max-w-3xl leading-relaxed">
+                  Odoo Community Edition no es un sistema cerrado — es una plataforma que crece con Grupo DABS.
+                  Una vez que inventario, compras, ventas y facturación estén operando de forma estable,
+                  el siguiente nivel está a un módulo de distancia.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+                {/* Mercado Libre */}
+                <div className="p-5 bg-slate-900/60 border border-yellow-500/20 rounded-lg group hover:border-yellow-500/40 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/40 flex items-center justify-center flex-shrink-0">
+                      <ShoppingCart className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-600 font-mono uppercase tracking-widest">Fase 2</div>
+                      <h3 className="text-white font-bold text-sm">Mercado Libre</h3>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                    Conectamos su catálogo de Odoo directamente con Mercado Libre. Publicaciones sincronizadas,
+                    inventario en tiempo real y órdenes que entran solas a su sistema — sin captura manual.
+                  </p>
+                  <div className="text-[10px] text-yellow-400/60 font-mono">Stock sync · Pedidos automáticos · Multi-cuenta</div>
+                </div>
+
+                {/* Ecommerce */}
+                <div className="p-5 bg-slate-900/60 border border-blue-500/20 rounded-lg group hover:border-blue-500/40 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/40 flex items-center justify-center flex-shrink-0">
+                      <Layers className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-600 font-mono uppercase tracking-widest">Fase 2</div>
+                      <h3 className="text-white font-bold text-sm">Tienda en Línea</h3>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                    Un ecommerce propio construido sobre Odoo: catálogo de partes diesel en línea, carrito de compra,
+                    pagos en línea y entregas — todo conectado al mismo inventario que ya operan.
+                  </p>
+                  <div className="text-[10px] text-blue-400/60 font-mono">Catálogo web · Pagos · Entregas · Sin duplicar datos</div>
+                </div>
+
+                {/* Modernización */}
+                <div className="p-5 bg-slate-900/60 border border-green-500/20 rounded-lg group hover:border-green-500/40 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-green-500/10 border border-green-500/40 flex items-center justify-center flex-shrink-0">
+                      <BarChart3 className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-600 font-mono uppercase tracking-widest">Fase 3+</div>
+                      <h3 className="text-white font-bold text-sm">Inteligencia del Negocio</h3>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed mb-3">
+                    Dashboards de ventas, reportes automáticos, análisis de rentabilidad por producto y cliente.
+                    Con todos los datos ya en Odoo, la visibilidad del negocio se vuelve inmediata.
+                  </p>
+                  <div className="text-[10px] text-green-400/60 font-mono">KPIs · Forecasting · Rentabilidad · Reportes automáticos</div>
+                </div>
+              </div>
+
+              <div className="mt-2 p-5 bg-slate-900/40 border-l-4 border-amber-500 rounded-lg">
+                <div className="flex items-start gap-4">
+                  <RefreshCw className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-amber-400 font-semibold mb-1">El ciclo que se rompe — de verdad</h4>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      La mayoría de las empresas de distribución en México siguen operando con Excel, WhatsApp y
+                      papel porque nunca tuvieron una base sólida. Con este proyecto, Grupo DABS deja de ser
+                      una empresa tradicional y se convierte en una{" "}
+                      <span className="text-white font-semibold">operación digital, trazable y lista para escalar</span>.
+                      Mercado Libre, ecommerce, nómina integrada — todo esto es posible porque el primer paso
+                      estará bien hecho.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline visual */}
+              <div className="mt-2">
+                <div className="text-[10px] text-slate-600 font-mono uppercase tracking-widest mb-4">Roadmap simplificado</div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="flex-1 p-3 bg-amber-500/10 border border-amber-500/30 rounded text-center">
+                    <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest">Ahora</div>
+                    <div className="text-xs text-white font-semibold mt-1">Base Operativa</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Inv · Compras · Ventas · CFDI</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-600 flex-shrink-0 mx-auto rotate-90 sm:rotate-0" />
+                  <div className="flex-1 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded text-center">
+                    <div className="text-[10px] text-yellow-400/70 font-mono uppercase tracking-widest">Fase 2</div>
+                    <div className="text-xs text-white font-semibold mt-1">Canales Digitales</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Meli · Ecommerce · Nómina</div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-slate-600 flex-shrink-0 mx-auto rotate-90 sm:rotate-0" />
+                  <div className="flex-1 p-3 bg-green-500/5 border border-green-500/20 rounded text-center">
+                    <div className="text-[10px] text-green-400/70 font-mono uppercase tracking-widest">Fase 3+</div>
+                    <div className="text-xs text-white font-semibold mt-1">Empresa Digital</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">BI · Automatización · Escala</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </TerminalFrame>
+        </div>
+      </section>
+
       {/* ═══ CTA ═══ */}
-      <section className="py-20 border-t border-slate-800">
+      <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame className="border-amber-500/30">
-            <div className="text-center space-y-8 py-8">
-              <div className="flex items-center justify-center gap-3 text-green-500 font-mono mb-6">
+            <div className="text-center space-y-6 md:space-y-8 py-6 md:py-8">
+              <div className="flex items-center justify-center gap-2 md:gap-3 text-green-500 font-mono mb-6 flex-wrap text-xs md:text-lg">
                 <span className="text-lg">root@netlab:~/grupo-dabs#</span>
                 <span className="text-lg">siguiente-paso</span>
                 <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
@@ -857,7 +987,7 @@ export default function DABSClient() {
 
               <h2 className="text-3xl md:text-4xl font-bold text-white">¿Empezamos?</h2>
 
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto">
                 Esta vez el sistema sí va a funcionar — porque primero diseñamos el proceso, después configuramos Odoo.
                 El siguiente paso es confirmar la propuesta y agendar el Kick Off.
               </p>

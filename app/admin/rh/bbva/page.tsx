@@ -45,6 +45,7 @@ export default function BBVAPage() {
   // Alta state
   const [altaLoading, setAltaLoading] = useState(false)
   const [altaMsg, setAltaMsg] = useState<{ tipo: 'ok' | 'error'; texto: string } | null>(null)
+  const [altaSeleccionados, setAltaSeleccionados] = useState<Set<string>>(new Set())
 
   // Pago state
   const [quincena, setQuincena] = useState<string>(qCurrent())
@@ -96,11 +97,37 @@ export default function BBVAPage() {
   const aptoAlta = empleados.filter(e => e.curp && e.email && e.telefono && e.numero_tarjeta && e.sucursal_bbva)
   const faltanDatos = empleados.filter(e => !e.curp || !e.email || !e.telefono || !e.numero_tarjeta || !e.sucursal_bbva)
 
+  const toggleAlta = (id: string) => {
+    setAltaSeleccionados(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+    setAltaMsg(null)
+  }
+
+  const toggleAltaTodos = () => {
+    setAltaSeleccionados(prev => {
+      if (prev.size === aptoAlta.length) return new Set()
+      return new Set(aptoAlta.map(e => e.id))
+    })
+    setAltaMsg(null)
+  }
+
   const descargarAlta = async () => {
+    if (altaSeleccionados.size === 0) {
+      setAltaMsg({ tipo: 'error', texto: 'Selecciona al menos un empleado para dar de alta' })
+      return
+    }
     setAltaLoading(true)
     setAltaMsg(null)
     try {
-      const r = await fetch('/api/rh/bbva/alta')
+      const r = await fetch('/api/rh/bbva/alta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(altaSeleccionados) }),
+      })
       if (!r.ok) {
         const d = await r.json()
         setAltaMsg({ tipo: 'error', texto: d.error || 'Error al generar el archivo' })
@@ -113,7 +140,7 @@ export default function BBVAPage() {
       a.download = `ALTA_NOMINA_BBVA_${new Date().toISOString().split('T')[0]}.txt`
       a.click()
       URL.revokeObjectURL(url)
-      setAltaMsg({ tipo: 'ok', texto: `Archivo generado con ${aptoAlta.length} empleado(s). Súbelo al portal BBVA.` })
+      setAltaMsg({ tipo: 'ok', texto: `Archivo generado con ${altaSeleccionados.size} empleado(s). Súbelo al portal BBVA.` })
     } finally {
       setAltaLoading(false)
     }
@@ -125,7 +152,8 @@ export default function BBVAPage() {
       if (next[id] !== undefined) {
         delete next[id]
       } else {
-        next[id] = salario || 0
+        // Salario es mensual — la quincena es la mitad
+        next[id] = Math.round(((salario || 0) / 2) * 100) / 100
       }
       return next
     })
@@ -242,17 +270,37 @@ export default function BBVAPage() {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="p-4 bg-green-500/5 border border-green-500/20 rounded">
-                <div className="text-xs text-green-400 font-bold mb-3 flex items-center gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Listos para alta ({aptoAlta.length})
+                <div className="text-xs text-green-400 font-bold mb-3 flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Listos para alta ({aptoAlta.length})</span>
+                  {aptoAlta.length > 0 && (
+                    <button onClick={toggleAltaTodos} className="text-[10px] text-slate-500 hover:text-green-400 underline">
+                      {altaSeleccionados.size === aptoAlta.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                    </button>
+                  )}
                 </div>
                 {aptoAlta.length === 0 ? (
                   <p className="text-xs text-slate-500">Ningún empleado tiene todos los datos completos</p>
                 ) : (
-                  <ul className="space-y-1">
+                  <ul className="space-y-1.5">
                     {aptoAlta.map(e => (
-                      <li key={e.id} className="text-xs text-slate-300 flex items-center justify-between gap-2">
-                        <span>{e.nombre}</span>
-                        <span className="text-slate-600">{e.numero_tarjeta}</span>
+                      <li
+                        key={e.id}
+                        onClick={() => toggleAlta(e.id)}
+                        className={`flex items-center gap-3 p-2 rounded border cursor-pointer transition-colors ${
+                          altaSeleccionados.has(e.id)
+                            ? 'bg-green-500/10 border-green-500/30'
+                            : 'border-transparent hover:border-slate-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={altaSeleccionados.has(e.id)}
+                          onChange={() => toggleAlta(e.id)}
+                          onClick={ev => ev.stopPropagation()}
+                          className="w-4 h-4 accent-green-500 cursor-pointer flex-shrink-0"
+                        />
+                        <span className="text-xs text-slate-300 flex-1">{e.nombre}</span>
+                        <span className="text-[10px] text-slate-600 font-mono">{e.numero_tarjeta}</span>
                       </li>
                     ))}
                   </ul>
@@ -303,14 +351,19 @@ export default function BBVAPage() {
               </div>
             )}
 
-            <Button
-              onClick={descargarAlta}
-              disabled={altaLoading || aptoAlta.length === 0}
-              className="bg-blue-600 hover:bg-blue-500 text-white gap-2 disabled:opacity-50"
-            >
-              {altaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              Descargar archivo de Alta ({aptoAlta.length} empleados)
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                onClick={descargarAlta}
+                disabled={altaLoading || altaSeleccionados.size === 0}
+                className="bg-blue-600 hover:bg-blue-500 text-white gap-2 disabled:opacity-50"
+              >
+                {altaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                Descargar Alta ({altaSeleccionados.size} seleccionados)
+              </Button>
+              {altaSeleccionados.size === 0 && aptoAlta.length > 0 && (
+                <span className="text-[10px] text-amber-400">Selecciona los empleados a dar de alta</span>
+              )}
+            </div>
           </div>
         </TerminalFrame>
 
@@ -389,7 +442,9 @@ export default function BBVAPage() {
                     <div className="col-span-5">
                       <div className="text-sm text-white">{e.nombre}</div>
                       {e.salario_mensual && (
-                        <div className="text-[10px] text-slate-500">Salario: {fmt(e.salario_mensual)}</div>
+                        <div className="text-[10px] text-slate-500">
+                          Mensual: {fmt(e.salario_mensual)} → <span className="text-green-500/70">Quincena: {fmt(Math.round(e.salario_mensual / 2 * 100) / 100)}</span>
+                        </div>
                       )}
                     </div>
                     <div className="col-span-3 text-xs text-slate-400 font-mono truncate">

@@ -2,17 +2,30 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
 
-// GET /api/rh/bbva/alta
+// POST /api/rh/bbva/alta
+// Body: { ids: string[] } — IDs de empleados a incluir en el archivo
 // Genera archivo .txt con el layout de alta de empleados para BBVA
 // Formato por registro (110 chars) — extraído del macro "ALTA DE EMPLEADOS BBVA.xlsm":
 //   [02 (2)] [CURP (18)] [EMAIL (50, space-padded)] [TELEFONO (10)] [SUCURSAL (4, zero-padded)] [TARJETA (16)] [spaces (10)]
-export async function GET() {
+export async function POST(req: Request) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  let ids: string[] = []
   try {
-    const empleados = await sql`
-      SELECT nombre, curp, email, telefono, numero_tarjeta, sucursal_bbva
+    const body = await req.json()
+    ids = Array.isArray(body.ids) ? body.ids : []
+  } catch {
+    return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
+  }
+
+  if (ids.length === 0) {
+    return NextResponse.json({ error: 'Selecciona al menos un empleado' }, { status: 400 })
+  }
+
+  try {
+    const todos = await sql`
+      SELECT id, nombre, curp, email, telefono, numero_tarjeta, sucursal_bbva
       FROM rh_empleados
       WHERE activo = true
         AND curp IS NOT NULL AND curp != ''
@@ -23,9 +36,12 @@ export async function GET() {
       ORDER BY nombre ASC
     ` as Record<string, unknown>[]
 
+    // Filtrar solo los IDs seleccionados
+    const empleados = todos.filter(e => ids.includes(e.id as string))
+
     if (empleados.length === 0) {
       return NextResponse.json({
-        error: 'No hay empleados con todos los datos completos (CURP, email, teléfono, tarjeta y sucursal BBVA)',
+        error: 'Ninguno de los empleados seleccionados tiene todos los datos completos (CURP, email, teléfono, tarjeta y sucursal BBVA)',
       }, { status: 400 })
     }
 
