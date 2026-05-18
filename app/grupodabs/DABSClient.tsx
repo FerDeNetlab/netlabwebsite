@@ -91,7 +91,7 @@ export default function DABSClient() {
                     transition={{ delay: 2.2 }}
                   >
                     <div className="inline-block px-4 py-2 bg-slate-900 border border-amber-500/30 text-[10px] text-amber-400 font-bold uppercase tracking-widest">
-                      Propuesta Comercial · Silvia Muñoz · Mayo 2026
+                      Propuesta Comercial · Silvia Muñoz · Mayo 2026 · <span className="text-green-400">v2.0 Negociada</span>
                     </div>
                   </motion.div>
 
@@ -594,80 +594,7 @@ export default function DABSClient() {
         </div>
       </section>
 
-      {/* ═══ MÓDULO ADICIONAL: NÓMINA ═══ */}
-      <section className="py-12 md:py-20 border-t border-amber-500/20 bg-amber-500/[0.02]">
-        <div className="container px-4 mx-auto max-w-6xl">
-          <TerminalFrame className="border-amber-500/30">
-            <div className="space-y-8">
-              <div className="flex items-center gap-3 text-green-500 font-mono mb-6">
-                <span className="text-lg">$</span>
-                <span className="text-lg">cat modulo-adicional.txt</span>
-              </div>
-
-              <div className="flex items-start gap-4 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 rounded text-[10px] text-amber-400 font-mono uppercase tracking-widest">
-                  Módulo Adicional Opcional
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-7 h-7 text-amber-400" />
-                </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">Nómina</h2>
-                  <p className="text-slate-400 text-sm mt-1">Gestión completa de nómina dentro de Odoo — sin herramientas externas</p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <h3 className="text-amber-400 font-semibold">Incluye:</h3>
-                  <ul className="space-y-2 text-sm text-slate-400">
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Configuración de empleados, puestos y departamentos</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Estructura salarial y tipos de contrato</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Cálculo de nómina ordinaria y extraordinaria</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Timbrado de CFDI de nómina integrado con PAC</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Migración de datos de empleados actuales</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Reportes de nómina por período y empleado</li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />Capacitación en piso al responsable de nómina</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="p-5 bg-amber-500/5 border border-amber-500/20 rounded-lg">
-                    <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-3">Inversión adicional</div>
-                    <div className="text-4xl font-bold text-amber-400">{fmt(10000)}</div>
-                    <div className="text-slate-500 text-sm mt-0.5">MXN · sin IVA</div>
-                    <div className="text-xl font-bold text-slate-300 mt-1">{fmt(11600)} <span className="text-sm text-slate-500">con IVA</span></div>
-                    <div className="mt-4 space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                        Configuración + migración + capacitación incluidas
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                        Reportes de nómina incluidos
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                        Costo de timbres CFDI de nómina a cargo de Grupo DABS (tarifa normal del PAC)
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-slate-900/50 border border-slate-800 rounded text-xs text-slate-500">
-                    <span className="text-slate-400 font-semibold">Nota: </span>
-                    Este módulo puede contratarse junto con el paquete Starter o en cualquier momento posterior una vez el sistema base esté operando.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TerminalFrame>
-        </div>
-      </section>
-
-      {/* ═══ EXCLUSIONES ═══ */}
+      {/* ═══ EXCLUSIONES ═══ */}}
       <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
@@ -683,6 +610,7 @@ export default function DABSClient() {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   {[
+                    { item: "Nómina", reason: "Disponible como siguiente paso — cuando el sistema base lleve 1–2 meses operando" },
                     { item: "Ecommerce / tienda en línea", reason: "Fase 2 — cuando el sistema base esté estabilizado" },
                     { item: "Integración con Mercado Libre", reason: "Fase 2 — propuesta independiente" },
                     { item: "Contabilidad avanzada", reason: "Fuera del paquete Starter" },
@@ -701,7 +629,7 @@ export default function DABSClient() {
                 </div>
 
                 <div className="mt-6 p-4 bg-slate-900/50 border-l-4 border-slate-600 rounded text-sm text-slate-400">
-                  <span className="text-white font-semibold">Nota: </span>Las exclusiones de Fase 2 (ecommerce, Mercado Libre) son el siguiente paso natural una vez que el sistema base lleve al menos 2–3 meses operando de forma estable.
+                  <span className="text-white font-semibold">Nota: </span>El módulo de Nómina y las funciones de Fase 2 (ecommerce, Mercado Libre) son el siguiente paso natural una vez que el sistema base lleve al menos 1–2 meses operando de forma estable.
                 </div>
               </div>
             </div>
@@ -723,16 +651,21 @@ export default function DABSClient() {
               <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-4">Paquete Base — Netlab OS Starter</div>
               <div className="text-center mb-8">
                 <div className="text-sm text-slate-500 font-mono mb-2">Inversión total del proyecto</div>
-                <div className="text-4xl md:text-5xl font-bold text-amber-400">{fmt(60000)}</div>
+                {/* Precio original tachado */}
+                <div className="text-xl text-slate-600 line-through mb-1">{fmt(60000)} MXN</div>
+                <div className="text-4xl md:text-5xl font-bold text-amber-400">{fmt(40000)}</div>
                 <div className="text-slate-500 text-sm mt-1">MXN · sin IVA</div>
-                <div className="text-2xl font-bold text-slate-300 mt-2">{fmt(69600)} <span className="text-base text-slate-500">MXN con IVA</span></div>
+                <div className="text-2xl font-bold text-slate-300 mt-2">{fmt(46400)} <span className="text-base text-slate-500">MXN con IVA</span></div>
+                <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 rounded text-[10px] text-green-400 font-mono uppercase tracking-widest">
+                  Precio negociado · {fmt(20000)} de ahorro
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-5 bg-slate-900/80 border border-amber-500/30 rounded-lg">
                   <div className="text-[10px] text-amber-400 font-mono uppercase tracking-widest mb-3">Pago 1 · A la aceptación</div>
-                  <div className="text-3xl font-bold text-white">{fmt(40000)}</div>
-                  <div className="text-slate-500 text-xs mt-0.5">MXN sin IVA · {fmt(46400)} con IVA</div>
+                  <div className="text-3xl font-bold text-white">{fmt(20000)}</div>
+                  <div className="text-slate-500 text-xs mt-0.5">MXN sin IVA · {fmt(23200)} con IVA</div>
                   <p className="text-xs text-slate-400 mt-3">Al confirmar la propuesta y firmar el acuerdo. Libera el inicio del proyecto.</p>
                 </div>
                 <div className="p-5 bg-slate-900/80 border border-slate-700 rounded-lg">
@@ -761,46 +694,6 @@ export default function DABSClient() {
                 Precios sin IVA. Se agrega según régimen fiscal de Grupo DABS. · Vigencia: 15 días naturales
               </div>
             </div>
-
-            {/* Card nómina opcional */}
-            <div className="p-6 bg-slate-900/60 border border-amber-500/20 rounded-xl">
-              <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
-                <div>
-                  <div className="text-[10px] text-amber-400/60 font-mono uppercase tracking-widest mb-1">Módulo Adicional Opcional</div>
-                  <h3 className="text-lg font-bold text-white">+ Nómina</h3>
-                  <p className="text-xs text-slate-500">Se puede contratar ahora o en cualquier momento posterior</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-amber-400">+{fmt(10000)}</div>
-                  <div className="text-xs text-slate-500">MXN sin IVA · {fmt(11600)} con IVA</div>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 text-[10px] text-slate-400 font-mono">
-                {["Configuración empleados", "Migración", "Timbrado CFDI nómina", "Reportes", "Capacitación"].map(t => (
-                  <span key={t} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded">{t}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Resumen con nómina */}
-            <div className="p-5 bg-slate-900/40 border border-slate-700 rounded-xl">
-              <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-4">Resumen si contratan ambos</div>
-              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
-                <div>
-                  <div className="text-xs text-slate-500 mb-1">Starter</div>
-                  <div className="text-sm md:text-lg font-bold text-white">{fmt(60000)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 mb-1">+ Nómina</div>
-                  <div className="text-sm md:text-lg font-bold text-amber-400">+{fmt(10000)}</div>
-                </div>
-                <div className="border-l border-slate-700">
-                  <div className="text-xs text-slate-500 mb-1">Total sin IVA</div>
-                  <div className="text-sm md:text-lg font-bold text-green-400">{fmt(70000)}</div>
-                  <div className="text-[10px] text-slate-600">{fmt(81200)} con IVA</div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -823,7 +716,7 @@ export default function DABSClient() {
                   {[
                     { num: 1, text: "Silvia revisa y aprueba esta propuesta", detail: "Cualquier duda se resuelve antes de avanzar" },
                     { num: 2, text: "Confirmación formal de aceptación", detail: "Correo o WhatsApp a Fer" },
-                    { num: 3, text: "Pago 1 — $40,000 MXN", detail: "Transferencia bancaria. Netlab emite factura." },
+                    { num: 3, text: "Pago 1 — $20,000 MXN", detail: "Transferencia bancaria. Netlab emite factura." },
                     { num: 4, text: "Netlab agenda el Kick Off", detail: "Reunión formal de inicio con el equipo de Grupo DABS" },
                     { num: 5, text: "El proyecto inicia", detail: "De aquí al Go Live: ~10 semanas" },
                   ].map((step) => (
@@ -958,8 +851,7 @@ export default function DABSClient() {
                   <div className="flex-1 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded text-center">
                     <div className="text-[10px] text-yellow-400/70 font-mono uppercase tracking-widest">Fase 2</div>
                     <div className="text-xs text-white font-semibold mt-1">Canales Digitales</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">Meli · Ecommerce · Nómina</div>
-                  </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Meli · Ecommerce · Nómina</div>                  </div>
                   <ArrowRight className="w-4 h-4 text-slate-600 flex-shrink-0 mx-auto rotate-90 sm:rotate-0" />
                   <div className="flex-1 p-3 bg-green-500/5 border border-green-500/20 rounded text-center">
                     <div className="text-[10px] text-green-400/70 font-mono uppercase tracking-widest">Fase 3+</div>
