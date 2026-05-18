@@ -594,7 +594,7 @@ export default function DABSClient() {
         </div>
       </section>
 
-      {/* ═══ EXCLUSIONES ═══ */}}
+      {/* ═══ EXCLUSIONES ═══ */}
       <section className="py-12 md:py-20 border-t border-slate-800">
         <div className="container px-4 mx-auto max-w-6xl">
           <TerminalFrame>
