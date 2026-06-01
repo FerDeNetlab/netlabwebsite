@@ -16,7 +16,7 @@ export default function PendientesPage() {
   if (status === 'loading' || !session) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <p className="text-green-400 font-mono animate-pulse">Cargando...</p>
+        <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
