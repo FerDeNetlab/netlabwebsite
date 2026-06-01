@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS director_todos (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Pendientes enviados por terceros vía /pendientesfer
+-- Pendientes enviados por terceros via /pendientesfer
 CREATE TABLE IF NOT EXISTS pendientes_externos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nombre TEXT NOT NULL,
@@ -22,4 +22,13 @@ CREATE TABLE IF NOT EXISTS pendientes_externos (
   asunto TEXT NOT NULL,
   descripcion TEXT,
   fecha_deseada DATE,
-  estado TEXT NOT NULL   estado TEXT NOT NULL   estado TEXT NOT NULL   estado TEXT NOT NULL   estado TEXT NOT NULL   estado T,  estado TEXT NOT NULL   estado TL   estado TEXT NOT NULL   estado TEXT NOTNOT   estado TEXT NOT NULL   estado TEXT NOT NULL  TS  estado TEXT NOT s_esta  estado TEXT NOTdos  estado TEXT NOT NULL   estado ISTS idx_dire  estado TEXT NOT NULL   estado TEXT NOT NULL   estado TEXT NOT NULL   estado TEXT NOT ntes  estado TEXT NOT NULL   estado TEXT os(est  estado TEXT NOT NULL   estado TEXT NOT NULL   ext  estado TEXT NOT NULL   estado Ts(created_at DESC);
+  estado TEXT NOT NULL DEFAULT 'nuevo'
+    CHECK (estado IN ('nuevo','visto','agendado','completado')),
+  notas_director TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_director_todos_estado ON director_todos(estado);
+CREATE INDEX IF NOT EXISTS idx_pendientes_externos_estado ON pendientes_externos(estado);
+CREATE INDEX IF NOT EXISTS idx_pendientes_externos_created ON pendientes_externos(created_at DESC);

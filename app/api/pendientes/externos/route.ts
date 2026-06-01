@@ -23,11 +23,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'nombre y asunto son obligatorios' }, { status: 400 })
   }
 
-  const rows = (await sql`
-    INSERT INTO pendientes_externos (nombre, empresa, asunto, descripcion, fecha_deseada)
-    VALUES (${nombre}, ${empresa}, ${asunto}, ${descripcion}, ${fechaDeseada})
-    RETURNING id, created_at
-  `) as { id: string; created_at: string }[]
+  let rows: { id: string; created_at: string }[]
+  try {
+    rows = (await sql`
+      INSERT INTO pendientes_externos (nombre, empresa, asunto, descripcion, fecha_deseada)
+      VALUES (${nombre}, ${empresa}, ${asunto}, ${descripcion}, ${fechaDeseada})
+      RETURNING id, created_at
+    `) as { id: string; created_at: string }[]
+  } catch (err) {
+    console.error('[pendientes/externos POST]', err)
+    return NextResponse.json({ error: 'Error al guardar el pendiente' }, { status: 500 })
+  }
 
   const chatId = process.env.TELEGRAM_DIRECTOR_CHAT_ID ?? '8335831704'
   const empresaStr = empresa ? ' (' + empresa + ')' : ''
