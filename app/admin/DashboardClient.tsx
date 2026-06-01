@@ -4,8 +4,6 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { TerminalFrame } from '@/components/ui/terminal-frame'
-import { Button } from '@/components/ui/button'
 import {
   Users,
   DollarSign,
@@ -18,7 +16,6 @@ import {
   UserCog
 } from 'lucide-react'
 import Image from 'next/image'
-import { Navbar } from '@/components/navbar'
 
 interface DashboardStats {
   totalClientes: number
@@ -150,130 +147,129 @@ export default function DashboardClient({ session }: DashboardClientProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 pt-4 pb-[env(safe-area-inset-bottom,16px)] pb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+    <div
+      className="min-h-screen bg-[#0a0a0a]"
+      style={{ paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}
+    >
+      {/* Top bar */}
+      <div
+        className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-green-500/20 px-4 flex items-center justify-between"
+        style={{ paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: '12px' }}
+      >
+        <Image
+          src="/logo-netlab.png"
+          alt="Netlab"
+          width={130}
+          height={40}
+          className="h-8 w-auto"
+        />
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 text-gray-400 active:text-red-400 transition-colors py-2 px-1"
         >
-          <TerminalFrame title="root@netlab:~/dashboard">
-            <div className="p-4 md:p-6 space-y-6">
-              {/* Header */}
-              <div className="border-b border-green-500/20 pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <Image
-                    src="/logo-netlab.png"
-                    alt="Netlab"
-                    width={120}
-                    height={36}
-                    className="h-8 w-auto"
-                  />
-                  <Button
-                    onClick={handleLogout}
-                    variant="outline"
-                    className="font-mono gap-1.5 text-xs bg-transparent px-3 py-2 h-auto"
-                    size="sm"
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                    Salir
-                  </Button>
-                </div>
-                <h1 className="text-xl md:text-3xl font-mono text-green-400 mb-1">
-                  Dashboard
-                </h1>
-                <p className="text-gray-400 font-mono text-xs">
-                  {new Date().toLocaleDateString('es-MX', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
+          <LogOut className="h-5 w-5" />
+          <span className="text-sm font-mono">Salir</span>
+        </button>
+      </div>
 
-              {/* Stats Grid — 2 cols en mobile */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {statCards.map((stat, index) => (
-                  <motion.div
-                    key={stat.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    onClick={() => router.push(stat.path)}
-                    className="bg-zinc-900/50 border border-green-500/20 rounded-xl p-4 active:scale-95 transition-all cursor-pointer"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-gray-400 text-xs font-mono mb-1 leading-tight">
-                          {stat.title}
-                        </p>
-                        <p className={`text-2xl font-bold font-mono ${stat.color}`}>
-                          {stat.value}
-                        </p>
-                      </div>
-                      <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Módulos Principales — grid 2x3 en mobile */}
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
-                {modules.map((module, index) => (
-                  <motion.div
-                    key={module.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.3 + index * 0.07 }}
-                    onClick={() => router.push(module.path)}
-                    className={`bg-zinc-900/50 border ${module.borderColor} rounded-xl p-4 active:scale-95 transition-all cursor-pointer`}
-                  >
-                    <div className="flex flex-col items-start gap-3">
-                      <div className={`p-3 rounded-xl ${module.bgColor}`}>
-                        <module.icon className={`h-6 w-6 ${module.color}`} />
-                      </div>
-                      <div>
-                        <h3 className={`text-sm font-bold font-mono ${module.color} mb-0.5`}>
-                          {module.title}
-                        </h3>
-                        <p className="text-gray-500 text-xs font-mono leading-tight">
-                          {module.description}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-zinc-900/50 border border-purple-500/20 rounded-xl p-4">
-                <h2 className="text-sm font-mono text-purple-400 mb-3 flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Acciones Rápidas
-                </h2>
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    { label: 'Nuevo Cliente', path: '/admin/clientes/nuevo' },
-                    { label: 'Nueva Cotización', path: '/admin/cotizaciones/nueva' },
-                    { label: 'Nueva Oportunidad', path: '/admin/crm' },
-                  ].map((action) => (
-                    <button
-                      key={action.label}
-                      onClick={() => router.push(action.path)}
-                      className="bg-zinc-800/50 active:bg-zinc-800 border border-gray-700 active:border-green-500/50 rounded-lg px-4 py-3.5 text-left text-sm font-mono text-gray-300 active:text-green-400 transition-all"
-                    >
-                      + {action.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </TerminalFrame>
+      <div className="px-4 pt-5 space-y-6">
+        {/* Saludo */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h1 className="text-2xl font-bold font-mono text-white">
+            Hola, {session.user?.name?.split(' ')[0] ?? 'Admin'} 👋
+          </h1>
+          <p className="text-gray-500 font-mono text-sm mt-0.5">
+            {new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         </motion.div>
+
+        {/* Stats — 3 chips horizontales */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.08 }}
+          className="grid grid-cols-3 gap-2"
+        >
+          {statCards.map((stat) => (
+            <button
+              key={stat.title}
+              onClick={() => router.push(stat.path)}
+              className={`bg-zinc-900 border border-zinc-800 active:border-zinc-600 rounded-2xl p-3 text-left active:scale-95 transition-all`}
+            >
+              <div className={`p-2 rounded-xl ${stat.bgColor} w-fit mb-2`}>
+                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              </div>
+              <p className={`text-2xl font-bold font-mono ${stat.color}`}>{stat.value}</p>
+              <p className="text-gray-500 text-[10px] font-mono leading-tight mt-0.5">{stat.title}</p>
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Módulos — lista de filas grandes */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
+          <p className="text-gray-500 text-xs font-mono uppercase tracking-widest mb-3 px-1">Módulos</p>
+          <div className="space-y-2">
+            {modules.map((module, index) => (
+              <motion.button
+                key={module.title}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.18 + index * 0.05 }}
+                onClick={() => router.push(module.path)}
+                className={`w-full flex items-center gap-4 bg-zinc-900 border ${module.borderColor} rounded-2xl px-4 py-4 active:scale-[0.98] transition-all text-left`}
+              >
+                <div className={`p-3 rounded-xl ${module.bgColor} shrink-0`}>
+                  <module.icon className={`h-7 w-7 ${module.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-base font-bold font-mono ${module.color}`}>{module.title}</p>
+                  <p className="text-gray-500 text-xs font-mono leading-snug mt-0.5 truncate">{module.description}</p>
+                </div>
+                <svg className="h-5 w-5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+        >
+          <p className="text-gray-500 text-xs font-mono uppercase tracking-widest mb-3 px-1">Acciones Rápidas</p>
+          <div className="grid grid-cols-1 gap-2">
+            {[
+              { label: 'Nuevo Cliente', path: '/admin/clientes/nuevo', icon: Users },
+              { label: 'Nueva Cotización', path: '/admin/cotizaciones/nueva', icon: ClipboardList },
+              { label: 'Nueva Oportunidad', path: '/admin/crm', icon: TrendingUp },
+            ].map((action) => (
+              <button
+                key={action.label}
+                onClick={() => router.push(action.path)}
+                className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 active:border-green-500/40 rounded-2xl px-4 py-4 active:scale-[0.98] transition-all"
+              >
+                <div className="p-2 rounded-lg bg-green-400/10 shrink-0">
+                  <Plus className="h-5 w-5 text-green-400" />
+                </div>
+                <span className="text-sm font-mono text-gray-300">{action.label}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Spacer bottom */}
+        <div className="h-4" />
       </div>
     </div>
   )
