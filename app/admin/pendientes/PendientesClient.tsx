@@ -316,7 +316,7 @@ function ExternoCard({
           {(ext.fecha_deseada || true) && (
             <div>
               <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Agregar al calendario</p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="date"
                   defaultValue={ext.fecha_deseada ? ext.fecha_deseada.slice(0, 10) : ''}
@@ -325,13 +325,13 @@ function ExternoCard({
                     ;(e.target as HTMLInputElement & { _fecha: string })._fecha = dateVal
                   }}
                   id={'fecha-ics-' + ext.id}
-                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50 w-36"
+                  className="min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50"
                 />
                 <input
                   type="time"
                   value={horaIcs}
                   onChange={(e) => setHoraIcs(e.target.value)}
-                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50 w-28"
+                  className="w-28 min-w-0 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50"
                 />
                 <button
                   onClick={() => {
