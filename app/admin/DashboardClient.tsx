@@ -151,39 +151,39 @@ export default function DashboardClient({ session }: DashboardClientProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-8 pb-16">
+      <div className="container mx-auto px-3 pt-4 pb-[env(safe-area-inset-bottom,16px)] pb-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <TerminalFrame title="root@netlab:~/dashboard">
-            <div className="p-6 space-y-8">
+            <div className="p-4 md:p-6 space-y-6">
               {/* Header */}
               <div className="border-b border-green-500/20 pb-4">
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <Image
                     src="/logo-netlab.png"
                     alt="Netlab"
-                    width={150}
-                    height={45}
-                    className="h-10 w-auto"
+                    width={120}
+                    height={36}
+                    className="h-8 w-auto"
                   />
                   <Button
                     onClick={handleLogout}
                     variant="outline"
-                    className="font-mono gap-2 text-sm bg-transparent"
+                    className="font-mono gap-1.5 text-xs bg-transparent px-3 py-2 h-auto"
                     size="sm"
                   >
-                    <LogOut className="h-4 w-4" />
-                    Cerrar Sesión
+                    <LogOut className="h-3.5 w-3.5" />
+                    Salir
                   </Button>
                 </div>
-                <h1 className="text-3xl font-mono text-green-400 mb-2">
-                  Dashboard - ERP Netlab
+                <h1 className="text-xl md:text-3xl font-mono text-green-400 mb-1">
+                  Dashboard
                 </h1>
-                <p className="text-gray-400 font-mono text-sm">
-                  Panel de control interno • {new Date().toLocaleDateString('es-MX', {
+                <p className="text-gray-400 font-mono text-xs">
+                  {new Date().toLocaleDateString('es-MX', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -192,8 +192,8 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                 </p>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Stats Grid — 2 cols en mobile */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {statCards.map((stat, index) => (
                   <motion.div
                     key={stat.title}
@@ -201,45 +201,45 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     onClick={() => router.push(stat.path)}
-                    className="bg-zinc-900/50 border border-green-500/20 rounded-lg p-6 hover:border-green-500/40 transition-all cursor-pointer hover:scale-105"
+                    className="bg-zinc-900/50 border border-green-500/20 rounded-xl p-4 active:scale-95 transition-all cursor-pointer"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <p className="text-gray-400 text-sm font-mono mb-2">
+                        <p className="text-gray-400 text-xs font-mono mb-1 leading-tight">
                           {stat.title}
                         </p>
-                        <p className={`text-3xl font-bold font-mono ${stat.color}`}>
+                        <p className={`text-2xl font-bold font-mono ${stat.color}`}>
                           {stat.value}
                         </p>
                       </div>
-                      <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                        <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                      <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              {/* Módulos Principales */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Módulos Principales — grid 2x3 en mobile */}
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
                 {modules.map((module, index) => (
                   <motion.div
                     key={module.title}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+                    transition={{ duration: 0.5, delay: 0.3 + index * 0.07 }}
                     onClick={() => router.push(module.path)}
-                    className={`bg-zinc-900/50 border ${module.borderColor} rounded-lg p-6 hover:border-opacity-60 transition-all cursor-pointer hover:scale-105`}
+                    className={`bg-zinc-900/50 border ${module.borderColor} rounded-xl p-4 active:scale-95 transition-all cursor-pointer`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-4 rounded-lg ${module.bgColor}`}>
-                        <module.icon className={`h-8 w-8 ${module.color}`} />
+                    <div className="flex flex-col items-start gap-3">
+                      <div className={`p-3 rounded-xl ${module.bgColor}`}>
+                        <module.icon className={`h-6 w-6 ${module.color}`} />
                       </div>
                       <div>
-                        <h3 className={`text-xl font-mono ${module.color} mb-1`}>
+                        <h3 className={`text-sm font-bold font-mono ${module.color} mb-0.5`}>
                           {module.title}
                         </h3>
-                        <p className="text-gray-400 text-sm font-mono">
+                        <p className="text-gray-500 text-xs font-mono leading-tight">
                           {module.description}
                         </p>
                       </div>
@@ -249,12 +249,12 @@ export default function DashboardClient({ session }: DashboardClientProps) {
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-zinc-900/50 border border-purple-500/20 rounded-lg p-6">
-                <h2 className="text-xl font-mono text-purple-400 mb-4">
-                  <Plus className="h-5 w-5 inline mr-2" />
+              <div className="bg-zinc-900/50 border border-purple-500/20 rounded-xl p-4">
+                <h2 className="text-sm font-mono text-purple-400 mb-3 flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
                   Acciones Rápidas
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-2">
                   {[
                     { label: 'Nuevo Cliente', path: '/admin/clientes/nuevo' },
                     { label: 'Nueva Cotización', path: '/admin/cotizaciones/nueva' },
@@ -263,14 +263,13 @@ export default function DashboardClient({ session }: DashboardClientProps) {
                     <button
                       key={action.label}
                       onClick={() => router.push(action.path)}
-                      className="bg-zinc-800/50 hover:bg-zinc-800 border border-gray-700 hover:border-green-500/50 rounded px-4 py-3 text-center text-sm font-mono text-gray-300 hover:text-green-400 transition-all"
+                      className="bg-zinc-800/50 active:bg-zinc-800 border border-gray-700 active:border-green-500/50 rounded-lg px-4 py-3.5 text-left text-sm font-mono text-gray-300 active:text-green-400 transition-all"
                     >
-                      {action.label}
+                      + {action.label}
                     </button>
                   ))}
                 </div>
               </div>
-
 
             </div>
           </TerminalFrame>
