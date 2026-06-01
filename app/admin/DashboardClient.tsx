@@ -163,9 +163,10 @@ export default function DashboardClient({ session }: DashboardClientProps) {
     >
       {/* Top bar */}
       <div
-        className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-green-500/20 px-4 flex items-center justify-between"
+        className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur border-b border-green-500/20"
         style={{ paddingTop: 'max(12px, env(safe-area-inset-top))', paddingBottom: '12px' }}
       >
+        <div className="max-w-3xl mx-auto px-4 flex items-center justify-between">
         <Image
           src="/logo-netlab.png"
           alt="Netlab"
@@ -180,9 +181,10 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           <LogOut className="h-5 w-5" />
           <span className="text-sm font-mono">Salir</span>
         </button>
+        </div>
       </div>
 
-      <div className="px-4 pt-5 space-y-6">
+      <div className="px-4 pt-5 space-y-6 max-w-3xl mx-auto">
         {/* Saludo */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -202,7 +204,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.08 }}
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-3 gap-3"
         >
           {statCards.map((stat) => (
             <button
@@ -226,7 +228,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           transition={{ duration: 0.4, delay: 0.15 }}
         >
           <p className="text-gray-500 text-xs font-mono uppercase tracking-widest mb-3 px-1">Módulos</p>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {modules.map((module, index) => (
               <motion.button
                 key={module.title}
@@ -258,7 +260,7 @@ export default function DashboardClient({ session }: DashboardClientProps) {
           transition={{ duration: 0.4, delay: 0.35 }}
         >
           <p className="text-gray-500 text-xs font-mono uppercase tracking-widest mb-3 px-1">Acciones Rápidas</p>
-          <div className="grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { label: 'Nuevo Cliente', path: '/admin/clientes/nuevo', icon: Users },
               { label: 'Nueva Cotización', path: '/admin/cotizaciones/nueva', icon: ClipboardList },
