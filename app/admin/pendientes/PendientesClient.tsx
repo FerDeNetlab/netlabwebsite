@@ -207,6 +207,12 @@ function ExternoCard({
   const [open, setOpen] = useState(ext.estado === 'nuevo')
   const [notas, setNotas] = useState(ext.notas_director ?? '')
   const [saving, setSaving] = useState(false)
+  const [horaIcs, setHoraIcs] = useState(() => {
+    if (ext.fecha_deseada && ext.fecha_deseada.includes('T')) {
+      return ext.fecha_deseada.slice(11, 16)
+    }
+    return '10:00'
+  })
 
   const saveNotas = async () => {
     setSaving(true)
@@ -307,14 +313,40 @@ function ExternoCard({
           </div>
 
           {/* ICS */}
-          {ext.fecha_deseada && (
-            <button
-              onClick={() => onSendIcs(ext)}
-              className="flex items-center gap-2 text-xs font-mono text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all w-fit"
-            >
-              <CalendarPlus className="w-3.5 h-3.5" />
-              Enviar .ics al email
-            </button>
+          {(ext.fecha_deseada || true) && (
+            <div>
+              <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-2">Agregar al calendario</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  defaultValue={ext.fecha_deseada ? ext.fecha_deseada.slice(0, 10) : ''}
+                  onChange={(e) => {
+                    const dateVal = e.target.value
+                    ;(e.target as HTMLInputElement & { _fecha: string })._fecha = dateVal
+                  }}
+                  id={'fecha-ics-' + ext.id}
+                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50 w-36"
+                />
+                <input
+                  type="time"
+                  value={horaIcs}
+                  onChange={(e) => setHoraIcs(e.target.value)}
+                  className="bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-blue-500/50 w-28"
+                />
+                <button
+                  onClick={() => {
+                    const dateInput = document.getElementById('fecha-ics-' + ext.id) as HTMLInputElement | null
+                    const dateVal = dateInput?.value || ext.fecha_deseada?.slice(0, 10) || ''
+                    if (!dateVal) { alert('Selecciona una fecha'); return }
+                    onSendIcs({ ...ext, fecha_deseada: dateVal + 'T' + horaIcs + ':00' })
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-mono text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/20 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                >
+                  <CalendarPlus className="w-3.5 h-3.5" />
+                  Enviar .ics
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -563,9 +595,9 @@ export default function PendientesClient() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-1.5">Fecha limite</p>
+                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mb-1.5">Fecha y hora limite</p>
                     <input
-                      type="date"
+                      type="datetime-local"
                       value={newFecha}
                       onChange={(e) => setNewFecha(e.target.value)}
                       className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-2 text-white font-mono text-xs focus:outline-none focus:border-amber-500/50"

@@ -10,6 +10,7 @@ export default function PendientesferPage() {
     asunto: '',
     descripcion: '',
     fecha_deseada: '',
+    hora_deseada: '',
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -29,7 +30,14 @@ export default function PendientesferPage() {
       const res = await fetch('/api/pendientes/externos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          fecha_deseada: form.fecha_deseada
+            ? form.hora_deseada
+              ? form.fecha_deseada + 'T' + form.hora_deseada + ':00'
+              : form.fecha_deseada
+            : '',
+        }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -139,16 +147,25 @@ export default function PendientesferPage() {
           />
         </div>
 
-        {/* Fecha deseada */}
+        {/* Fecha y hora deseada */}
         <div>
-          <label className="block text-xs font-mono text-zinc-400 mb-1">Fecha deseada</label>
-          <input
-            type="date"
-            name="fecha_deseada"
-            value={form.fecha_deseada}
-            onChange={handleChange}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-green-500 transition-colors"
-          />
+          <label className="block text-xs font-mono text-zinc-400 mb-1">Fecha y hora deseada</label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="date"
+              name="fecha_deseada"
+              value={form.fecha_deseada}
+              onChange={handleChange}
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-green-500 transition-colors"
+            />
+            <input
+              type="time"
+              name="hora_deseada"
+              value={form.hora_deseada}
+              onChange={handleChange}
+              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-green-500 transition-colors"
+            />
+          </div>
         </div>
 
         {error && (
