@@ -53,7 +53,7 @@ export default function PendientesferPage() {
             </svg>
           </div>
           <h2 className="text-xl font-mono text-white mb-2">Pendiente enviado</h2>
-          <p className="text-zinc-400 font-mono text-sm">Luis recibio tu mensaje y lo revisara pronto.</p>
+          <p className="text-zinc-400 font-mono text-sm">Fer recibio tu mensaje y lo revisara pronto.</p>
         </div>
       </div>
     )
@@ -71,9 +71,9 @@ export default function PendientesferPage() {
           className="mx-auto mb-4 object-contain"
           priority
         />
-        <h1 className="text-xl font-mono text-white">Enviar pendiente a Luis</h1>
+        <h1 className="text-xl font-mono text-white">Enviar pendiente a Fer</h1>
         <p className="text-zinc-400 font-mono text-sm mt-1">
-          Deja aqui lo que necesitas que Luis atienda.
+          Deja aqui los pendientes que necesitas que el Fer te ayude a resolver.
         </p>
       </div>
 
