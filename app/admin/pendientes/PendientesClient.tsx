@@ -676,7 +676,7 @@ export default function PendientesClient() {
               </div>
             )}
 
-            {/* List */}
+            {/* List agrupada por estado */}
             {externos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-14 gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
@@ -686,15 +686,39 @@ export default function PendientesClient() {
                 <p className="text-zinc-700 font-mono text-xs">Comparte el link de arriba</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {externos.map((e) => (
-                  <ExternoCard
-                    key={e.id}
-                    ext={e}
-                    onUpdate={updateExterno}
-                    onSendIcs={sendIcsFromExterno}
-                  />
-                ))}
+              <div className="space-y-6">
+                {(
+                  [
+                    { key: 'nuevo',     label: 'Nuevos',     dot: 'bg-blue-500' },
+                    { key: 'visto',     label: 'Vistos',     dot: 'bg-yellow-500' },
+                    { key: 'agendado',  label: 'Agendados',  dot: 'bg-purple-500' },
+                    { key: 'completado',label: 'Completados',dot: 'bg-green-500' },
+                  ] as const
+                ).map(({ key, label, dot }) => {
+                  const grupo = externos.filter((e) => e.estado === key)
+                  if (!grupo.length) return null
+                  return (
+                    <div key={key}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`w-2 h-2 rounded-full ${dot}`} />
+                        <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                          {label} ({grupo.length})
+                        </p>
+                        <div className="flex-1 h-px bg-zinc-800" />
+                      </div>
+                      <div className="space-y-2">
+                        {grupo.map((e) => (
+                          <ExternoCard
+                            key={e.id}
+                            ext={e}
+                            onUpdate={updateExterno}
+                            onSendIcs={sendIcsFromExterno}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
