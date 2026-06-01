@@ -20,12 +20,19 @@ function getTransporter() {
     return transporterCache
 }
 
+export interface EmailAttachment {
+    filename: string
+    content: string | Buffer
+    contentType: string
+}
+
 export interface EmailMessage {
     to: string | string[]
     subject: string
     html: string
     text?: string
     replyTo?: string
+    attachments?: EmailAttachment[]
 }
 
 export async function sendEmail(msg: EmailMessage): Promise<{ ok: boolean; error?: string; id?: string }> {
@@ -41,6 +48,11 @@ export async function sendEmail(msg: EmailMessage): Promise<{ ok: boolean; error
             html: msg.html,
             text: msg.text || msg.html.replace(/<[^>]+>/g, ''),
             replyTo: msg.replyTo,
+            attachments: msg.attachments?.map(a => ({
+                filename: a.filename,
+                content: a.content,
+                contentType: a.contentType,
+            })),
         })
         return { ok: true, id: info.messageId }
     } catch (err) {

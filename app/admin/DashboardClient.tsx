@@ -13,7 +13,8 @@ import {
   ClipboardList,
   Package,
   Plus,
-  UserCog
+  UserCog,
+  CheckSquare
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -143,6 +144,15 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       bgColor: 'bg-orange-400/10',
       borderColor: 'border-orange-500/20',
       path: '/admin/rh',
+    },
+    {
+      title: 'Pendientes',
+      description: 'Mis tareas y pendientes de otros',
+      icon: CheckSquare,
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-400/10',
+      borderColor: 'border-amber-500/20',
+      path: '/admin/pendientes',
     },
   ]
 
