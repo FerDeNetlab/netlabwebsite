@@ -112,18 +112,17 @@ export default function ProdetecsIAClient() {
                   </div>
 
                   <motion.h1
-                    className="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight"
+                    className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.8 }}
                   >
-                    Odoo Enterprise tiene los datos.
-                    <br />
+                    Odoo Enterprise tiene los datos.{" "}
                     <span className="text-blue-400">Ya es hora de que Direccion pueda leerlos.</span>
                   </motion.h1>
 
                   <motion.p
-                    className="text-lg md:text-xl text-slate-400 max-w-3xl leading-relaxed"
+                    className="text-sm md:text-xl text-slate-400 max-w-3xl leading-relaxed"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.5 }}
@@ -173,7 +172,7 @@ export default function ProdetecsIAClient() {
                 <span className="text-lg">cat prodetecs-situacion.txt</span>
               </div>
               <div className="space-y-6 text-slate-300 leading-relaxed">
-                <p className="text-xl font-semibold text-white">
+                <p className="text-base md:text-xl font-semibold text-white">
                   Prodetecs opera con Odoo Enterprise. El problema es que Odoo no esta entregando los dashboards y las metricas que Direccion necesita para tomar decisiones en tiempo real.
                 </p>
                 <div className="grid md:grid-cols-2 gap-8 mt-8">
@@ -294,11 +293,11 @@ export default function ProdetecsIAClient() {
             <p className="text-slate-400 text-base md:text-lg">Servicio mensual recurrente. Tokens incluidos. Sin sorpresas.</p>
           </div>
           <div className="max-w-3xl mx-auto space-y-6">
-            <div className="p-8 bg-gradient-to-br from-blue-500/10 to-slate-900 border-2 border-blue-500/40 rounded-xl">
+            <div className="p-5 md:p-8 bg-gradient-to-br from-blue-500/10 to-slate-900 border-2 border-blue-500/40 rounded-xl">
               <div className="text-[10px] text-blue-400 font-mono uppercase tracking-widest mb-4">Prodetecs IA Analytics Layer — Mensual Recurrente</div>
               <div className="text-center mb-8">
                 <div className="text-sm text-slate-500 font-mono mb-2">Inversion mensual</div>
-                <div className="text-5xl font-bold text-blue-400">{fmt(3700)}</div>
+                <div className="text-4xl md:text-5xl font-bold text-blue-400">{fmt(3700)}</div>
                 <div className="text-slate-500 text-sm mt-1">MXN sin IVA</div>
                 <div className="text-2xl font-bold text-slate-300 mt-2">{fmt(4292)} <span className="text-base text-slate-500">MXN con IVA</span></div>
               </div>
@@ -343,7 +342,7 @@ export default function ProdetecsIAClient() {
             </div>
             <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-xl">
               <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-4">Anexo A · Cotizacion formal</div>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto"><table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800">
                     <th className="text-left text-slate-500 font-mono pb-2 font-normal">Concepto</th>
@@ -364,7 +363,7 @@ export default function ProdetecsIAClient() {
                     <td className="py-3 text-right text-blue-400 font-bold">{fmt(4292)} MXN</td>
                   </tr>
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         </div>
@@ -413,8 +412,8 @@ export default function ProdetecsIAClient() {
           <TerminalFrame className="border-blue-500/30">
             <div className="text-center space-y-6 md:space-y-8 py-6 md:py-8">
               <div className="flex items-center justify-center gap-2 md:gap-3 text-green-500 font-mono mb-6 flex-wrap text-xs md:text-lg">
-                <span className="text-lg">root@netlab:~/prodetecs#</span>
-                <span className="text-lg">siguiente-paso</span>
+                <span className="break-all">root@netlab:~/prodetecs#</span>
+                <span>siguiente-paso</span>
                 <span className="w-2.5 h-5 bg-green-500 animate-pulse inline-block align-middle ml-1" />
               </div>
               <h2 className="text-3xl md:text-4xl font-bold text-white">Empezamos?</h2>
