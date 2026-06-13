@@ -80,7 +80,7 @@ export default function IngresosPage() {
 
     const fetchCfdisDisp = async () => {
         setLoadingCfdisDisp(true)
-        const r = await fetch('/api/finanzas/cfdi?tipo=emitida')
+        const r = await fetch(`/api/finanzas/cfdi?tipo=emitida&mes=${mes}&anio=${anio}`)
         const d = await r.json()
         setCfdisDisp(d.cfdis ?? d ?? [])
         setLoadingCfdisDisp(false)
@@ -88,7 +88,7 @@ export default function IngresosPage() {
 
     const fetchCfdisTab = async () => {
         setLoadingCfdisTab(true)
-        const r = await fetch('/api/finanzas/cfdi?tipo=emitida')
+        const r = await fetch(`/api/finanzas/cfdi?tipo=emitida&mes=${mes}&anio=${anio}`)
         const d = await r.json()
         setCfdisTab(d.cfdis ?? d ?? [])
         setLoadingCfdisTab(false)
@@ -104,7 +104,8 @@ export default function IngresosPage() {
     const abrirPanelCfdi = (mov: MovBancario) => {
         setLigandoMov(mov)
         setSearchCfdiPanel('')
-        if (cfdisDisp.length === 0) fetchCfdisDisp()
+        setCfdisDisp([])
+        fetchCfdisDisp()
     }
 
     const ligarCfdi = async (cfdiId: string) => {

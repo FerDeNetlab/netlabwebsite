@@ -13,27 +13,48 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const estado = searchParams.get('estado') // 'sin_asignar' | 'asignado' | null = todos
+    const tipo = searchParams.get('tipo')     // 'emitida' | 'recibida' | null = todos
+    const mesRaw = searchParams.get('mes')
+    const anioRaw = searchParams.get('anio')
+    const mesNum  = mesRaw  ? parseInt(mesRaw,  10) : null
+    const anioNum = anioRaw ? parseInt(anioRaw, 10) : null
+    const conMes  = mesNum !== null && anioNum !== null && !isNaN(mesNum) && !isNaN(anioNum)
 
-    const rows = estado
-      ? await sql`
-          SELECT c.*,
-            f.numero_factura, f.concepto AS factura_concepto,
-            g.concepto AS gasto_concepto, g.proveedor AS gasto_proveedor
-          FROM cfdis c
-          LEFT JOIN facturas f ON c.factura_id = f.id
-          LEFT JOIN gastos   g ON c.gasto_id   = g.id
-          WHERE c.estado = ${estado}
-          ORDER BY c.created_at DESC
-        `
-      : await sql`
-          SELECT c.*,
-            f.numero_factura, f.concepto AS factura_concepto,
-            g.concepto AS gasto_concepto, g.proveedor AS gasto_proveedor
-          FROM cfdis c
-          LEFT JOIN facturas f ON c.factura_id = f.id
-          LEFT JOIN gastos   g ON c.gasto_id   = g.id
-          ORDER BY c.created_at DESC
-        `
+    const SELECT = `
+      SELECT c.id, c.uuid_sat, c.tipo_netlab, c.tipo_comprobante, c.fecha, c.fecha_timbrado,
+             c.emisor_rfc, c.emisor_nombre, c.receptor_rfc, c.receptor_nombre,
+             c.subtotal, c.total, c.moneda, c.estado, c.xml_nombre, c.xml_url,
+             c.factura_id, c.gasto_id, c.created_at,
+             f.numero_factura, f.concepto AS factura_concepto,
+             g.concepto AS gasto_concepto, g.proveedor AS gasto_proveedor
+      FROM cfdis c
+      LEFT JOIN facturas f ON c.factura_id = f.id
+      LEFT JOIN gastos   g ON c.gasto_id   = g.id
+    `
+
+    let rows
+    if (tipo && conMes) {
+      rows = await sql`${sql.unsafe(SELECT)}
+        WHERE c.tipo_netlab = ${tipo}
+          AND EXTRACT(MONTH FROM c.fecha) = ${mesNum!}
+          AND EXTRACT(YEAR  FROM c.fecha) = ${anioNum!}
+        ORDER BY c.fecha DESC NULLS LAST, c.created_at DESC`
+    } else if (tipo && estado) {
+      rows = await sql`${sql.unsafe(SELECT)}
+        WHERE c.tipo_netlab = ${tipo} AND c.estado = ${estado}
+        ORDER BY c.fecha DESC NULLS LAST, c.created_at DESC`
+    } else if (tipo) {
+      rows = await sql`${sql.unsafe(SELECT)}
+        WHERE c.tipo_netlab = ${tipo}
+        ORDER BY c.fecha DESC NULLS LAST, c.created_at DESC`
+    } else if (estado) {
+      rows = await sql`${sql.unsafe(SELECT)}
+        WHERE c.estado = ${estado}
+        ORDER BY c.fecha DESC NULLS LAST, c.created_at DESC`
+    } else {
+      rows = await sql`${sql.unsafe(SELECT)}
+        ORDER BY c.fecha DESC NULLS LAST, c.created_at DESC`
+    }
 
     return NextResponse.json({ cfdis: rows })
   } catch (error) {
