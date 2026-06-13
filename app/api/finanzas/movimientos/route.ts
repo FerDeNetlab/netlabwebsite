@@ -2,239 +2,81 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { auth } from '@/auth'
 
+// GET: movimientos bancarios del mes filtrados por tipo (abono=ingresos, cargo=gastos)
 export async function GET(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    const session = await auth()
+    if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  try {
     const { searchParams } = new URL(request.url)
-    const mes = Number(searchParams.get('mes') || new Date().getMonth() + 1)
-    const anio = Number(searchParams.get('anio') || new Date().getFullYear())
+    const tipo = searchParams.get('tipo') || 'cargo' // 'abono' | 'cargo'
+    const mes  = parseInt(searchParams.get('mes')  || String(new Date().getMonth() + 1))
+    const anio = parseInt(searchParams.get('anio') || String(new Date().getFullYear()))
 
-    const today = new Date().toISOString().split('T')[0]
-
-    const diasAtraso = (fechaVenc: string | null): number => {
-      if (!fechaVenc) return 0
-      const venc = new Date(String(fechaVenc).split('T')[0] + 'T12:00:00')
-      const hoy = new Date(today + 'T12:00:00')
-      return Math.max(0, Math.floor((hoy.getTime() - venc.getTime()) / 86400000))
-    }
-
-    // ── INGRESOS: facturas del mes ──
-    let facturas: Record<string, unknown>[] = []
-    let facturas_error: string | null = null
     try {
-      facturas = await sql`
-        SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
-          COALESCE(f.dia_mes, NULL) AS dia_mes,
-          COALESCE(f.recurrente, false) AS recurrente,
-          f.fecha_vencimiento, f.fecha_emision,
-          f.estado,
-          cl.nombre AS cliente_nombre
-        FROM facturas f
-        LEFT JOIN clientes cl ON f.cliente_id = cl.id
-        WHERE EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
-          AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
-        ORDER BY COALESCE(f.fecha_vencimiento, f.created_at) ASC
-      ` as Record<string, unknown>[]
-    } catch {
-      // Si recurrente/dia_mes no existen, intentar query básica
-      try {
-        facturas = await sql`
-          SELECT f.id, f.numero_factura, f.concepto, f.total AS monto,
-            false AS recurrente, NULL AS dia_mes,
-            f.fecha_vencimiento, f.fecha_emision,
-            f.estado,
-            cl.nombre AS cliente_nombre
-          FROM facturas f
-          LEFT JOIN clientes cl ON f.cliente_id = cl.id
-          WHERE EXTRACT(MONTH FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${mes}
-            AND EXTRACT(YEAR  FROM COALESCE(f.fecha_vencimiento, f.created_at)) = ${anio}
-          ORDER BY COALESCE(f.fecha_vencimiento, f.created_at) ASC
-        ` as Record<string, unknown>[]
-      } catch (e2) {
-        facturas_error = e2 instanceof Error ? e2.message : String(e2)
-        console.error('[ERP] facturas fallback error:', facturas_error)
-      }
-    }
+        const rows = tipo === 'abono'
+            ? await sql`
+                SELECT mb.id, mb.fecha_operacion, mb.descripcion, mb.referencia,
+                    mb.abono AS monto, mb.etiqueta, mb.categoria, mb.notas, mb.conciliado,
+                    mb.cfdi_id,
+                    ec.banco, ec.numero_cuenta,
+                    c.uuid_sat, c.emisor_rfc, c.emisor_nombre,
+                    c.receptor_rfc, c.receptor_nombre,
+                    c.total AS cfdi_total, c.xml_nombre, c.tipo_netlab AS cfdi_tipo
+                FROM movimientos_bancarios mb
+                JOIN estados_cuenta ec ON ec.id = mb.estado_cuenta_id
+                LEFT JOIN cfdis c ON c.id = mb.cfdi_id
+                WHERE mb.abono > 0
+                    AND EXTRACT(MONTH FROM mb.fecha_operacion) = ${mes}
+                    AND EXTRACT(YEAR  FROM mb.fecha_operacion) = ${anio}
+                ORDER BY mb.fecha_operacion ASC
+            `
+            : await sql`
+                SELECT mb.id, mb.fecha_operacion, mb.descripcion, mb.referencia,
+                    mb.cargo AS monto, mb.etiqueta, mb.categoria, mb.notas, mb.conciliado,
+                    mb.cfdi_id,
+                    ec.banco, ec.numero_cuenta,
+                    c.uuid_sat, c.emisor_rfc, c.emisor_nombre,
+                    c.receptor_rfc, c.receptor_nombre,
+                    c.total AS cfdi_total, c.xml_nombre, c.tipo_netlab AS cfdi_tipo
+                FROM movimientos_bancarios mb
+                JOIN estados_cuenta ec ON ec.id = mb.estado_cuenta_id
+                LEFT JOIN cfdis c ON c.id = mb.cfdi_id
+                WHERE mb.cargo > 0
+                    AND EXTRACT(MONTH FROM mb.fecha_operacion) = ${mes}
+                    AND EXTRACT(YEAR  FROM mb.fecha_operacion) = ${anio}
+                ORDER BY mb.fecha_operacion ASC
+            `
 
-    // Pagos realizados este mes
-    const pagosRealizados = await sql`
-      SELECT p.factura_id, p.monto, p.fecha_pago, p.metodo_pago
-      FROM pagos p
-      WHERE EXTRACT(MONTH FROM p.fecha_pago) = ${mes}
-        AND EXTRACT(YEAR FROM p.fecha_pago) = ${anio}
-    ` as Record<string, unknown>[]
-    const pagosPorFactura: Record<string, { total: number; fecha_pago: string; metodo: string }> = {}
-    for (const p of pagosRealizados) {
-      const fid = p.factura_id as string
-      if (!pagosPorFactura[fid]) pagosPorFactura[fid] = { total: 0, fecha_pago: '', metodo: '' }
-      pagosPorFactura[fid].total += Number(p.monto)
-      pagosPorFactura[fid].fecha_pago = (p.fecha_pago as string) || ''
-      pagosPorFactura[fid].metodo = (p.metodo_pago as string) || ''
+        return NextResponse.json({ movimientos: rows })
+    } catch (error) {
+        console.error('[movimientos] GET error:', error)
+        return NextResponse.json({ error: 'Error al obtener movimientos' }, { status: 500 })
     }
+}
 
-    // ── EGRESOS: gastos del mes ──
-    let gastos: Record<string, unknown>[] = []
-    let gastos_error: string | null = null
+// PATCH: actualizar etiqueta, categoria, notas y/o cfdi_id de un movimiento bancario
+export async function PATCH(request: Request) {
+    const session = await auth()
+    if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
     try {
-      gastos = await sql`
-        SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
-          COALESCE(g.recurrente, false) AS recurrente,
-          COALESCE(g.dia_mes, NULL) AS dia_mes,
-          g.fecha_vencimiento, g.fecha_pago,
-          g.subtipo,
-          cg.nombre AS categoria_nombre, cg.color AS categoria_color
-        FROM gastos g
-        LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
-        WHERE (
-          g.recurrente = true
-        ) OR (
-          COALESCE(g.recurrente, false) = false
-          AND EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
-          AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
-        )
-        ORDER BY COALESCE(g.recurrente, false) DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
-      ` as Record<string, unknown>[]
-    } catch {
-      // Fallback sin recurrente
-      try {
-        gastos = await sql`
-          SELECT g.id, g.concepto, g.monto, g.estado, g.proveedor,
-            false AS recurrente, NULL AS dia_mes,
-            g.fecha_vencimiento, g.fecha_pago,
-            g.subtipo,
-            cg.nombre AS categoria_nombre, cg.color AS categoria_color
-          FROM gastos g
-          LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
-          WHERE EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
-            AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
-          ORDER BY COALESCE(g.fecha_vencimiento, g.created_at) ASC
+        const { id, cfdi_id, etiqueta, categoria, notas } = await request.json()
+        if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
+
+        const [row] = await sql`
+            UPDATE movimientos_bancarios SET
+                cfdi_id   = CASE WHEN ${cfdi_id   !== undefined}::boolean THEN ${cfdi_id   ?? null}::uuid ELSE cfdi_id   END,
+                etiqueta  = CASE WHEN ${etiqueta  !== undefined}::boolean THEN ${etiqueta  ?? null}       ELSE etiqueta  END,
+                categoria = CASE WHEN ${categoria !== undefined}::boolean THEN ${categoria ?? null}       ELSE categoria END,
+                notas     = CASE WHEN ${notas     !== undefined}::boolean THEN ${notas     ?? null}       ELSE notas     END
+            WHERE id = ${id}::uuid
+            RETURNING *
         ` as Record<string, unknown>[]
-      } catch (e2) {
-        gastos_error = e2 instanceof Error ? e2.message : String(e2)
-        console.error('[ERP] gastos fallback error:', gastos_error)
-      }
+
+        return NextResponse.json(row)
+    } catch (error) {
+        console.error('[movimientos] PATCH error:', error)
+        return NextResponse.json({ error: 'Error al actualizar movimiento' }, { status: 500 })
     }
-
-    const movimientos: Record<string, unknown>[] = []
-
-    // Construir ingresos
-    for (const f of facturas) {
-      const pago = pagosPorFactura[f.id as string]
-      let fechaIdeal = (f.fecha_vencimiento as string)?.split('T')[0] || null
-      if (f.recurrente && f.dia_mes) {
-        const dia = Math.min(Number(f.dia_mes), new Date(anio, mes, 0).getDate())
-        fechaIdeal = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
-      }
-      movimientos.push({
-        ...f,
-        fecha_ideal: fechaIdeal,
-        tipo_mov: 'ingreso',
-        subtipo: f.recurrente ? 'recurrente' : 'unico',
-        estado: pago ? 'cobrado' : ((f.estado as string) === 'pagada' ? 'cobrado' : 'pendiente'),
-        fecha_pago: pago?.fecha_pago || null,
-        metodo_pago: pago?.metodo || null,
-        monto_pagado: pago?.total || 0,
-        has_cfdi: false,
-        has_banco: false,
-        dias_atraso: pago ? 0 : diasAtraso(fechaIdeal),
-      })
-    }
-
-    // Construir egresos
-    for (const g of gastos) {
-      let fechaIdeal = (g.fecha_vencimiento as string)?.split('T')[0] || null
-      if (g.recurrente && g.dia_mes) {
-        const dia = Math.min(Number(g.dia_mes), new Date(anio, mes, 0).getDate())
-        fechaIdeal = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
-      }
-      const pagado = (g.estado as string) === 'pagado'
-      movimientos.push({
-        ...g,
-        fecha_ideal: fechaIdeal,
-        tipo_mov: 'egreso',
-        subtipo: g.recurrente ? 'recurrente' : 'unico',
-        estado: pagado ? 'pagado' : 'pendiente',
-        has_cfdi: false,
-        has_banco: false,
-        dias_atraso: pagado ? 0 : diasAtraso(fechaIdeal),
-      })
-    }
-
-    return NextResponse.json({ movimientos, mes, anio, _debug: { facturas_count: facturas.length, gastos_count: gastos.length, facturas_error, gastos_error } })
-  } catch (error) {
-    console.error('[ERP] Error movimientos:', error)
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Error', stack: error instanceof Error ? error.stack?.split('\n').slice(0,3).join(' | ') : '' }, { status: 500 })
-  }
 }
 
-export async function POST(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-
-  try {
-    const body = await request.json()
-    const { tipo, id, monto, fecha_pago, metodo_pago, notas } = body
-    const fechaPago = fecha_pago || new Date().toISOString().split('T')[0]
-
-    if (tipo === 'ingreso') {
-      // Register payment for a factura
-      await sql`
-        INSERT INTO pagos (id, factura_id, monto, metodo_pago, fecha_pago, notas, created_at)
-        VALUES (gen_random_uuid(), ${id}, ${monto}, ${metodo_pago || null}, ${fechaPago}, ${notas || null}, NOW())
-      `
-      return NextResponse.json({ ok: true }, { status: 201 })
-    } else if (tipo === 'egreso') {
-      // Mark gasto as paid
-      await sql`
-        UPDATE gastos SET estado = 'pagado', fecha_pago = ${fechaPago}, updated_at = NOW()
-        WHERE id = ${id}
-      `
-      return NextResponse.json({ ok: true }, { status: 200 })
-    }
-
-    return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 })
-  } catch (error) {
-    console.error('[ERP] Error:', error)
-    return NextResponse.json({ error: 'Error al registrar movimiento' }, { status: 500 })
-  }
-}
-
-export async function DELETE(request: Request) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-
-  try {
-    const { searchParams } = new URL(request.url)
-    const tipo = searchParams.get('tipo')
-    const id = searchParams.get('id')
-    const mes = searchParams.get('mes')
-    const anio = searchParams.get('anio')
-
-    if (!tipo || !id) return NextResponse.json({ error: 'Faltan parámetros' }, { status: 400 })
-
-    if (tipo === 'ingreso') {
-      // Delete pagos for this factura in this month
-      if (mes && anio) {
-        await sql`
-                    DELETE FROM pagos WHERE factura_id = ${id}
-                    AND EXTRACT(MONTH FROM fecha_pago) = ${Number(mes)}
-                    AND EXTRACT(YEAR FROM fecha_pago) = ${Number(anio)}
-                `
-      } else {
-        await sql`DELETE FROM pagos WHERE factura_id = ${id}`
-      }
-      return NextResponse.json({ ok: true })
-    } else if (tipo === 'egreso') {
-      // Reset gasto to pendiente
-      await sql`UPDATE gastos SET estado = 'pendiente', fecha_pago = NULL, updated_at = NOW() WHERE id = ${id}`
-      return NextResponse.json({ ok: true })
-    }
-
-    return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 })
-  } catch (error) {
-    console.error('[ERP] Error:', error)
-    return NextResponse.json({ error: 'Error al cancelar movimiento' }, { status: 500 })
-  }
-}
