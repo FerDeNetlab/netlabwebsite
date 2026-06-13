@@ -80,7 +80,7 @@ export default function GastosPage() {
 
     const fetchCfdisDisp = async () => {
         setLoadingCfdisDisp(true)
-        const r = await fetch(`/api/finanzas/cfdi?tipo=recibida&mes=${mes}&anio=${anio}`)
+        const r = await fetch(`/api/finanzas/cfdi?tipo=recibida`)
         const d = await r.json()
         setCfdisDisp(d.cfdis ?? d ?? [])
         setLoadingCfdisDisp(false)
