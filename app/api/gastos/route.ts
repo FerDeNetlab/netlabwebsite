@@ -11,9 +11,21 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const mes  = parseInt(searchParams.get('mes')  || String(new Date().getMonth() + 1))
     const anio = parseInt(searchParams.get('anio') || String(new Date().getFullYear()))
+    const soloRecurrentes = searchParams.get('recurrentes') === '1'
 
     try {
-        const gastos = await sql`
+        const gastos = soloRecurrentes
+            ? await sql`
+      SELECT g.*, cg.nombre as categoria_nombre, cg.color as categoria_color, cg.icono as categoria_icono,
+        NULL::uuid AS movimiento_bancario_id, NULL::timestamptz AS fecha_pago_banco, NULL::text AS banco_descripcion,
+        NULL::uuid AS cfdi_id
+      FROM gastos g
+      LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
+      WHERE g.recurrente = true
+        AND (g.fecha_baja IS NULL)
+      ORDER BY g.dia_mes ASC NULLS LAST, g.concepto ASC
+    ` as Record<string, unknown>[]
+            : await sql`
       SELECT g.*, cg.nombre as categoria_nombre, cg.color as categoria_color, cg.icono as categoria_icono,
         mb.id AS movimiento_bancario_id, mb.fecha_operacion AS fecha_pago_banco, mb.descripcion AS banco_descripcion,
         cfdi.id AS cfdi_id
@@ -21,15 +33,10 @@ export async function GET(request: Request) {
       LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
       LEFT JOIN movimientos_bancarios mb ON mb.gasto_id = g.id
       LEFT JOIN cfdis cfdi ON cfdi.gasto_id = g.id
-      WHERE (
-        g.recurrente = true
-        AND (g.fecha_baja IS NULL OR (EXTRACT(YEAR FROM g.fecha_baja) * 12 + EXTRACT(MONTH FROM g.fecha_baja)) >= (${anio} * 12 + ${mes}))
-      ) OR (
-        g.recurrente = false
-        AND EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
-        AND EXTRACT(YEAR  FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
-      )
-      ORDER BY g.recurrente DESC, COALESCE(g.fecha_vencimiento, g.created_at) ASC
+      WHERE EXTRACT(MONTH FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${mes}
+        AND EXTRACT(YEAR FROM COALESCE(g.fecha_vencimiento, g.created_at)) = ${anio}
+        AND (g.fecha_baja IS NULL OR g.fecha_baja > MAKE_DATE(${anio}, ${mes}, 1))
+      ORDER BY COALESCE(g.fecha_vencimiento, g.created_at) ASC
     ` as Record<string, unknown>[]
 
         const categorias = await sql`
@@ -58,6 +65,7 @@ export async function POST(request: Request) {
             recurrente, dia_mes, subtipo, notas,
             tipo_gasto, bolsa_origen,
             archivo_url, archivo_nombre, archivo_tipo,
+            cuenta_contable,
         } = body
 
         // Defaults SAF: tipo_gasto + bolsa_origen
@@ -72,7 +80,7 @@ export async function POST(request: Request) {
       INSERT INTO gastos (
         id, categoria_id, concepto, monto, fecha_vencimiento, proveedor,
         recurrente, dia_mes, subtipo, estado, notas,
-        tipo_gasto, bolsa_origen,
+        tipo_gasto, bolsa_origen, cuenta_contable,
         archivo_url, archivo_nombre, archivo_tipo,
         created_at, updated_at
       )
@@ -81,7 +89,7 @@ export async function POST(request: Request) {
         ${fecha_vencimiento || null}, ${proveedor || null},
         ${recurrente || false}, ${dia_mes || null}, ${subtipo || 'general'},
         'pendiente', ${notas || null},
-        ${tipoGastoVal}, ${bolsaOrigenVal},
+        ${tipoGastoVal}, ${bolsaOrigenVal}, ${cuenta_contable || null},
         ${archivo_url || null}, ${archivo_nombre || null}, ${archivo_tipo || null},
         NOW(), NOW()
       )

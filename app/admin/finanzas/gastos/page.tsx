@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon, FileText, FileCode2, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon, FileText, FileCode2, ChevronDown, RefreshCw } from 'lucide-react'
+import { CUENTAS_GASTO, labelCuenta } from '@/lib/catalogo-sat'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -17,6 +18,7 @@ interface Gasto {
     fecha_vencimiento: string; fecha_pago: string; categoria_nombre: string; categoria_color: string;
     recurrente: boolean; dia_mes: number; subtipo: string;
     tipo_gasto?: string; bolsa_origen?: string;
+    cuenta_contable?: string | null;
     archivo_url?: string | null; archivo_nombre?: string | null;
     estado_calculado?: string; dias_atraso?: number | null;
     movimiento_bancario_id?: string | null;
@@ -53,12 +55,12 @@ export default function GastosPage() {
     const [form, setForm] = useState<{
         categoria_id: string; concepto: string; monto: string; fecha_vencimiento: string;
         proveedor: string; recurrente: boolean; dia_mes: string; subtipo: string; notas: string;
-        tipo_gasto: string; bolsa_origen: string;
+        tipo_gasto: string; bolsa_origen: string; cuenta_contable: string;
         archivo_url: string | null; archivo_nombre: string | null; archivo_tipo: string | null;
     }>({
         categoria_id: '', concepto: '', monto: '', fecha_vencimiento: '', proveedor: '',
         recurrente: false, dia_mes: '', subtipo: 'general', notas: '',
-        tipo_gasto: 'variable', bolsa_origen: 'operacion_variable',
+        tipo_gasto: 'variable', bolsa_origen: 'operacion_variable', cuenta_contable: '',
         archivo_url: null, archivo_nombre: null, archivo_tipo: null,
     })
     const [editingId, setEditingId] = useState<string | null>(null)
@@ -85,6 +87,17 @@ export default function GastosPage() {
     const [searchCfdi, setSearchCfdi] = useState('')
     // Form avanzado SAF
     const [showSaf, setShowSaf] = useState(false)
+    const [showRecurrentes, setShowRecurrentes] = useState(false)
+    const [recurrentes, setRecurrentes] = useState<Gasto[]>([])
+    const [loadingRecurrentes, setLoadingRecurrentes] = useState(false)
+
+    const fetchRecurrentes = async () => {
+        setLoadingRecurrentes(true)
+        const r = await fetch('/api/gastos?recurrentes=1')
+        const d = await r.json()
+        setRecurrentes(d.gastos || [])
+        setLoadingRecurrentes(false)
+    }
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
@@ -105,6 +118,7 @@ export default function GastosPage() {
             recurrente: tipo === 'fijo', dia_mes: '', subtipo: 'general', notas: '',
             tipo_gasto: tipo === 'fijo' ? 'estructural' : 'variable',
             bolsa_origen: tipo === 'fijo' ? 'operacion_base' : 'operacion_variable',
+            cuenta_contable: '',
             archivo_url: null, archivo_nombre: null, archivo_tipo: null,
         })
         setShowForm(tipo)
@@ -153,6 +167,7 @@ export default function GastosPage() {
                 ...form, monto: Number(form.monto),
                 dia_mes: form.dia_mes ? Number(form.dia_mes) : null,
                 recurrente: showForm === 'fijo',
+                cuenta_contable: form.cuenta_contable || null,
             })
         })
         if (r.ok) { setShowForm(false); fetchData() }
@@ -278,18 +293,11 @@ export default function GastosPage() {
         else alert('Error al ligar CFDI')
     }
 
+    // El API ya filtra por mes; sólo aplicamos búsqueda y filtro de banco
     const filtered = gastos.filter(g => {
-        const matchSearch = (g.concepto + g.proveedor + g.categoria_nombre).toLowerCase().includes(search.toLowerCase())
-        let matchMes = g.recurrente
-        if (!g.recurrente && g.fecha_vencimiento) {
-            const d = new Date(String(g.fecha_vencimiento).split('T')[0] + 'T12:00:00')
-            const vencMes = d.getMonth() + 1; const vencAnio = d.getFullYear()
-            // show if vence this month OR unpaid from previous month (rolling)
-            const isPendiente = (g.estado_calculado || g.estado) !== 'pagado'
-            matchMes = (vencMes === mes && vencAnio === anio) || (isPendiente && (vencAnio < anio || (vencAnio === anio && vencMes < mes)))
-        }
+        const matchSearch = (g.concepto + (g.proveedor || '') + (g.categoria_nombre || '')).toLowerCase().includes(search.toLowerCase())
         const matchBanco = filtroEstado === 'todos' ? true : filtroEstado === 'con_banco' ? !!g.movimiento_bancario_id : !g.movimiento_bancario_id
-        return matchSearch && matchMes && matchBanco
+        return matchSearch && matchBanco
     })
     const totalMes = filtered.reduce((s, g) => s + Number(g.monto), 0)
     const confirmadoBanco = filtered.filter(g => g.movimiento_bancario_id).reduce((s, g) => s + Number(g.monto), 0)
@@ -339,6 +347,48 @@ export default function GastosPage() {
                                     <FileCode2 className="h-3 w-3 inline mr-1" /> CFDIs recibidos
                                 </button>
                             </div>
+
+                            {/* Panel recurrentes activos */}
+                            {tabPrincipal === 'gastos' && (
+                                <div className="border border-orange-500/20 rounded-lg overflow-hidden">
+                                    <button onClick={() => { setShowRecurrentes(s => !s); if (!showRecurrentes && recurrentes.length === 0) fetchRecurrentes() }}
+                                        className="w-full flex items-center justify-between px-4 py-3 bg-orange-500/5 hover:bg-orange-500/10 transition-colors font-mono text-xs text-orange-400">
+                                        <span className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" /> Recurrentes activos (referencia)</span>
+                                        <div className="flex items-center gap-2">
+                                            {showRecurrentes && <button onClick={e => { e.stopPropagation(); fetchRecurrentes() }} className="text-gray-600 hover:text-gray-400"><RefreshCw className="h-3 w-3" /></button>}
+                                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showRecurrentes ? 'rotate-180' : ''}`} />
+                                        </div>
+                                    </button>
+                                    {showRecurrentes && (
+                                        <div className="p-3">
+                                            {loadingRecurrentes ? (
+                                                <p className="font-mono text-xs text-gray-600 py-2">cargando...</p>
+                                            ) : recurrentes.length === 0 ? (
+                                                <p className="font-mono text-xs text-gray-600 py-2">No hay gastos recurrentes activos</p>
+                                            ) : (
+                                                <div className="space-y-1">
+                                                    {recurrentes.filter(g => !g.fecha_baja).map(g => (
+                                                        <div key={g.id} className="flex items-center justify-between font-mono text-xs py-1.5 border-b border-gray-800 last:border-0">
+                                                            <div>
+                                                                <span className="text-gray-300">{g.concepto}</span>
+                                                                {g.proveedor && <span className="text-gray-600 ml-2">· {g.proveedor}</span>}
+                                                                {g.cuenta_contable && <span className="text-orange-500/70 ml-2">· {labelCuenta(g.cuenta_contable)}</span>}
+                                                            </div>
+                                                            <div className="flex items-center gap-3 shrink-0">
+                                                                {g.dia_mes && <span className="text-gray-500">día {g.dia_mes}</span>}
+                                                                <span className="text-red-400">{fmt(g.monto)}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    <div className="pt-2 text-right font-mono text-xs text-gray-500">
+                                                        Total recurrente mensual: <span className="text-orange-400 font-bold">{fmt(recurrentes.filter(g => !g.fecha_baja).reduce((s, g) => s + Number(g.monto), 0))}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {tabPrincipal === 'gastos' && (<>
                             {/* Month navigation */}
@@ -441,10 +491,20 @@ export default function GastosPage() {
                                             <button type="button" onClick={() => setShowSaf(s => !s)}
                                                 className="flex items-center gap-1 font-mono text-xs text-gray-600 hover:text-gray-400 transition-colors">
                                                 <ChevronDown className={`h-3 w-3 transition-transform ${showSaf ? 'rotate-180' : ''}`} />
-                                                opciones avanzadas (SAF)
+                                                opciones avanzadas (SAF + contabilidad)
                                             </button>
                                             {showSaf && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                                    <div>
+                                                        <label className="font-mono text-xs text-orange-400">Cuenta contable SAT</label>
+                                                        <select value={form.cuenta_contable} onChange={e => setForm(f => ({ ...f, cuenta_contable: e.target.value }))}
+                                                            className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
+                                                            <option value="">Sin cuenta contable</option>
+                                                            {CUENTAS_GASTO.map(c => (
+                                                                <option key={c.codigo} value={c.codigo}>{c.codigo} — {c.nombre}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
                                                     <div>
                                                         <label className="font-mono text-xs text-orange-400">Tipo de gasto (SAF)</label>
                                                         <select value={form.tipo_gasto} onChange={e => {

@@ -7,7 +7,8 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark, GitMerge, X, FileText, FileCode2 } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark, GitMerge, X, FileText, FileCode2, CalendarClock, ChevronDown, RefreshCw } from 'lucide-react'
+import { CUENTAS_INGRESO, labelCuenta } from '@/lib/catalogo-sat'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -15,6 +16,7 @@ interface Factura {
     id: string; numero_factura: string; concepto: string; total: number; tipo: string;
     cliente_nombre: string; cliente_empresa: string; fecha_vencimiento: string;
     recurrente: boolean; dia_mes: number; estado: string;
+    cuenta_contable?: string | null;
     movimiento_bancario_id?: string | null;
     fecha_pago_banco?: string | null;
     banco_descripcion?: string | null;
@@ -61,30 +63,40 @@ export default function FacturasPage() {
     const [searchCfdi, setSearchCfdi] = useState('')
     const [mes, setMes] = useState(new Date().getMonth() + 1)
     const [anio, setAnio] = useState(new Date().getFullYear())
+    const [showRecurrentes, setShowRecurrentes] = useState(false)
+    const [recurrentes, setRecurrentes] = useState<Factura[]>([])
+    const [loadingRecurrentes, setLoadingRecurrentes] = useState(false)
+
+    const fetchRecurrentes = async () => {
+        setLoadingRecurrentes(true)
+        const r = await fetch('/api/facturas?recurrentes=1')
+        const d = await r.json()
+        setRecurrentes(d || [])
+        setLoadingRecurrentes(false)
+    }
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
 
     useEffect(() => { if (status === 'unauthenticated') router.push('/admin/login') }, [status, router])
 
+    const fetchFacturas = () => {
+        fetch(`/api/facturas?mes=${mes}&anio=${anio}`)
+            .then(r => r.json()).then(data => { setFacturas(data); setLoading(false) })
+            .catch(() => setLoading(false))
+    }
+
     useEffect(() => {
         if (status !== 'authenticated') return
-        fetch('/api/facturas').then(r => r.json()).then(data => { setFacturas(data); setLoading(false) }).catch(() => setLoading(false))
-    }, [status])
+        fetchFacturas()
+    }, [status, mes, anio])
 
-    const lastDay = new Date(anio, mes, 0).getDate()
+    // El API ya filtra por mes; solo aplicamos búsqueda y filtros de UI
     const filtered = facturas.filter(f => {
-        const matchSearch = (f.numero_factura + f.concepto + f.cliente_nombre).toLowerCase().includes(search.toLowerCase())
+        const matchSearch = (f.numero_factura + f.concepto + (f.cliente_nombre || '')).toLowerCase().includes(search.toLowerCase())
         const matchTipo = filtroTipo === 'todos' || f.tipo === filtroTipo
-        let matchMes = f.recurrente
-        if (!f.recurrente && f.fecha_vencimiento) {
-            const d = new Date(String(f.fecha_vencimiento).split('T')[0] + 'T12:00:00')
-            // show if vence this month OR vence in a past month (rolling unpaid)
-            const vencMes = d.getMonth() + 1; const vencAnio = d.getFullYear()
-            matchMes = (vencAnio < anio) || (vencAnio === anio && vencMes <= mes)
-        }
         const matchBanco = filtroEstado === 'todos' ? true : filtroEstado === 'con_banco' ? !!f.movimiento_bancario_id : !f.movimiento_bancario_id
-        return matchSearch && matchTipo && matchMes && matchBanco
+        return matchSearch && matchTipo && matchBanco
     })
     const totalMes = filtered.reduce((s, f) => s + Number(f.total), 0)
     const cobradoBanco = filtered.filter(f => f.movimiento_bancario_id).reduce((s, f) => s + f.total, 0)
@@ -118,8 +130,7 @@ export default function FacturasPage() {
         })
         if (r.ok) {
             setLigandoFactura(null)
-            // refresh facturas
-            fetch('/api/facturas').then(r => r.json()).then(data => setFacturas(data)).catch(() => {})
+            fetchFacturas()
         } else alert('Error al ligar')
     }
 
@@ -163,7 +174,7 @@ export default function FacturasPage() {
         })
         if (r.ok) {
             setLigandoCfdiFactura(null)
-            fetch('/api/facturas').then(r => r.json()).then(data => setFacturas(data)).catch(() => {})
+            fetchFacturas()
         } else alert('Error al ligar CFDI')
     }
 
@@ -211,6 +222,47 @@ export default function FacturasPage() {
                             </div>
 
                             {tabPrincipal === 'facturas' && (<>
+
+                            {/* Panel recurrentes activos */}
+                            <div className="border border-green-500/20 rounded-lg overflow-hidden">
+                                <button onClick={() => { setShowRecurrentes(s => !s); if (!showRecurrentes && recurrentes.length === 0) fetchRecurrentes() }}
+                                    className="w-full flex items-center justify-between px-4 py-3 bg-green-500/5 hover:bg-green-500/10 transition-colors font-mono text-xs text-green-400">
+                                    <span className="flex items-center gap-2"><CalendarClock className="h-3.5 w-3.5" /> Ingresos recurrentes (referencia)</span>
+                                    <div className="flex items-center gap-2">
+                                        {showRecurrentes && <button onClick={e => { e.stopPropagation(); fetchRecurrentes() }} className="text-gray-600 hover:text-gray-400"><RefreshCw className="h-3 w-3" /></button>}
+                                        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showRecurrentes ? 'rotate-180' : ''}`} />
+                                    </div>
+                                </button>
+                                {showRecurrentes && (
+                                    <div className="p-3">
+                                        {loadingRecurrentes ? (
+                                            <p className="font-mono text-xs text-gray-600 py-2">cargando...</p>
+                                        ) : recurrentes.length === 0 ? (
+                                            <p className="font-mono text-xs text-gray-600 py-2">No hay ingresos recurrentes registrados</p>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                {recurrentes.map(f => (
+                                                    <div key={f.id} className="flex items-center justify-between font-mono text-xs py-1.5 border-b border-gray-800 last:border-0">
+                                                        <div>
+                                                            <span className="text-gray-300">{f.concepto}</span>
+                                                            {f.cliente_nombre && <span className="text-gray-600 ml-2">· {f.cliente_nombre}</span>}
+                                                            {f.cuenta_contable && <span className="text-green-500/70 ml-2">· {labelCuenta(f.cuenta_contable)}</span>}
+                                                        </div>
+                                                        <div className="flex items-center gap-3 shrink-0">
+                                                            {f.dia_mes && <span className="text-gray-500">día {f.dia_mes}</span>}
+                                                            <span className="text-green-400">{fmt(f.total)}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <div className="pt-2 text-right font-mono text-xs text-gray-500">
+                                                    Total recurrente mensual: <span className="text-green-400 font-bold">{fmt(recurrentes.reduce((s, f) => s + Number(f.total), 0))}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Month navigation */}
                             <div className="flex items-center justify-between bg-zinc-900/50 border border-green-500/20 rounded-lg px-4 py-2">
                                 <button onClick={prevMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
