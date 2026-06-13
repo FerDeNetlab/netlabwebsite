@@ -70,6 +70,7 @@ export default function ConciliacionClient() {
   const [facturaCands, setFacturaCands] = useState<FacturaCandidato[]>([])
   const [gastoCands, setGastoCands]     = useState<GastoCandidato[]>([])
   const [loadCand, setLoadCand]   = useState(false)
+  const [busqueda, setBusqueda]   = useState('')
   const [etiqueta, setEtiqueta]   = useState('')
   const [categoria, setCategoria] = useState('')
   const [notas, setNotas]         = useState('')
@@ -128,13 +129,25 @@ export default function ConciliacionClient() {
     onDrop, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1, disabled: uploading,
   })
 
-  const abrirPanel = async (m: Movimiento) => {
-    setEditando(m); setEtiqueta(m.etiqueta ?? ''); setCategoria(m.categoria ?? ''); setNotas(m.notas ?? '')
-    setCfdiCands([]); setFacturaCands([]); setGastoCands([])
+  const abrirPanel = (m: Movimiento) => {
+    setEditando(m)
+    setEtiqueta(m.etiqueta ?? '')
+    setCategoria(m.categoria ?? '')
+    setNotas(m.notas ?? '')
+    setBusqueda('')
+    setCfdiCands([])
+    setFacturaCands([])
+    setGastoCands([])
+  }
+
+  const buscarCandidatos = async () => {
+    if (!editando) return
     setLoadCand(true)
-    const tipo = m.cargo ? 'cargo' : 'abono'
-    const monto = m.cargo ?? m.abono ?? 0
-    const r = await fetch(`/api/finanzas/conciliacion/candidatos?monto=${monto}&fecha=${m.fecha_operacion}&tipo=${tipo}`)
+    const tipo = editando.cargo ? 'cargo' : 'abono'
+    const monto = editando.cargo ?? editando.abono ?? 0
+    const params = new URLSearchParams({ monto: String(monto), fecha: editando.fecha_operacion, tipo })
+    if (busqueda.trim()) params.set('q', busqueda.trim())
+    const r = await fetch(`/api/finanzas/conciliacion/candidatos?${params}`)
     const d = await r.json()
     setCfdiCands(d.candidatos ?? [])
     setFacturaCands(d.facturas ?? [])
@@ -367,9 +380,31 @@ export default function ConciliacionClient() {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    value={busqueda}
+                    onChange={e => setBusqueda(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && buscarCandidatos()}
+                    placeholder="buscar por nombre, concepto o monto..."
+                    className={inputCls + ' flex-1'}
+                  />
+                  <button
+                    onClick={buscarCandidatos}
+                    disabled={loadCand}
+                    className="px-4 py-2 font-mono text-xs bg-green-500/20 hover:bg-green-500/30 border border-green-500/40 text-green-300 rounded transition-colors disabled:opacity-50"
+                  >
+                    {loadCand ? 'buscando...' : '$ buscar'}
+                  </button>
+                </div>
+                <p className="text-[10px] font-mono text-gray-600">
+                  {editando.cargo ? 'cargo' : 'abono'} · {fmt(editando.cargo ?? editando.abono)} · {fmtDate(editando.fecha_operacion)}
+                </p>
+              </div>
+
               {loadCand ? (
-                <p className="text-gray-600 font-mono text-xs">buscando candidatos...</p>
-              ) : (
+                <p className="text-gray-600 font-mono text-xs animate-pulse">buscando candidatos...</p>
+              ) : (facturaCands.length > 0 || gastoCands.length > 0 || cfdiCands.length > 0) ? (
                 <div className="space-y-4">
                   {facturaCands.length > 0 && (
                     <div>
@@ -442,11 +477,8 @@ export default function ConciliacionClient() {
                     </div>
                   )}
 
-                  {facturaCands.length === 0 && gastoCands.length === 0 && cfdiCands.length === 0 && (
-                    <p className="font-mono text-xs text-gray-600">no se encontraron candidatos (±10%, ±45 días)</p>
-                  )}
                 </div>
-              )}
+              ) : null}
 
               <div className="space-y-3 pt-2 border-t border-green-500/10">
                 <div>

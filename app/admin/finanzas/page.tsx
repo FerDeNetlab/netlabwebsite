@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, BarChart3, ArrowLeftRight, FileBarChart, Landmark, PieChart, Wallet, Bell, FileCode2, GitMerge } from 'lucide-react'
+import { ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, Receipt, CreditCard, Calendar, ArrowLeftRight, FileCode2, GitMerge, DollarSign, BarChart3 } from 'lucide-react'
 
 interface FinanzasStats {
     cxc: { pendientes: number; por_cobrar: number }
@@ -50,18 +50,12 @@ export default function FinanzasPage() {
     const fmt = (n: number) => `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
     const modules = [
-        { title: 'Anexo Financiero', desc: 'Matriz operativa y presupuesto', icon: PieChart, path: '/admin/finanzas/anexo', color: 'text-orange-400', border: 'border-orange-500/30' },
-        { title: 'Cuentas por Cobrar', desc: 'Ingresos pendientes', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
-        { title: 'Gastos', desc: 'Egresos y gastos fijos', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
-        { title: 'Ingresos y Egresos', desc: 'Cobranza y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
+        { title: 'Ingresos', desc: 'Cuentas por cobrar y CFDIs emitidos', icon: Receipt, path: '/admin/finanzas/facturas', color: 'text-green-400', border: 'border-green-500/30' },
+        { title: 'Gastos', desc: 'Cuentas por pagar y CFDIs recibidos', icon: CreditCard, path: '/admin/finanzas/gastos', color: 'text-red-400', border: 'border-red-500/30' },
+        { title: 'Banco', desc: 'Movimientos y conciliación', icon: GitMerge, path: '/admin/finanzas/conciliacion', color: 'text-teal-400', border: 'border-teal-500/30' },
+        { title: 'CFDIs / XML SAT', desc: 'Repositorio fiscal del SAT', icon: FileCode2, path: '/admin/finanzas/cfdi', color: 'text-blue-400', border: 'border-blue-500/30' },
         { title: 'Calendario', desc: 'Cobros y pagos del mes', icon: Calendar, path: '/admin/finanzas/calendario', color: 'text-blue-400', border: 'border-blue-500/30' },
-        { title: 'Flujo de Efectivo', desc: 'Proyección mensual', icon: BarChart3, path: '/admin/finanzas/flujo', color: 'text-purple-400', border: 'border-purple-500/30' },
-        { title: 'Bolsas (SAF)', desc: 'Operación, crecimiento, reserva', icon: Wallet, path: '/admin/finanzas/bolsas', color: 'text-fuchsia-400', border: 'border-fuchsia-500/30' },
-        { title: 'Reportes', desc: 'Panorama financiero completo', icon: FileBarChart, path: '/admin/finanzas/reportes', color: 'text-yellow-400', border: 'border-yellow-500/30' },
-        { title: 'Aportes de Capital', desc: 'Inversiones, préstamos, financiamiento', icon: Landmark, path: '/admin/finanzas/aportes', color: 'text-amber-400', border: 'border-amber-500/30' },
-        { title: 'Recordatorios', desc: 'Cron, email y Telegram', icon: Bell, path: '/admin/finanzas/recordatorios', color: 'text-cyan-400', border: 'border-cyan-500/30' },
-        { title: 'CFDIs / XML SAT', desc: 'Conciliación de facturas fiscales', icon: FileCode2, path: '/admin/finanzas/cfdi', color: 'text-blue-400', border: 'border-blue-500/30' },
-        { title: 'Conciliación Bancaria', desc: 'Estados de cuenta BBVA vs CFDIs', icon: GitMerge, path: '/admin/finanzas/conciliacion', color: 'text-teal-400', border: 'border-teal-500/30' },
+        { title: 'Cobranza', desc: 'Registro de cobros y pagos', icon: ArrowLeftRight, path: '/admin/finanzas/movimientos', color: 'text-emerald-400', border: 'border-emerald-500/30' },
     ]
 
     return (

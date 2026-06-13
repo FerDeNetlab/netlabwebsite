@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark, GitMerge, X, FileText } from 'lucide-react'
+import { ArrowLeft, Plus, Search, Receipt, ChevronLeft, ChevronRight, Landmark, GitMerge, X, FileText, FileCode2 } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -28,6 +28,13 @@ interface CfdiCandidato {
     id: string; uuid_sat: string; emisor_rfc: string; emisor_nombre: string | null;
     receptor_rfc: string; receptor_nombre: string | null; total: number; fecha: string; xml_nombre: string;
 }
+interface CfdiEmitido {
+    id: string; uuid_sat: string; fecha: string; emisor_rfc: string;
+    receptor_rfc: string; receptor_nombre: string | null;
+    subtotal: number; total: number; moneda: string;
+    estado: string; factura_id: string | null;
+    xml_nombre: string | null;
+}
 
 export default function FacturasPage() {
     const { status } = useSession()
@@ -37,13 +44,21 @@ export default function FacturasPage() {
     const [search, setSearch] = useState('')
     const [filtroTipo, setFiltroTipo] = useState('todos')
     const [filtroEstado, setFiltroEstado] = useState<'todos' | 'con_banco' | 'sin_banco'>('todos')
+    const [tabPrincipal, setTabPrincipal] = useState<'facturas' | 'cfdis'>('facturas')
+    // Panel ligar banco (manual)
     const [ligandoFactura, setLigandoFactura] = useState<Factura | null>(null)
     const [movCandidatos, setMovCandidatos] = useState<MovBanco[]>([])
     const [loadMovCands, setLoadMovCands] = useState(false)
-    // Panel ligar CFDI
+    const [busquedaBanco, setBusquedaBanco] = useState('')
+    // Panel ligar CFDI (manual)
     const [ligandoCfdiFactura, setLigandoCfdiFactura] = useState<Factura | null>(null)
     const [cfdiCandidatos, setCfdiCandidatos] = useState<CfdiCandidato[]>([])
     const [loadCfdiCands, setLoadCfdiCands] = useState(false)
+    const [busquedaCfdi, setBusquedaCfdi] = useState('')
+    // Tab CFDIs emitidos
+    const [cfdisEmitidos, setCfdisEmitidos] = useState<CfdiEmitido[]>([])
+    const [loadingCfdis, setLoadingCfdis] = useState(false)
+    const [searchCfdi, setSearchCfdi] = useState('')
     const [mes, setMes] = useState(new Date().getMonth() + 1)
     const [anio, setAnio] = useState(new Date().getFullYear())
 
@@ -77,12 +92,19 @@ export default function FacturasPage() {
 
     const fmt = (n: number) => `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2 })}`
 
-    const abrirPanelLigar = async (f: Factura) => {
+    const abrirPanelLigar = (f: Factura) => {
         setLigandoFactura(f)
         setMovCandidatos([])
+        setBusquedaBanco('')
+    }
+
+    const buscarMovBanco = async () => {
+        if (!ligandoFactura) return
         setLoadMovCands(true)
-        const fecha = f.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
-        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?monto=${f.total}&fecha=${fecha}&tipo=abono`)
+        const fecha = ligandoFactura.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const params = new URLSearchParams({ monto: String(ligandoFactura.total), fecha, tipo: 'abono' })
+        if (busquedaBanco.trim()) params.set('q', busquedaBanco.trim())
+        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?${params}`)
         const d = await r.json()
         setMovCandidatos(d.movimientos ?? [])
         setLoadMovCands(false)
@@ -101,15 +123,37 @@ export default function FacturasPage() {
         } else alert('Error al ligar')
     }
 
-    const abrirPanelCfdi = async (f: Factura) => {
+    const abrirPanelCfdi = (f: Factura) => {
         setLigandoCfdiFactura(f)
         setCfdiCandidatos([])
+        setBusquedaCfdi('')
+    }
+
+    const buscarCfdiCandidatos = async () => {
+        if (!ligandoCfdiFactura) return
         setLoadCfdiCands(true)
-        const r = await fetch(`/api/finanzas/conciliacion/cfdi-candidatos?monto=${f.total}&tipo=emitida`)
+        const params = new URLSearchParams({ monto: String(ligandoCfdiFactura.total), tipo: 'emitida' })
+        if (busquedaCfdi.trim()) params.set('q', busquedaCfdi.trim())
+        const r = await fetch(`/api/finanzas/conciliacion/cfdi-candidatos?${params}`)
         const d = await r.json()
         setCfdiCandidatos(d.cfdis ?? [])
         setLoadCfdiCands(false)
     }
+
+    const fetchCfdisEmitidos = async () => {
+        setLoadingCfdis(true)
+        const r = await fetch('/api/finanzas/cfdi?tipo=emitida')
+        const d = await r.json()
+        setCfdisEmitidos(d.cfdis ?? d ?? [])
+        setLoadingCfdis(false)
+    }
+
+    useEffect(() => {
+        if (status === 'authenticated' && tabPrincipal === 'cfdis' && cfdisEmitidos.length === 0) {
+            fetchCfdisEmitidos()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tabPrincipal, status])
 
     const ligarCfdi = async (cfdiId: string) => {
         if (!ligandoCfdiFactura) return
@@ -133,21 +177,40 @@ export default function FacturasPage() {
             <Navbar />
             <div className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                    <TerminalFrame title="root@netlab:~/finanzas/cuentas-por-cobrar">
+                    <TerminalFrame title="root@netlab:~/finanzas/ingresos">
                         <div className="p-6 space-y-6">
                             <div className="flex items-center justify-between border-b border-green-500/20 pb-4">
                                 <div>
                                     <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-2">
                                         <ArrowLeft className="h-4 w-4" /> Finanzas
                                     </Button>
-                                    <h1 className="text-3xl font-mono text-green-400">Cuentas por Cobrar</h1>
-                                    <p className="text-gray-400 font-mono text-sm mt-1">Definiciones de ingresos esperados</p>
+                                    <h1 className="text-3xl font-mono text-green-400">Ingresos</h1>
+                                    <p className="text-gray-400 font-mono text-sm mt-1">Cuentas por cobrar y CFDIs emitidos</p>
                                 </div>
-                                <Button onClick={() => router.push('/admin/finanzas/facturas/nueva')} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
-                                    <Plus className="h-4 w-4" /> Nueva Entrada
-                                </Button>
+                                {tabPrincipal === 'facturas' && (
+                                    <Button onClick={() => router.push('/admin/finanzas/facturas/nueva')} className="font-mono gap-2 bg-green-600 hover:bg-green-700" size="sm">
+                                        <Plus className="h-4 w-4" /> Nueva Factura
+                                    </Button>
+                                )}
                             </div>
 
+                            {/* Tabs principales */}
+                            <div className="flex gap-1 border-b border-green-500/20">
+                                <button onClick={() => setTabPrincipal('facturas')}
+                                    className={`px-4 py-2 font-mono text-xs border-b-2 -mb-px transition-colors ${
+                                        tabPrincipal === 'facturas' ? 'border-green-400 text-green-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                                    }`}>
+                                    <Receipt className="h-3 w-3 inline mr-1" /> Facturas manuales
+                                </button>
+                                <button onClick={() => setTabPrincipal('cfdis')}
+                                    className={`px-4 py-2 font-mono text-xs border-b-2 -mb-px transition-colors ${
+                                        tabPrincipal === 'cfdis' ? 'border-green-400 text-green-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                                    }`}>
+                                    <FileCode2 className="h-3 w-3 inline mr-1" /> CFDIs emitidos
+                                </button>
+                            </div>
+
+                            {tabPrincipal === 'facturas' && (<>
                             {/* Month navigation */}
                             <div className="flex items-center justify-between bg-zinc-900/50 border border-green-500/20 rounded-lg px-4 py-2">
                                 <button onClick={prevMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
@@ -273,6 +336,81 @@ export default function FacturasPage() {
                                     <p className="font-mono text-gray-600 text-sm mt-1">Agrega ingresos esperados para rastrearlos</p>
                                 </div>
                             )}
+                            </>)}
+
+                            {tabPrincipal === 'cfdis' && (
+                                <div className="space-y-4">
+                                    <div className="flex gap-2 items-center">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <input type="text" placeholder="Buscar por RFC, nombre, UUID..."
+                                                value={searchCfdi} onChange={e => setSearchCfdi(e.target.value)}
+                                                className="w-full bg-zinc-900 border border-gray-700 rounded pl-10 pr-4 py-2 text-sm font-mono text-gray-300 focus:border-green-500 focus:outline-none" />
+                                        </div>
+                                        <button onClick={fetchCfdisEmitidos}
+                                            className="px-4 py-2 font-mono text-xs bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded transition-colors">
+                                            actualizar
+                                        </button>
+                                    </div>
+                                    {loadingCfdis ? (
+                                        <p className="text-gray-500 font-mono text-xs">cargando CFDIs...</p>
+                                    ) : cfdisEmitidos.filter(c =>
+                                        (c.receptor_nombre?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                         c.receptor_rfc?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                         c.uuid_sat?.toLowerCase().includes(searchCfdi.toLowerCase())) ?? true
+                                    ).length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <FileCode2 className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+                                            <p className="font-mono text-gray-400">No hay CFDIs emitidos importados</p>
+                                            <p className="font-mono text-gray-600 text-sm mt-1">Importa XMLs del SAT en <a href="/admin/finanzas/cfdi" className="text-blue-400 hover:underline">CFDIs / XML SAT</a></p>
+                                        </div>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full font-mono text-xs">
+                                                <thead>
+                                                    <tr className="text-gray-600 border-b border-green-500/10 text-left">
+                                                        <th className="pb-2 pr-4 font-normal">fecha</th>
+                                                        <th className="pb-2 pr-4 font-normal">receptor</th>
+                                                        <th className="pb-2 pr-4 font-normal">UUID</th>
+                                                        <th className="pb-2 pr-4 text-right font-normal">total</th>
+                                                        <th className="pb-2 font-normal">factura</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-green-500/5">
+                                                    {cfdisEmitidos
+                                                        .filter(c =>
+                                                            !searchCfdi.trim() ||
+                                                            c.receptor_nombre?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                                            c.receptor_rfc?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                                            c.uuid_sat?.toLowerCase().includes(searchCfdi.toLowerCase())
+                                                        )
+                                                        .map(c => (
+                                                            <tr key={c.id} className="hover:bg-green-500/5 transition-colors">
+                                                                <td className="py-2 pr-4 text-gray-400 whitespace-nowrap">
+                                                                    {c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX') : '—'}
+                                                                </td>
+                                                                <td className="py-2 pr-4">
+                                                                    <div className="text-gray-200 truncate max-w-[180px]">{c.receptor_nombre || c.receptor_rfc}</div>
+                                                                    <div className="text-gray-600 text-[10px]">{c.receptor_rfc}</div>
+                                                                </td>
+                                                                <td className="py-2 pr-4 text-gray-600 text-[10px]">{c.uuid_sat?.substring(0, 18)}…</td>
+                                                                <td className="py-2 pr-4 text-right text-green-400 whitespace-nowrap">{fmt(c.total)}</td>
+                                                                <td className="py-2">
+                                                                    {c.factura_id ? (
+                                                                        <span className="text-blue-400 text-[10px]">✓ ligado</span>
+                                                                    ) : (
+                                                                        <span className="text-gray-600 text-[10px]">sin ligar</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </TerminalFrame>
                 </motion.div>
@@ -302,7 +440,19 @@ export default function FacturasPage() {
                             <div className="mt-3 text-lg font-bold text-green-400">{fmt(ligandoFactura.total)}</div>
                         </div>
 
-                        <p className="font-mono text-xs text-gray-500">abonos bancarios similares (±15%, ±60 días):</p>
+                        <div className="flex gap-2">
+                            <input
+                                value={busquedaBanco}
+                                onChange={e => setBusquedaBanco(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && buscarMovBanco()}
+                                placeholder="buscar por descripción o monto..."
+                                className="flex-1 px-3 py-2 bg-zinc-900 border border-green-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-1 focus:ring-green-500/50"
+                            />
+                            <button onClick={buscarMovBanco} disabled={loadMovCands}
+                                className="px-3 py-2 font-mono text-xs bg-green-500/20 hover:bg-green-500/30 border border-green-500/40 text-green-300 rounded transition-colors disabled:opacity-50">
+                                {loadMovCands ? '...' : 'buscar'}
+                            </button>
+                        </div>
 
                         {loadMovCands ? (
                             <p className="text-gray-600 font-mono text-xs">buscando...</p>
@@ -310,7 +460,7 @@ export default function FacturasPage() {
                             <div className="font-mono text-xs text-gray-600 bg-zinc-900/40 border border-gray-800 rounded p-4 text-center">
                                 No se encontraron abonos similares.<br />
                                 <span className="text-gray-700">Sube el estado de cuenta BBVA en</span>{' '}
-                                <a href="/admin/finanzas/conciliacion" className="text-yellow-500 hover:underline">Conciliación</a>
+                                <a href="/admin/finanzas/conciliacion" className="text-yellow-500 hover:underline">Banco</a>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -358,7 +508,20 @@ export default function FacturasPage() {
                             <div className="text-gray-500 text-xs mt-0.5">{ligandoCfdiFactura.concepto}</div>
                             <div className="mt-2 text-lg font-bold text-green-400">{fmt(ligandoCfdiFactura.total)}</div>
                         </div>
-                        <p className="font-mono text-xs text-gray-500">CFDIs emitidos con monto similar (±15%):</p>
+
+                        <div className="flex gap-2">
+                            <input
+                                value={busquedaCfdi}
+                                onChange={e => setBusquedaCfdi(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && buscarCfdiCandidatos()}
+                                placeholder="buscar por RFC, nombre o monto..."
+                                className="flex-1 px-3 py-2 bg-zinc-900 border border-blue-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                            />
+                            <button onClick={buscarCfdiCandidatos} disabled={loadCfdiCands}
+                                className="px-3 py-2 font-mono text-xs bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 rounded transition-colors disabled:opacity-50">
+                                {loadCfdiCands ? '...' : 'buscar'}
+                            </button>
+                        </div>
                         {loadCfdiCands ? (
                             <p className="text-gray-600 font-mono text-xs">buscando...</p>
                         ) : cfdiCandidatos.length === 0 ? (

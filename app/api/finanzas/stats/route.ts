@@ -7,268 +7,92 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   try {
-    const now = new Date()
-    const mes = now.getMonth() + 1
-    const anio = now.getFullYear()
-    const hoy = now.toISOString().split('T')[0]
-    const diasEnMes = new Date(anio, mes, 0).getDate()
+    // 5 queries consolidadas — reemplaza las 15+ queries anteriores
 
-    // ═══ INGRESOS DEL MES (pagos cobrados) ═══
-    const ingresosMes = await sql`
-      SELECT COALESCE(SUM(monto), 0) as total FROM pagos
+    // 1. Ingresos y egresos confirmados del mes (con movimiento bancario)
+    const [ingresosEgresos] = await sql`
+      SELECT
+        COALESCE(SUM(CASE WHEN tipo_netlab = 'emitida' AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE) THEN total ELSE 0 END), 0) AS ingresos_cfdi_mes,
+        COALESCE(SUM(CASE WHEN tipo_netlab = 'recibida' AND DATE_TRUNC('month', fecha) = DATE_TRUNC('month', CURRENT_DATE) THEN total ELSE 0 END), 0) AS egresos_cfdi_mes
+      FROM cfdis
+    ` as Record<string, unknown>[]
+
+    // 2. Ingresos cobrados vía pagos manuales del mes
+    const [pagosDelMes] = await sql`
+      SELECT COALESCE(SUM(monto), 0) AS total
+      FROM pagos
       WHERE DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
     ` as Record<string, unknown>[]
 
-    // ═══ EGRESOS DEL MES (gastos pagados) ═══
-    const egresosMes = await sql`
-      SELECT COALESCE(SUM(monto), 0) as total FROM gastos
-      WHERE estado = 'pagado' AND DATE_TRUNC('month', fecha_pago) = DATE_TRUNC('month', CURRENT_DATE)
+    // 3. Cuentas por cobrar (facturas pendientes)
+    const [cxcRow] = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE estado IN ('pendiente', 'vencida', 'parcial')) AS pendientes,
+        COALESCE(SUM(total) FILTER (WHERE estado IN ('pendiente', 'vencida', 'parcial')), 0) AS por_cobrar
+      FROM facturas
     ` as Record<string, unknown>[]
 
-    // ═══ CxC: POR COBRAR ESTE MES ═══
-    // Recurrentes: sum total of all recurring that haven't been paid this month
-    const facturasRecurrentesAll = await sql`
-      SELECT f.id, f.total FROM facturas f WHERE f.recurrente = true
+    // 4. Cuentas por pagar (gastos pendientes)
+    const [cxpRow] = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE estado = 'pendiente') AS pendientes,
+        COALESCE(SUM(monto) FILTER (WHERE estado = 'pendiente'), 0) AS por_pagar
+      FROM gastos
+      WHERE fecha_baja IS NULL OR fecha_baja > CURRENT_DATE
     ` as Record<string, unknown>[]
 
-    const pagosMesAll = await sql`
-      SELECT factura_id, SUM(monto) as total_pagado FROM pagos
-      WHERE EXTRACT(MONTH FROM fecha_pago) = ${mes} AND EXTRACT(YEAR FROM fecha_pago) = ${anio}
-      GROUP BY factura_id
-    ` as Record<string, unknown>[]
-    const pagosMesMap = new Map(pagosMesAll.map(p => [p.factura_id as string, Number(p.total_pagado)]))
-
-    let porCobrarMes = 0
-    let pendientesCobro = 0
-    for (const f of facturasRecurrentesAll) {
-      if (!pagosMesMap.has(f.id as string)) {
-        porCobrarMes += Number(f.total)
-        pendientesCobro++
-      }
-    }
-
-    // Únicos del mes: with fecha_vencimiento this month and not fully paid
-    const unicosMes = await sql`
-      SELECT f.id, f.total FROM facturas f
-      LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
-      WHERE f.recurrente = false
-        AND EXTRACT(MONTH FROM f.fecha_vencimiento) = ${mes}
-        AND EXTRACT(YEAR FROM f.fecha_vencimiento) = ${anio}
-        AND COALESCE(p.pagado, 0) < f.total
-    ` as Record<string, unknown>[]
-    for (const f of unicosMes) {
-      porCobrarMes += Number(f.total)
-      pendientesCobro++
-    }
-
-    // ═══ CxP: POR PAGAR ESTE MES ═══
-    // Gastos fijos recurrentes pendientes
-    const gastosFijosPendientes = await sql`
-      SELECT COALESCE(SUM(monto), 0) as total, COUNT(*) as pendientes
-      FROM gastos WHERE recurrente = true AND estado = 'pendiente'
-    ` as Record<string, unknown>[]
-
-    // Gastos únicos del mes pendientes
-    const gastosUnicosMesPendientes = await sql`
-      SELECT COALESCE(SUM(monto), 0) as total, COUNT(*) as pendientes
-      FROM gastos WHERE recurrente = false AND estado = 'pendiente'
-        AND EXTRACT(MONTH FROM fecha_vencimiento) = ${mes}
-        AND EXTRACT(YEAR FROM fecha_vencimiento) = ${anio}
-    ` as Record<string, unknown>[]
-
-    const porPagarMes = Number(gastosFijosPendientes[0].total) + Number(gastosUnicosMesPendientes[0].total)
-    const pendientesPago = Number(gastosFijosPendientes[0].pendientes) + Number(gastosUnicosMesPendientes[0].pendientes)
-
-    // ═══ ALERTAS ═══
-    const alertas: { tipo: string; severity: 'danger' | 'warning' | 'info'; titulo: string; detalle: string; link?: string }[] = []
-
-    // 1. COBROS RETRASADOS — Recurrentes con dia_mes ya pasado y sin pago este mes
-    const facturasRecurrentes = await sql`
-      SELECT f.id, f.numero_factura, f.concepto, f.total, f.dia_mes, cl.nombre as cliente
-      FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
-      WHERE f.recurrente = true AND f.dia_mes IS NOT NULL
-    ` as Record<string, unknown>[]
-
-    const pagosMes = await sql`
-      SELECT factura_id FROM pagos
-      WHERE EXTRACT(MONTH FROM fecha_pago) = ${mes} AND EXTRACT(YEAR FROM fecha_pago) = ${anio}
-    ` as Record<string, unknown>[]
-    const pagosMesSet = new Set(pagosMes.map(p => p.factura_id as string))
-
-    const diaHoy = now.getDate()
-    for (const f of facturasRecurrentes) {
-      const diaMes = Math.min(Number(f.dia_mes), diasEnMes)
-      if (diaHoy > diaMes && !pagosMesSet.has(f.id as string)) {
-        const diasRetraso = diaHoy - diaMes
-        alertas.push({
-          tipo: 'cobro_retrasado',
-          severity: diasRetraso > 10 ? 'danger' : 'warning',
-          titulo: `Cobro retrasado: ${f.numero_factura}`,
-          detalle: `${f.cliente || f.concepto} — $${Number(f.total).toLocaleString('es-MX')} (${diasRetraso} días de retraso)`,
-          link: '/admin/finanzas/movimientos',
-        })
-      }
-    }
-
-    // 2. COBROS PRÓXIMOS — Recurrentes con dia_mes en los próximos 5 días
-    for (const f of facturasRecurrentes) {
-      const diaMes = Math.min(Number(f.dia_mes), diasEnMes)
-      const diasPara = diaMes - diaHoy
-      if (diasPara >= 0 && diasPara <= 5 && !pagosMesSet.has(f.id as string)) {
-        alertas.push({
-          tipo: 'cobro_proximo',
-          severity: 'info',
-          titulo: `Cobro próximo: ${f.numero_factura}`,
-          detalle: `${f.cliente || f.concepto} — $${Number(f.total).toLocaleString('es-MX')} (${diasPara === 0 ? 'hoy' : `en ${diasPara} día${diasPara > 1 ? 's' : ''}`})`,
-          link: '/admin/finanzas/movimientos',
-        })
-      }
-    }
-
-    // 3. GASTOS RETRASADOS — Recurrentes con dia_mes ya pasado y no pagados
-    const gastosRecurrentes = await sql`
-      SELECT g.id, g.concepto, g.monto, g.dia_mes, g.proveedor
-      FROM gastos g WHERE g.recurrente = true AND g.dia_mes IS NOT NULL AND g.estado = 'pendiente'
-    ` as Record<string, unknown>[]
-
-    for (const g of gastosRecurrentes) {
-      const diaMes = Math.min(Number(g.dia_mes), diasEnMes)
-      if (diaHoy > diaMes) {
-        const diasRetraso = diaHoy - diaMes
-        alertas.push({
-          tipo: 'gasto_retrasado',
-          severity: diasRetraso > 10 ? 'danger' : 'warning',
-          titulo: `Pago retrasado: ${g.concepto}`,
-          detalle: `${g.proveedor || ''} — $${Number(g.monto).toLocaleString('es-MX')} (${diasRetraso} días de retraso)`,
-          link: '/admin/finanzas/movimientos',
-        })
-      }
-    }
-
-    // 4. GASTOS PRÓXIMOS — Recurrentes/únicos que vencen en los próximos 5 días
-    const gastosProximos = await sql`
-      SELECT g.concepto, g.monto, g.dia_mes, g.fecha_vencimiento, g.recurrente, g.proveedor,
-        cg.nombre as categoria_nombre, cg.color as categoria_color
-      FROM gastos g LEFT JOIN categorias_gasto cg ON g.categoria_id = cg.id
-      WHERE g.estado = 'pendiente'
-    ` as Record<string, unknown>[]
-
-    for (const g of gastosProximos) {
-      let diaMes: number | null = null
-      if (g.recurrente && g.dia_mes) {
-        diaMes = Math.min(Number(g.dia_mes), diasEnMes)
-      } else if (g.fecha_vencimiento) {
-        const fv = new Date(g.fecha_vencimiento as string)
-        if (fv.getMonth() + 1 === mes && fv.getFullYear() === anio) diaMes = fv.getDate()
-      }
-      if (diaMes !== null) {
-        const diasPara = diaMes - diaHoy
-        if (diasPara >= 0 && diasPara <= 5 && !gastosRecurrentes.find(gr => gr.concepto === g.concepto)) {
-          alertas.push({
-            tipo: 'gasto_proximo',
-            severity: 'info',
-            titulo: `Pago próximo: ${g.concepto}`,
-            detalle: `${g.proveedor || g.categoria_nombre || ''} — $${Number(g.monto).toLocaleString('es-MX')} (${diasPara === 0 ? 'hoy' : `en ${diasPara} día${diasPara > 1 ? 's' : ''}`})`,
-            link: '/admin/finanzas/movimientos',
-          })
-        }
-      }
-    }
-
-    // 5. FACTURAS ÚNICAS VENCIDAS — fecha_vencimiento pasada y sin pago completo
-    const facturasVencidas = await sql`
-      SELECT f.id, f.numero_factura, f.concepto, f.total, f.fecha_vencimiento, cl.nombre as cliente
-      FROM facturas f LEFT JOIN clientes cl ON f.cliente_id = cl.id
-      LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
-      WHERE f.recurrente = false AND f.fecha_vencimiento < ${hoy} AND COALESCE(p.pagado, 0) < f.total
-      ORDER BY f.fecha_vencimiento ASC LIMIT 5
-    ` as Record<string, unknown>[]
-
-    for (const f of facturasVencidas) {
-      const diasRetraso = Math.round((now.getTime() - new Date(f.fecha_vencimiento as string).getTime()) / (1000 * 60 * 60 * 24))
-      alertas.push({
-        tipo: 'factura_vencida',
-        severity: 'danger',
-        titulo: `Factura vencida: ${f.numero_factura}`,
-        detalle: `${f.cliente || f.concepto} — $${Number(f.total).toLocaleString('es-MX')} (${diasRetraso} días vencida)`,
-        link: `/admin/finanzas/facturas/${f.id}`,
-      })
-    }
-
-    // 6. BALANCE NEGATIVO
-    const ingresos = Number(ingresosMes[0].total)
-    const egresos = Number(egresosMes[0].total)
-    if (egresos > ingresos && ingresos > 0) {
-      alertas.push({
-        tipo: 'balance_negativo',
-        severity: 'danger',
-        titulo: 'Balance del mes negativo',
-        detalle: `Egresos ($${egresos.toLocaleString('es-MX')}) superan ingresos ($${ingresos.toLocaleString('es-MX')}) por $${(egresos - ingresos).toLocaleString('es-MX')}`,
-        link: '/admin/finanzas/reportes',
-      })
-    }
-
-    // Sort: danger first, then warning, then info
-    const severityOrder = { danger: 0, warning: 1, info: 2 }
-    alertas.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
-
-    // ═══ KPIs SAF: Cartera vencida + Presión de caja + Runway ═══
-    const carteraVencidaRows = await sql`
-      SELECT COALESCE(SUM(f.total - COALESCE(p.pagado, 0)), 0) as monto, COUNT(*) as n
+    // 5. Alertas simples: facturas vencidas, gastos vencidos, balance negativo
+    const alertasRows = await sql`
+      SELECT 'factura_vencida' AS tipo, f.numero_factura AS referencia,
+        cl.nombre AS nombre, f.total AS monto,
+        f.fecha_vencimiento::text AS fecha,
+        f.id AS link_id
       FROM facturas f
-      LEFT JOIN (SELECT factura_id, SUM(monto) as pagado FROM pagos GROUP BY factura_id) p ON f.id = p.factura_id
+      LEFT JOIN clientes cl ON cl.id = f.cliente_id
       WHERE f.estado IN ('pendiente', 'parcial', 'vencida')
         AND f.recurrente = false
         AND f.fecha_vencimiento < CURRENT_DATE
-        AND COALESCE(p.pagado, 0) < f.total
+      ORDER BY f.fecha_vencimiento ASC
+      LIMIT 5
     ` as Record<string, unknown>[]
-    const carteraVencida = {
-      monto: Number(carteraVencidaRows[0]?.monto || 0),
-      facturas: Number(carteraVencidaRows[0]?.n || 0),
-    }
 
-    const ingresos30dRows = await sql`
-      SELECT COALESCE(SUM(f.total), 0) as monto FROM facturas f
-      WHERE f.estado IN ('pendiente', 'parcial', 'vencida')
-        AND (
-          (f.recurrente = true AND f.dia_mes IS NOT NULL)
-          OR (f.recurrente = false AND f.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days')
-        )
-    ` as Record<string, unknown>[]
-    const gastos30dRows = await sql`
-      SELECT COALESCE(SUM(g.monto), 0) as monto FROM gastos g
-      WHERE g.estado = 'pendiente'
-        AND (
-          (g.recurrente = true AND g.dia_mes IS NOT NULL)
-          OR (g.recurrente = false AND g.fecha_vencimiento <= CURRENT_DATE + INTERVAL '30 days')
-        )
-    ` as Record<string, unknown>[]
-    const ingresos30d = Number(ingresos30dRows[0]?.monto || 0)
-    const gastos30d = Number(gastos30dRows[0]?.monto || 0)
-    const saldoActual = ingresos - egresos
-    const presionCaja = saldoActual > 0
-      ? Math.max(0, (gastos30d - ingresos30d) / saldoActual)
-      : (gastos30d > ingresos30d ? 9.99 : 0)
-    const gastoSemanal = gastos30d > 0 ? gastos30d / 4 : (egresos > 0 ? egresos / 4 : 1)
-    const runwaySemanas = saldoActual > 0 ? saldoActual / gastoSemanal : 0
+    const ingresosMes = Number(pagosDelMes.total) + Number(ingresosEgresos.ingresos_cfdi_mes)
+    const egresosMes = Number(ingresosEgresos.egresos_cfdi_mes)
+    const balanceMes = ingresosMes - egresosMes
+
+    const alertas = [
+      ...alertasRows.map((r) => ({
+        tipo: r.tipo as string,
+        severity: 'danger' as const,
+        titulo: `Factura vencida: ${r.referencia}`,
+        detalle: `${r.nombre || 'Sin cliente'} — $${Number(r.monto).toLocaleString('es-MX')}`,
+        link: `/admin/finanzas/facturas/${r.link_id}`,
+      })),
+      ...(balanceMes < 0 ? [{
+        tipo: 'balance_negativo',
+        severity: 'danger' as const,
+        titulo: 'Balance del mes negativo',
+        detalle: `Egresos superan ingresos por $${Math.abs(balanceMes).toLocaleString('es-MX')}`,
+        link: '/admin/finanzas/facturas',
+      }] : []),
+    ]
 
     return NextResponse.json({
-      cxc: { por_cobrar: porCobrarMes, pendientes: pendientesCobro },
-      cxp: { por_pagar: porPagarMes, pendientes: pendientesPago },
-      ingresos_mes: ingresos,
-      egresos_mes: egresos,
-      balance_mes: ingresos - egresos,
-      alertas,
-      kpis_saf: {
-        cartera_vencida: carteraVencida,
-        presion_caja_porcentaje: presionCaja * 100,
-        runway_semanas: runwaySemanas,
-        ingresos_proximos_30d: ingresos30d,
-        gastos_proximos_30d: gastos30d,
+      cxc: {
+        pendientes: Number(cxcRow.pendientes),
+        por_cobrar: Number(cxcRow.por_cobrar),
       },
+      cxp: {
+        pendientes: Number(cxpRow.pendientes),
+        por_pagar: Number(cxpRow.por_pagar),
+      },
+      ingresos_mes: ingresosMes,
+      egresos_mes: egresosMes,
+      balance_mes: balanceMes,
+      alertas,
     })
   } catch (error) {
-    console.error('[ERP] Error:', error)
+    console.error('[ERP] Error stats:', error)
     return NextResponse.json({ error: 'Error al obtener stats financieros' }, { status: 500 })
   }
 }

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/navbar'
-import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon, FileText } from 'lucide-react'
+import { ArrowLeft, Plus, Search, CreditCard, CheckCircle, X, CalendarClock, Zap, Users, Wrench, Pencil, Save, Upload, Eye, Paperclip, ChevronLeft, ChevronRight, Landmark, GitMerge, BanIcon, FileText, FileCode2, ChevronDown } from 'lucide-react'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 import { BOLSAS_SAF, BOLSA_LABEL } from '@/lib/finanzas-bolsas'
@@ -24,6 +24,13 @@ interface Gasto {
     banco_descripcion?: string | null;
     fecha_baja?: string | null;
     cfdi_id?: string | null;
+}
+interface CfdiRecibido {
+    id: string; uuid_sat: string; fecha: string;
+    emisor_rfc: string; emisor_nombre: string | null;
+    subtotal: number; total: number; moneda: string;
+    estado: string; gasto_id: string | null;
+    xml_nombre: string | null;
 }
 interface MovBanco {
     id: string; fecha_operacion: string; descripcion: string; referencia: string;
@@ -61,13 +68,23 @@ export default function GastosPage() {
     const [anio, setAnio] = useState(new Date().getFullYear())
     const [filtroEstado, setFiltroEstado] = useState<'todos' | 'con_banco' | 'sin_banco'>('todos')
     // Panel ligar banco
+    const [tabPrincipal, setTabPrincipal] = useState<'gastos' | 'cfdis'>('gastos')
+    // Panel ligar banco (manual)
     const [ligandoGasto, setLigandoGasto] = useState<Gasto | null>(null)
     const [movCandidatos, setMovCandidatos] = useState<MovBanco[]>([])
     const [loadMovCands, setLoadMovCands] = useState(false)
-    // Panel ligar CFDI
+    const [busquedaBanco, setBusquedaBanco] = useState('')
+    // Panel ligar CFDI (manual)
     const [ligandoCfdiGasto, setLigandoCfdiGasto] = useState<Gasto | null>(null)
     const [cfdiCandidatos, setCfdiCandidatos] = useState<CfdiCandidato[]>([])
     const [loadCfdiCands, setLoadCfdiCands] = useState(false)
+    const [busquedaCfdi, setBusquedaCfdi] = useState('')
+    // Tab CFDIs recibidos
+    const [cfdisRecibidos, setCfdisRecibidos] = useState<CfdiRecibido[]>([])
+    const [loadingCfdis, setLoadingCfdis] = useState(false)
+    const [searchCfdi, setSearchCfdi] = useState('')
+    // Form avanzado SAF
+    const [showSaf, setShowSaf] = useState(false)
 
     const prevMes = () => { if (mes === 1) { setMes(12); setAnio(a => a - 1) } else setMes(m => m - 1) }
     const nextMes = () => { if (mes === 12) { setMes(1); setAnio(a => a + 1) } else setMes(m => m + 1) }
@@ -191,12 +208,19 @@ export default function GastosPage() {
         else alert('Error al guardar')
     }
 
-    const abrirPanelLigar = async (g: Gasto) => {
+    const abrirPanelLigar = (g: Gasto) => {
         setLigandoGasto(g)
         setMovCandidatos([])
+        setBusquedaBanco('')
+    }
+
+    const buscarMovBanco = async () => {
+        if (!ligandoGasto) return
         setLoadMovCands(true)
-        const fecha = g.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
-        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?monto=${g.monto}&fecha=${fecha}&tipo=cargo`)
+        const fecha = ligandoGasto.fecha_vencimiento?.split('T')[0] || new Date().toISOString().split('T')[0]
+        const params = new URLSearchParams({ monto: String(ligandoGasto.monto), fecha, tipo: 'cargo' })
+        if (busquedaBanco.trim()) params.set('q', busquedaBanco.trim())
+        const r = await fetch(`/api/finanzas/conciliacion/movimientos-candidatos?${params}`)
         const d = await r.json()
         setMovCandidatos(d.movimientos ?? [])
         setLoadMovCands(false)
@@ -212,15 +236,37 @@ export default function GastosPage() {
         else alert('Error al ligar')
     }
 
-    const abrirPanelCfdi = async (g: Gasto) => {
+    const abrirPanelCfdi = (g: Gasto) => {
         setLigandoCfdiGasto(g)
         setCfdiCandidatos([])
+        setBusquedaCfdi('')
+    }
+
+    const buscarCfdiCandidatos = async () => {
+        if (!ligandoCfdiGasto) return
         setLoadCfdiCands(true)
-        const r = await fetch(`/api/finanzas/conciliacion/cfdi-candidatos?monto=${g.monto}&tipo=recibida`)
+        const params = new URLSearchParams({ monto: String(ligandoCfdiGasto.monto), tipo: 'recibida' })
+        if (busquedaCfdi.trim()) params.set('q', busquedaCfdi.trim())
+        const r = await fetch(`/api/finanzas/conciliacion/cfdi-candidatos?${params}`)
         const d = await r.json()
         setCfdiCandidatos(d.cfdis ?? [])
         setLoadCfdiCands(false)
     }
+
+    const fetchCfdisRecibidos = async () => {
+        setLoadingCfdis(true)
+        const r = await fetch('/api/finanzas/cfdi?tipo=recibida')
+        const d = await r.json()
+        setCfdisRecibidos(d.cfdis ?? d ?? [])
+        setLoadingCfdis(false)
+    }
+
+    useEffect(() => {
+        if (status === 'authenticated' && tabPrincipal === 'cfdis' && cfdisRecibidos.length === 0) {
+            fetchCfdisRecibidos()
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tabPrincipal, status])
 
     const ligarCfdi = async (cfdiId: string) => {
         if (!ligandoCfdiGasto) return
@@ -264,18 +310,37 @@ export default function GastosPage() {
                                 <div>
                                     <Button onClick={() => router.push('/admin/finanzas')} variant="ghost" className="font-mono gap-2 text-sm mb-2"><ArrowLeft className="h-4 w-4" /> Finanzas</Button>
                                     <h1 className="text-3xl font-mono text-red-400">Gastos</h1>
-                                    <p className="text-gray-400 font-mono text-sm mt-1">Gastos fijos y únicos</p>
+                                    <p className="text-gray-400 font-mono text-sm mt-1">Cuentas por pagar y CFDIs recibidos</p>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={() => openForm('fijo')} className="font-mono gap-2 bg-orange-600 hover:bg-orange-700" size="sm">
-                                        <CalendarClock className="h-4 w-4" /> Gasto Fijo
-                                    </Button>
-                                    <Button onClick={() => openForm('unico')} className="font-mono gap-2 bg-red-600 hover:bg-red-700" size="sm">
-                                        <Zap className="h-4 w-4" /> Gasto Único
-                                    </Button>
-                                </div>
+                                {tabPrincipal === 'gastos' && (
+                                    <div className="flex gap-2">
+                                        <Button onClick={() => openForm('fijo')} className="font-mono gap-2 bg-orange-600 hover:bg-orange-700" size="sm">
+                                            <CalendarClock className="h-4 w-4" /> Gasto Fijo
+                                        </Button>
+                                        <Button onClick={() => openForm('unico')} className="font-mono gap-2 bg-red-600 hover:bg-red-700" size="sm">
+                                            <Zap className="h-4 w-4" /> Gasto Único
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
+                            {/* Tabs principales */}
+                            <div className="flex gap-1 border-b border-red-500/20">
+                                <button onClick={() => setTabPrincipal('gastos')}
+                                    className={`px-4 py-2 font-mono text-xs border-b-2 -mb-px transition-colors ${
+                                        tabPrincipal === 'gastos' ? 'border-red-400 text-red-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                                    }`}>
+                                    <CreditCard className="h-3 w-3 inline mr-1" /> Gastos manuales
+                                </button>
+                                <button onClick={() => setTabPrincipal('cfdis')}
+                                    className={`px-4 py-2 font-mono text-xs border-b-2 -mb-px transition-colors ${
+                                        tabPrincipal === 'cfdis' ? 'border-red-400 text-red-400' : 'border-transparent text-gray-500 hover:text-gray-300'
+                                    }`}>
+                                    <FileCode2 className="h-3 w-3 inline mr-1" /> CFDIs recibidos
+                                </button>
+                            </div>
+
+                            {tabPrincipal === 'gastos' && (<>
                             {/* Month navigation */}
                             <div className="flex items-center justify-between bg-zinc-900/50 border border-red-500/20 rounded-lg px-4 py-2">
                                 <button onClick={prevMes} className="p-1 rounded hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors">
@@ -371,31 +436,39 @@ export default function GastosPage() {
                                             </div>
                                         </div>
 
-                                        {/* SAF: tipo_gasto + bolsa_origen */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-gray-800">
-                                            <div>
-                                                <label className="font-mono text-xs text-orange-400">Tipo de gasto (SAF) *</label>
-                                                <select value={form.tipo_gasto} onChange={e => {
-                                                    const tg = e.target.value
-                                                    const bo = tg === 'estructural' ? 'operacion_base' : tg === 'estrategico' ? 'crecimiento' : 'operacion_variable'
-                                                    setForm(f => ({ ...f, tipo_gasto: tg, bolsa_origen: bo }))
-                                                }}
-                                                    className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
-                                                    <option value="estructural">🏛️ Estructural (renta, sueldos, software)</option>
-                                                    <option value="variable">⚡ Variable (gasolina, comisiones)</option>
-                                                    <option value="estrategico">🚀 Estratégico (marketing, equipo)</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="font-mono text-xs text-orange-400">Bolsa de origen</label>
-                                                <select value={form.bolsa_origen} onChange={e => setForm(f => ({ ...f, bolsa_origen: e.target.value }))}
-                                                    className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
-                                                    {BOLSAS_SAF.map(b => <option key={b} value={b}>{BOLSA_LABEL[b]}</option>)}
-                                                </select>
-                                            </div>
+                                        {/* SAF: tipo_gasto + bolsa_origen — sección avanzada colapsada */}
+                                        <div className="pt-2 border-t border-gray-800">
+                                            <button type="button" onClick={() => setShowSaf(s => !s)}
+                                                className="flex items-center gap-1 font-mono text-xs text-gray-600 hover:text-gray-400 transition-colors">
+                                                <ChevronDown className={`h-3 w-3 transition-transform ${showSaf ? 'rotate-180' : ''}`} />
+                                                opciones avanzadas (SAF)
+                                            </button>
+                                            {showSaf && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                                    <div>
+                                                        <label className="font-mono text-xs text-orange-400">Tipo de gasto (SAF)</label>
+                                                        <select value={form.tipo_gasto} onChange={e => {
+                                                            const tg = e.target.value
+                                                            const bo = tg === 'estructural' ? 'operacion_base' : tg === 'estrategico' ? 'crecimiento' : 'operacion_variable'
+                                                            setForm(f => ({ ...f, tipo_gasto: tg, bolsa_origen: bo }))
+                                                        }}
+                                                            className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
+                                                            <option value="estructural">🏛️ Estructural (renta, sueldos, software)</option>
+                                                            <option value="variable">⚡ Variable (gasolina, comisiones)</option>
+                                                            <option value="estrategico">🚀 Estratégico (marketing, equipo)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="font-mono text-xs text-orange-400">Bolsa de origen</label>
+                                                        <select value={form.bolsa_origen} onChange={e => setForm(f => ({ ...f, bolsa_origen: e.target.value }))}
+                                                            className="w-full bg-zinc-800 border border-gray-700 rounded px-3 py-2 font-mono text-sm text-white focus:border-orange-500 focus:outline-none mt-1">
+                                                            {BOLSAS_SAF.map(b => <option key={b} value={b}>{BOLSA_LABEL[b]}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Comprobante (Vercel Blob) */}
                                         <div className="pt-2">
                                             <label className="font-mono text-xs text-gray-500">Comprobante (PDF / imagen) — opcional</label>
                                             {form.archivo_nombre ? (
@@ -596,6 +669,82 @@ export default function GastosPage() {
                                     <p className="font-mono text-gray-400">{search ? 'Sin resultados' : 'No hay gastos registrados'}</p>
                                 </div>
                             )}
+                            </>)}
+
+                            {tabPrincipal === 'cfdis' && (
+                                <div className="space-y-4">
+                                    <div className="flex gap-2 items-center">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <input type="text" placeholder="Buscar por RFC, nombre, UUID..."
+                                                value={searchCfdi} onChange={e => setSearchCfdi(e.target.value)}
+                                                className="w-full bg-zinc-900 border border-gray-700 rounded pl-10 pr-4 py-2 text-sm font-mono text-gray-300 focus:border-red-500 focus:outline-none" />
+                                        </div>
+                                        <button onClick={fetchCfdisRecibidos}
+                                            className="px-4 py-2 font-mono text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 rounded transition-colors">
+                                            actualizar
+                                        </button>
+                                    </div>
+                                    {loadingCfdis ? (
+                                        <p className="text-gray-500 font-mono text-xs">cargando CFDIs...</p>
+                                    ) : cfdisRecibidos.filter(c =>
+                                        !searchCfdi.trim() ||
+                                        c.emisor_nombre?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                        c.emisor_rfc?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                        c.uuid_sat?.toLowerCase().includes(searchCfdi.toLowerCase())
+                                    ).length === 0 ? (
+                                        <div className="text-center py-12">
+                                            <FileCode2 className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+                                            <p className="font-mono text-gray-400">No hay CFDIs recibidos importados</p>
+                                            <p className="font-mono text-gray-600 text-sm mt-1">Importa XMLs del SAT en <a href="/admin/finanzas/cfdi" className="text-blue-400 hover:underline">CFDIs / XML SAT</a></p>
+                                        </div>
+                                    ) : (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full font-mono text-xs">
+                                                <thead>
+                                                    <tr className="text-gray-600 border-b border-red-500/10 text-left">
+                                                        <th className="pb-2 pr-4 font-normal">fecha</th>
+                                                        <th className="pb-2 pr-4 font-normal">emisor</th>
+                                                        <th className="pb-2 pr-4 font-normal">UUID</th>
+                                                        <th className="pb-2 pr-4 text-right font-normal">total</th>
+                                                        <th className="pb-2 font-normal">gasto</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-red-500/5">
+                                                    {cfdisRecibidos
+                                                        .filter(c =>
+                                                            !searchCfdi.trim() ||
+                                                            c.emisor_nombre?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                                            c.emisor_rfc?.toLowerCase().includes(searchCfdi.toLowerCase()) ||
+                                                            c.uuid_sat?.toLowerCase().includes(searchCfdi.toLowerCase())
+                                                        )
+                                                        .map(c => (
+                                                            <tr key={c.id} className="hover:bg-red-500/5 transition-colors">
+                                                                <td className="py-2 pr-4 text-gray-400 whitespace-nowrap">
+                                                                    {c.fecha ? new Date(c.fecha).toLocaleDateString('es-MX') : '—'}
+                                                                </td>
+                                                                <td className="py-2 pr-4">
+                                                                    <div className="text-gray-200 truncate max-w-[180px]">{c.emisor_nombre || c.emisor_rfc}</div>
+                                                                    <div className="text-gray-600 text-[10px]">{c.emisor_rfc}</div>
+                                                                </td>
+                                                                <td className="py-2 pr-4 text-gray-600 text-[10px]">{c.uuid_sat?.substring(0, 18)}…</td>
+                                                                <td className="py-2 pr-4 text-right text-red-400 whitespace-nowrap">{fmt(c.total)}</td>
+                                                                <td className="py-2">
+                                                                    {c.gasto_id ? (
+                                                                        <span className="text-orange-400 text-[10px]">✓ ligado</span>
+                                                                    ) : (
+                                                                        <span className="text-gray-600 text-[10px]">sin ligar</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </TerminalFrame>
                 </motion.div>
@@ -626,7 +775,19 @@ export default function GastosPage() {
                             <div className="mt-3 text-lg font-bold text-red-400">{fmt(ligandoGasto.monto)}</div>
                         </div>
 
-                        <p className="font-mono text-xs text-gray-500">movimientos bancarios similares (±15%, ±60 días):</p>
+                        <div className="flex gap-2">
+                            <input
+                                value={busquedaBanco}
+                                onChange={e => setBusquedaBanco(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && buscarMovBanco()}
+                                placeholder="buscar por descripción o monto..."
+                                className="flex-1 px-3 py-2 bg-zinc-900 border border-red-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500/50"
+                            />
+                            <button onClick={buscarMovBanco} disabled={loadMovCands}
+                                className="px-3 py-2 font-mono text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 rounded transition-colors disabled:opacity-50">
+                                {loadMovCands ? '...' : 'buscar'}
+                            </button>
+                        </div>
 
                         {loadMovCands ? (
                             <p className="text-gray-600 font-mono text-xs">buscando...</p>
@@ -683,7 +844,20 @@ export default function GastosPage() {
                             {ligandoCfdiGasto.proveedor && <div className="text-gray-500 text-xs mt-0.5">{ligandoCfdiGasto.proveedor}</div>}
                             <div className="mt-2 text-lg font-bold text-red-400">{fmt(ligandoCfdiGasto.monto)}</div>
                         </div>
-                        <p className="font-mono text-xs text-gray-500">CFDIs recibidos con monto similar (±15%):</p>
+
+                        <div className="flex gap-2">
+                            <input
+                                value={busquedaCfdi}
+                                onChange={e => setBusquedaCfdi(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && buscarCfdiCandidatos()}
+                                placeholder="buscar por RFC, nombre o monto..."
+                                className="flex-1 px-3 py-2 bg-zinc-900 border border-blue-500/20 rounded font-mono text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                            />
+                            <button onClick={buscarCfdiCandidatos} disabled={loadCfdiCands}
+                                className="px-3 py-2 font-mono text-xs bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 rounded transition-colors disabled:opacity-50">
+                                {loadCfdiCands ? '...' : 'buscar'}
+                            </button>
+                        </div>
                         {loadCfdiCands ? (
                             <p className="text-gray-600 font-mono text-xs">buscando...</p>
                         ) : cfdiCandidatos.length === 0 ? (
