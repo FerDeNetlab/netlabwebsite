@@ -74,7 +74,10 @@ export async function POST(request: Request, { params }: Ctx) {
         ` as Record<string, unknown>[]
 
         // Notificación por email a Netlab (best-effort, no bloquea)
-        const destino = process.env.NETLAB_TICKETS_EMAIL || process.env.NETLAB_FINANZAS_EMAIL
+        const destino = process.env.NETLAB_TICKETS_EMAIL
+            || process.env.NETLAB_FINANZAS_EMAIL
+            || process.env.DIRECTOR_EMAIL
+            || 'soporte@netlab.mx'
         if (destino && isEmailConfigured()) {
             const color = urgencia === 'critica' ? '#ef4444' : urgencia === 'alta' ? '#f59e0b' : '#22c55e'
             sendEmail({
