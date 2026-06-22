@@ -49,6 +49,7 @@ export interface Ticket {
     categoria: string | null
     solicitante_nombre: string | null
     solicitante_email: string | null
+    imagenes: string[]
     created_at: string
     updated_at: string
 }

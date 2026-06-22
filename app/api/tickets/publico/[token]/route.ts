@@ -25,7 +25,7 @@ export async function GET(_req: Request, { params }: Ctx) {
 
         const tickets = await sql`
             SELECT id, folio, titulo, descripcion, urgencia, estado, categoria,
-                   solicitante_nombre, created_at, updated_at
+                   solicitante_nombre, imagenes, created_at, updated_at
             FROM tickets
             WHERE proyecto_id = ${proyecto.id as string}
             ORDER BY created_at DESC
@@ -51,6 +51,9 @@ export async function POST(request: Request, { params }: Ctx) {
         const categoria = typeof body.categoria === 'string' ? body.categoria.trim() || null : null
         const solicitante_nombre = typeof body.solicitante_nombre === 'string' ? body.solicitante_nombre.trim() || null : null
         const solicitante_email = typeof body.solicitante_email === 'string' ? body.solicitante_email.trim() || null : null
+        const imagenes: string[] = Array.isArray(body.imagenes)
+            ? body.imagenes.filter((u: unknown): u is string => typeof u === 'string').slice(0, 10)
+            : []
 
         if (!titulo || !descripcion) {
             return NextResponse.json({ error: 'Título y descripción son obligatorios' }, { status: 400 })
@@ -66,10 +69,10 @@ export async function POST(request: Request, { params }: Ctx) {
 
         const result = await sql`
             INSERT INTO tickets
-                (proyecto_id, folio, titulo, descripcion, urgencia, categoria, solicitante_nombre, solicitante_email)
+                (proyecto_id, folio, titulo, descripcion, urgencia, categoria, solicitante_nombre, solicitante_email, imagenes)
             VALUES
                 (${proyecto.id as string}, ${folio}, ${titulo}, ${descripcion}, ${urgencia},
-                 ${categoria}, ${solicitante_nombre}, ${solicitante_email})
+                 ${categoria}, ${solicitante_nombre}, ${solicitante_email}, ${JSON.stringify(imagenes)}::jsonb)
             RETURNING *
         ` as Record<string, unknown>[]
 
@@ -92,6 +95,7 @@ export async function POST(request: Request, { params }: Ctx) {
                         <p><strong>Urgencia:</strong> <span style="color:${color}">${URGENCIA_LABEL[urgencia]}</span></p>
                         ${categoria ? `<p><strong>Categoría:</strong> ${categoria}</p>` : ''}
                         <p><strong>Descripción:</strong><br>${descripcion.replace(/\n/g, '<br>')}</p>
+                        ${imagenes.length ? `<p><strong>Capturas (${imagenes.length}):</strong><br>${imagenes.map((u) => `<a href="${u}" style="color:#22c55e">${u}</a>`).join('<br>')}</p>` : ''}
                         <hr style="border-color:#333">
                         <p style="color:#888">De: ${solicitante_nombre || 'Anónimo'} ${solicitante_email ? `(${solicitante_email})` : ''}</p>
                     </div>

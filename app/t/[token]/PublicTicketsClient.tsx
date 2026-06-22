@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { Plus, Send, LifeBuoy, ArrowLeft } from 'lucide-react'
+import { Plus, Send, LifeBuoy, ArrowLeft, ImagePlus, X, Paperclip } from 'lucide-react'
 import {
     URGENCIAS, ESTADO_LABEL, URGENCIA_LABEL,
     type PortalPublico, type Ticket, type TicketComentario, type EstadoTicket, type Urgencia,
@@ -23,7 +23,7 @@ const URGENCIA_COLOR: Record<Urgencia, string> = {
 
 export default function PublicTicketsClient({ portal, token }: { portal: PortalPublico; token: string }) {
     const [tickets, setTickets] = useState<Ticket[]>(portal.tickets)
-    const [showForm, setShowForm] = useState(portal.tickets.length === 0)
+    const [showForm, setShowForm] = useState(false)
     const [selected, setSelected] = useState<string | null>(null)
 
     const refresh = useCallback(async () => {
@@ -72,6 +72,18 @@ export default function PublicTicketsClient({ portal, token }: { portal: PortalP
                             />
                         )}
 
+                        {/* Estado vacío */}
+                        {!showForm && tickets.length === 0 && (
+                            <div className="text-center py-12">
+                                <p className="text-gray-400 font-mono text-sm mb-4">
+                                    Aún no has levantado ningún ticket.
+                                </p>
+                                <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-mono gap-2">
+                                    <Plus className="h-4 w-4" /> Crear mi primer ticket
+                                </Button>
+                            </div>
+                        )}
+
                         {/* Lista */}
                         {tickets.length > 0 && (
                             <div className="space-y-2">
@@ -83,8 +95,9 @@ export default function PublicTicketsClient({ portal, token }: { portal: PortalP
                                     >
                                         <div className="flex items-center justify-between gap-3">
                                             <div className="min-w-0">
-                                                <p className="font-mono text-sm text-gray-200 truncate">
+                                                <p className="font-mono text-sm text-gray-200 truncate flex items-center gap-1.5">
                                                     <span className="text-gray-500">{t.folio}</span> · {t.titulo}
+                                                    {t.imagenes?.length > 0 && <Paperclip className="h-3 w-3 text-gray-500 shrink-0" />}
                                                 </p>
                                                 <p className="text-gray-500 text-xs font-mono mt-1">
                                                     {new Date(t.created_at).toLocaleDateString('es-MX')}
@@ -121,8 +134,30 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
     const [categoria, setCategoria] = useState('')
     const [nombre, setNombre] = useState('')
     const [email, setEmail] = useState('')
+    const [imagenes, setImagenes] = useState<string[]>([])
+    const [uploading, setUploading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState('')
+
+    const handleFiles = async (files: FileList | null) => {
+        if (!files || files.length === 0) return
+        setError('')
+        setUploading(true)
+        for (const file of Array.from(files)) {
+            if (imagenes.length >= 10) break
+            const fd = new FormData()
+            fd.append('file', file)
+            try {
+                const res = await fetch(`/api/tickets/publico/${token}/upload`, { method: 'POST', body: fd })
+                const data = await res.json()
+                if (res.ok && data.url) setImagenes((prev) => [...prev, data.url])
+                else setError(data.error || 'No se pudo subir la imagen')
+            } catch {
+                setError('Error al subir la imagen')
+            }
+        }
+        setUploading(false)
+    }
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -140,6 +175,7 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
                 categoria: categoria || null,
                 solicitante_nombre: nombre || null,
                 solicitante_email: email || null,
+                imagenes,
             }),
         })
         setSaving(false)
@@ -188,6 +224,42 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
                             className="w-full px-3 py-2 bg-zinc-900 border border-blue-500/20 rounded text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                     </div>
                 </div>
+                {/* Capturas de pantalla */}
+                <div>
+                    <label className="text-sm text-gray-400 mb-1 block">Capturas (opcional)</label>
+                    <div className="flex flex-wrap gap-2">
+                        {imagenes.map((url, idx) => (
+                            <div key={url} className="relative group">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={url} alt={`captura ${idx + 1}`} className="h-20 w-20 object-cover rounded border border-blue-500/20" />
+                                <button
+                                    type="button"
+                                    onClick={() => setImagenes((prev) => prev.filter((u) => u !== url))}
+                                    className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full p-0.5"
+                                    title="Quitar"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        ))}
+                        {imagenes.length < 10 && (
+                            <label className="h-20 w-20 flex flex-col items-center justify-center gap-1 rounded border border-dashed border-blue-500/30 text-gray-500 hover:text-blue-400 hover:border-blue-500/50 cursor-pointer transition-all">
+                                <ImagePlus className="h-5 w-5" />
+                                <span className="text-[10px]">{uploading ? 'Subiendo...' : 'Agregar'}</span>
+                                <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp,image/gif"
+                                    multiple
+                                    className="hidden"
+                                    disabled={uploading}
+                                    onChange={(e) => { handleFiles(e.target.files); e.target.value = '' }}
+                                />
+                            </label>
+                        )}
+                    </div>
+                    <p className="text-gray-600 text-[11px] mt-1">PNG, JPG, WEBP o GIF. Máximo 4 MB c/u.</p>
+                </div>
+
                 {error && <p className="text-red-400 text-sm">{error}</p>}
                 <div className="flex gap-3 pt-1">
                     {onCancel && (
@@ -195,7 +267,7 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
                             <ArrowLeft className="h-4 w-4" /> Cancelar
                         </Button>
                     )}
-                    <Button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-mono">
+                    <Button type="submit" disabled={saving || uploading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-mono">
                         {saving ? 'Enviando...' : 'Enviar ticket'}
                     </Button>
                 </div>
@@ -251,6 +323,17 @@ function ClientTicketPanel({ token, ticketId, onClose }: { token: string; ticket
                         <div className="bg-zinc-900/50 border border-gray-800 rounded p-4 mb-4">
                             <p className="text-gray-300 text-sm whitespace-pre-wrap">{ticket.descripcion}</p>
                         </div>
+
+                        {ticket.imagenes?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {ticket.imagenes.map((url, idx) => (
+                                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={url} alt={`captura ${idx + 1}`} className="h-24 w-24 object-cover rounded border border-gray-700 hover:border-blue-500/50 transition-all" />
+                                    </a>
+                                ))}
+                            </div>
+                        )}
 
                         <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">Conversación</p>
                         <div className="space-y-3 mb-4">

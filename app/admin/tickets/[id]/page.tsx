@@ -270,6 +270,17 @@ function TicketPanel({ ticketId, onClose, onChanged }: { ticketId: string; autor
                             <p className="text-gray-300 text-sm whitespace-pre-wrap">{ticket.descripcion}</p>
                         </div>
 
+                        {ticket.imagenes?.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {ticket.imagenes.map((url, idx) => (
+                                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={url} alt={`captura ${idx + 1}`} className="h-24 w-24 object-cover rounded border border-gray-700 hover:border-blue-500/50 transition-all" />
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Hilo */}
                         <p className="text-xs text-gray-500 uppercase tracking-widest mb-2">Conversación</p>
                         <div className="space-y-3 mb-4">
