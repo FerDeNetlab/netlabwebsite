@@ -14,7 +14,9 @@ import {
   Package,
   Plus,
   UserCog,
-  CheckSquare
+  CheckSquare,
+  BookOpen,
+  Ticket as TicketIcon
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -153,6 +155,24 @@ export default function DashboardClient({ session }: DashboardClientProps) {
       bgColor: 'bg-amber-400/10',
       borderColor: 'border-amber-500/20',
       path: '/admin/pendientes',
+    },
+    {
+      title: 'Documentaciones',
+      description: 'Manuales que compartes con clientes',
+      icon: BookOpen,
+      color: 'text-green-400',
+      bgColor: 'bg-green-400/10',
+      borderColor: 'border-green-500/20',
+      path: '/documentaciones',
+    },
+    {
+      title: 'Tickets',
+      description: 'Soporte: ticketeras y links para clientes',
+      icon: TicketIcon,
+      color: 'text-blue-400',
+      bgColor: 'bg-blue-400/10',
+      borderColor: 'border-blue-500/20',
+      path: '/admin/tickets',
     },
   ]
 
