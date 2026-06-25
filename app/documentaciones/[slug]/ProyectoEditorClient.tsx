@@ -17,6 +17,8 @@ import {
     RefreshCw,
     ExternalLink,
     ChevronRight,
+    Globe,
+    Lock,
 } from 'lucide-react'
 import {
     DOC_COLORES,
@@ -91,6 +93,17 @@ export default function ProyectoEditorClient({ slug, sessionEmail }: { slug: str
         if (res.ok) fetchProyecto()
     }
 
+    const toggleVisibilidad = async () => {
+        const nuevo = !proyecto.is_public
+        const res = await fetch(`/api/documentaciones/proyectos/${proyecto.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_public: nuevo }),
+        })
+        if (res.ok) fetchProyecto()
+        else alert('No se pudo cambiar la visibilidad')
+    }
+
     const eliminarCategoria = async (catId: string, nombre: string) => {
         if (!confirm(`¿Eliminar la categoría "${nombre}" y todos sus flujos?`)) return
         const res = await fetch(`/api/documentaciones/categorias/${catId}`, { method: 'DELETE' })
@@ -124,6 +137,14 @@ export default function ProyectoEditorClient({ slug, sessionEmail }: { slug: str
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
+                                        onClick={toggleVisibilidad}
+                                        title={proyecto.is_public ? 'Está público — clic para hacerlo privado' : 'Está privado — clic para hacerlo público'}
+                                        className={`transition-all rounded-sm px-3 py-1.5 text-xs font-mono flex items-center gap-2 border ${proyecto.is_public ? 'bg-emerald-600/10 border-emerald-500/50 text-emerald-400 hover:bg-emerald-600/20' : 'bg-yellow-600/10 border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/20'}`}
+                                    >
+                                        {proyecto.is_public ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                                        {proyecto.is_public ? 'Público' : 'Privado'}
+                                    </button>
+                                    <button
                                         onClick={copyLink}
                                         className="bg-green-600/10 border border-green-500/50 text-green-400 hover:bg-green-600/20 hover:text-green-300 transition-all rounded-sm px-3 py-1.5 text-xs font-mono flex items-center gap-2"
                                     >
@@ -149,6 +170,13 @@ export default function ProyectoEditorClient({ slug, sessionEmail }: { slug: str
                                 </div>
                             </div>
                         </div>
+
+                        {!proyecto.is_public && (
+                            <div className="bg-yellow-600/10 border border-yellow-500/30 rounded-md px-4 py-3 flex items-center gap-2 text-yellow-300 font-mono text-sm">
+                                <Lock className="h-4 w-4 shrink-0" />
+                                Esta documentación está <strong>privada</strong>: el link al cliente no funcionará. Haz clic en <strong>Privado</strong> para volverla pública.
+                            </div>
+                        )}
 
                         {/* Acciones */}
                         <div className="flex justify-between items-center">
