@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { Navbar } from '@/components/navbar'
 import { TerminalFrame } from '@/components/ui/terminal-frame'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Send, Copy, CheckCheck, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Send, Copy, CheckCheck, ExternalLink, CheckCircle2 } from 'lucide-react'
 import {
     ESTADOS, URGENCIAS, ESTADO_LABEL, URGENCIA_LABEL,
     type Ticket, type TicketComentario, type EstadoTicket, type Urgencia,
@@ -192,6 +192,8 @@ function TicketPanel({ ticketId, onClose, onChanged }: { ticketId: string; autor
     const [ticket, setTicket] = useState<(Ticket & { comentarios: TicketComentario[] }) | null>(null)
     const [mensaje, setMensaje] = useState('')
     const [sending, setSending] = useState(false)
+    const [aviso, setAviso] = useState('')
+    const [finalizando, setFinalizando] = useState(false)
 
     const load = useCallback(async () => {
         const res = await fetch(`/api/tickets/tickets/${ticketId}`)
@@ -207,6 +209,27 @@ function TicketPanel({ ticketId, onClose, onChanged }: { ticketId: string; autor
             body: JSON.stringify({ [campo]: valor }),
         })
         if (res.ok) { await load(); onChanged() }
+    }
+
+    const finalizar = async () => {
+        setFinalizando(true)
+        setAviso('')
+        const res = await fetch(`/api/tickets/tickets/${ticketId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ estado: 'resuelto' }),
+        })
+        setFinalizando(false)
+        if (res.ok) {
+            const data = await res.json()
+            setAviso(data._notificado
+                ? '✓ Finalizado. Se notificó al solicitante por correo.'
+                : '✓ Marcado como resuelto (sin correo: el solicitante no dejó email o el SMTP no está configurado).')
+            await load()
+            onChanged()
+        } else {
+            setAviso('No se pudo finalizar el ticket.')
+        }
     }
 
     const enviar = async (e: React.FormEvent) => {
@@ -264,6 +287,21 @@ function TicketPanel({ ticketId, onClose, onChanged }: { ticketId: string; autor
                                     {URGENCIAS.map((u) => <option key={u} value={u}>{URGENCIA_LABEL[u]}</option>)}
                                 </select>
                             </div>
+                        </div>
+
+                        {/* Finalizar (check) — notifica al solicitante por correo */}
+                        <div className="mb-4">
+                            {ticket.estado === 'resuelto' || ticket.estado === 'cerrado' ? (
+                                <div className="flex items-center gap-2 text-emerald-400 text-sm bg-emerald-500/10 border border-emerald-500/30 rounded px-4 py-2.5">
+                                    <CheckCircle2 className="h-4 w-4" /> Ticket {ticket.estado === 'resuelto' ? 'resuelto' : 'cerrado'}
+                                </div>
+                            ) : (
+                                <Button onClick={finalizar} disabled={finalizando} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-mono gap-2">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    {finalizando ? 'Finalizando...' : 'Marcar como finalizado y avisar al solicitante'}
+                                </Button>
+                            )}
+                            {aviso && <p className="text-xs text-gray-400 mt-2">{aviso}</p>}
                         </div>
 
                         <div className="bg-zinc-900/50 border border-gray-800 rounded p-4 mb-4">
