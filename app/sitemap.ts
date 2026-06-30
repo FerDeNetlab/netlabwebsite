@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next"
-import { servicios, ciudades, industrias } from "@/lib/seo-data"
+import { servicios, ciudades, industrias, casosIA } from "@/lib/seo-data"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://www.netlab.mx"
@@ -120,6 +120,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.7,
       })
     }
+  }
+
+  // Netlab IA — casos de uso de análisis de datos con IA en Odoo
+  for (const caso of casosIA) {
+    routes.push({
+      url: `${baseUrl}/odoo-ia/${caso.slug}`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    })
   }
 
   return routes

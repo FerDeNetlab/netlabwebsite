@@ -11,6 +11,7 @@ const SystemsSection = dynamic(() => import("@/components/sections/systems").the
 const MethodologySection = dynamic(() => import("@/components/sections/methodology").then(m => ({ default: m.MethodologySection })))
 const OdooCEvsEnterpriseSection = dynamic(() => import("@/components/sections/odoo-ce-vs-enterprise").then(m => ({ default: m.OdooCEvsEnterpriseSection })))
 const OdooPricingSection = dynamic(() => import("@/components/sections/odoo-pricing").then(m => ({ default: m.OdooPricingSection })))
+const AIAnalyticsSection = dynamic(() => import("@/components/sections/ai-analytics").then(m => ({ default: m.AIAnalyticsSection })))
 const DirectContactSection = dynamic(() => import("@/components/sections/direct-contact").then(m => ({ default: m.DirectContactSection })))
 const CtaSection = dynamic(() => import("@/components/sections/cta").then(m => ({ default: m.CtaSection })))
 const FaqSection = dynamic(() => import("@/components/sections/faq").then(m => ({ default: m.FaqSection })))
@@ -28,6 +29,7 @@ export default function Home() {
       <MethodologySection />
       <OdooCEvsEnterpriseSection />
       <OdooPricingSection />
+      <AIAnalyticsSection />
       <DirectContactSection />
       <CtaSection />
       <FaqSection />

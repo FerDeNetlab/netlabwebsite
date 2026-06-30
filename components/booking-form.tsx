@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Loader } from "lucide-react"
+import { pushEvent } from "@/lib/gtm"
 
 interface BookingFormProps {
   onSuccess?: () => void
@@ -49,6 +50,14 @@ export function BookingForm({ onSuccess, plan }: BookingFormProps) {
         const data = await response.json()
         throw new Error(data.error || "Error al guardar")
       }
+
+      // Conversión principal para Google Ads / GA4 vía GTM
+      pushEvent("generate_lead", {
+        form: "booking",
+        plan: plan || "general",
+        usuarios: formData.usuarios,
+        empresa: formData.empresa || undefined,
+      })
 
       // Redirigir a Cal.com después de 500ms
       setTimeout(() => {

@@ -4,6 +4,7 @@ import { JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { AuthSessionProvider } from "@/components/session-provider"
+import { GtmEvents } from "@/components/gtm-events"
 import "./globals.css"
 
 const jetbrainsMono = JetBrains_Mono({
@@ -491,6 +492,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             {children}
           </div>
         </AuthSessionProvider>
+        <GtmEvents />
         <Analytics />
         <SpeedInsights />
       </body>
