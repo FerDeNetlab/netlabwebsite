@@ -163,7 +163,15 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
         e.preventDefault()
         setError('')
         if (!titulo.trim() || !descripcion.trim()) {
-            setError('Título y descripción son obligatorios')
+            setError('Asunto y descripción son obligatorios')
+            return
+        }
+        if (!nombre.trim()) {
+            setError('Tu nombre es obligatorio')
+            return
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+            setError('Escribe un correo válido para enviarte la confirmación')
             return
         }
         setSaving(true)
@@ -214,16 +222,18 @@ function NuevoTicketForm({ token, onCancel, onCreated }: { token: string; onCanc
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-sm text-gray-400 mb-1 block">Tu nombre</label>
-                        <input value={nombre} onChange={(e) => setNombre(e.target.value)}
+                        <label className="text-sm text-gray-400 mb-1 block">Tu nombre *</label>
+                        <input value={nombre} onChange={(e) => setNombre(e.target.value)} required
                             className="w-full px-3 py-2 bg-zinc-900 border border-blue-500/20 rounded text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                     </div>
                     <div>
-                        <label className="text-sm text-gray-400 mb-1 block">Tu email</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                        <label className="text-sm text-gray-400 mb-1 block">Tu email *</label>
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                            placeholder="tu@correo.com"
                             className="w-full px-3 py-2 bg-zinc-900 border border-blue-500/20 rounded text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" />
                     </div>
                 </div>
+                <p className="text-gray-500 text-[11px] -mt-2">Te enviaremos la confirmación y las actualizaciones de tu ticket a este correo.</p>
                 {/* Capturas de pantalla */}
                 <div>
                     <label className="text-sm text-gray-400 mb-1 block">Capturas (opcional)</label>

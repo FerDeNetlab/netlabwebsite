@@ -58,6 +58,12 @@ export async function POST(request: Request, { params }: Ctx) {
         if (!titulo || !descripcion) {
             return NextResponse.json({ error: 'Título y descripción son obligatorios' }, { status: 400 })
         }
+        if (!solicitante_nombre) {
+            return NextResponse.json({ error: 'Tu nombre es obligatorio' }, { status: 400 })
+        }
+        if (!solicitante_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(solicitante_email)) {
+            return NextResponse.json({ error: 'Un correo válido es obligatorio' }, { status: 400 })
+        }
 
         // Folio atómico: incrementa el contador de la ticketera en un solo statement
         const seqRows = await sql`
@@ -101,6 +107,33 @@ export async function POST(request: Request, { params }: Ctx) {
                     </div>
                 `,
             }).catch((e) => console.error('[tickets-publico] email error:', e))
+        }
+
+        // Confirmación al solicitante: "hemos recibido tu ticket" (best-effort)
+        if (solicitante_email && isEmailConfigured()) {
+            const portalUrl = `https://netlab.mx/t/${token}`
+            sendEmail({
+                to: solicitante_email,
+                subject: `[${folio}] Hemos recibido tu ticket — ${titulo}`,
+                html: `
+                    <div style="font-family:monospace;background:#0a0a0a;color:#e5e5e5;padding:24px;border-radius:8px">
+                        <h2 style="color:#22c55e;margin:0 0 8px">✓ Hemos recibido tu ticket</h2>
+                        <p>Hola ${solicitante_nombre}, recibimos tu solicitud y nuestro equipo la revisará pronto.</p>
+                        <p style="color:#888;margin:16px 0 4px">Folio</p>
+                        <p style="margin:0 0 12px"><strong>${folio}</strong></p>
+                        <p style="color:#888;margin:0 0 4px">Asunto</p>
+                        <p style="margin:0 0 12px"><strong>${titulo}</strong></p>
+                        <p style="color:#888;margin:0 0 4px">Urgencia</p>
+                        <p style="margin:0 0 12px">${URGENCIA_LABEL[urgencia]}</p>
+                        <p style="color:#888;margin:0 0 4px">Descripción</p>
+                        <p style="margin:0 0 16px">${descripcion.replace(/\n/g, '<br>')}</p>
+                        <p>Puedes dar seguimiento y responder desde tu portal:</p>
+                        <p><a href="${portalUrl}" style="color:#22c55e">${portalUrl}</a></p>
+                        <hr style="border-color:#333">
+                        <p style="color:#888;font-size:12px">Netlab · Soporte</p>
+                    </div>
+                `,
+            }).catch((e) => console.error('[tickets-publico] email confirmación error:', e))
         }
 
         return NextResponse.json(result[0])
