@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { servicios, ciudades, industrias, casosIA } from "@/lib/seo-data"
+import { articulos } from "@/lib/blog-data"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://www.netlab.mx"
@@ -127,6 +128,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     routes.push({
       url: `${baseUrl}/odoo-ia/${caso.slug}`,
       lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    })
+  }
+
+  // Blog — artículos AEO
+  for (const articulo of articulos) {
+    routes.push({
+      url: `${baseUrl}/blog/${articulo.slug}`,
+      lastModified: new Date(articulo.fechaISO),
       changeFrequency: "monthly",
       priority: 0.8,
     })

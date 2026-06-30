@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Calendar, Clock, ArrowRight } from "lucide-react"
 import { CommandPrompt } from "@/components/ui/command-prompt"
+import { articulos } from "@/lib/blog-data"
 
 export const metadata: Metadata = {
   title: "Blog | Odoo y ERP para PyMEs en México | Netlab",
@@ -12,6 +13,16 @@ export const metadata: Metadata = {
 }
 
 const posts = [
+  // Artículos basados en datos (AEO)
+  ...articulos.map((a) => ({
+    slug: a.slug,
+    title: a.titulo,
+    description: a.descripcion,
+    date: a.fecha,
+    readTime: a.readTime,
+    tags: a.tags,
+  })),
+  // Artículo manual existente
   {
     slug: "odoo-community-vs-enterprise",
     title: "Odoo Community vs Enterprise: ¿cuál conviene para tu PyME en México?",

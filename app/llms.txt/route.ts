@@ -1,4 +1,5 @@
 import { servicios, casosIA } from "@/lib/seo-data"
+import { articulos } from "@/lib/blog-data"
 
 export const dynamic = "force-static"
 
@@ -39,6 +40,7 @@ Netlab conecta IA a tu ERP Odoo para convertir tus datos en decisiones, sin migr
 ${iaLinks}
 
 ## Guías y blog
+${articulos.map((a) => `- [${a.titulo}](${baseUrl}/blog/${a.slug}): ${a.respuestaCorta}`).join("\n")}
 - [Odoo Community vs Enterprise: cuál conviene para tu PyME en México](${baseUrl}/blog/odoo-community-vs-enterprise)
 - [Blog de Netlab](${baseUrl}/blog)
 
